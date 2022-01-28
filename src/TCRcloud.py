@@ -23,11 +23,11 @@ parser_cloud= subparsers.add_parser('cloud',
 
 required_group= parser_cloud.add_argument_group('required arguments')
 
-required_group.add_argument('-r','--repertoire', 
-    type= base.jsonfile, 
-    help= 'indicate the name of the AIRR Standards repertoire file',
-    metavar= 'repertoires.airr.json', 
-    required= True)
+# required_group.add_argument('-r','--repertoire', 
+#     type= base.jsonfile, 
+#     help= 'indicate the name of the AIRR Standards repertoire file',
+#     metavar= 'repertoires.airr.json', 
+#     required= True)
 
 required_group.add_argument('-s','--rearrangements', 
     type= str, 
