@@ -3,12 +3,13 @@ import argparse
 
 import base
 import cloud
+import radar
 import download
 
 # create the top-level parser
 parser= argparse.ArgumentParser(
     description= 'Create a wordcloud of CDR3 \
-sequences from TCR AIRR-seq data and calculate some basic metrics.',
+sequences from TCR AIRR-seq data or a radar plot with diversity metrics.',
     prog= 'TCRcloud')
 
 subparsers= parser.add_subparsers(
@@ -37,26 +38,32 @@ required_group.add_argument('-s','--rearrangements',
 
 parser_cloud.set_defaults(func=cloud.wordcloud)
 
-# # create subparser for printing the metrics
-# parser_metrics = subparsers.add_parser('metrics', help='Only calculate the metrics and print to file')
-# required_group = parser_metrics.add_argument_group('required arguments')
-# required_group.add_argument('-j','--repertoire', type=airrdownload.jsonfile, help='indicate the name of the AIRR Standards repertoire file', metavar='repertoires.airr.json', required=True)
-# required_group.add_argument('-r','--rearrangements', type=str, help='indicate the name of the AIRR Standards rearrangements file', metavar='rearrangements.tsv', required=True)
-# parser_metrics.set_defaults(func=metrics.metrics)
+# create subparser for making the radar
+parser_radar = subparsers.add_parser('radar', help='Only calculate \
+the metrics and print to file')
+required_group = parser_radar.add_argument_group('required arguments')
+required_group.add_argument('-s','--rearrangements', 
+    type= str, 
+    help= 'indicate the name of the AIRR Standards rearrangements file', 
+    metavar= 'rearrangements.tsv', 
+    required= True)
+
+parser_radar.set_defaults(func=radar.radar)
 
 # create subparser for downloading the data
-parser_testdata= subparsers.add_parser('download', 
+parser_download= subparsers.add_parser('download', 
     help= 'Download TCR AIRR-seq rearrangements data matching a given \
 repertoire metadata file')
 
-required_group= parser_testdata.add_argument_group('required arguments')
+required_group= parser_download.add_argument_group('required arguments')
 
-parser_testdata.add_argument('-r','--repertoire', 
+required_group.add_argument('-r','--repertoire', 
     type= base.jsonfile, 
     help= 'indicate the name of the AIRR Standards repertoire file',  
-    metavar= 'repertoires.airr.json')
+    metavar= 'repertoires.airr.json',
+    required= True)
 
-parser_testdata.set_defaults(func=download.airrdownload)
+parser_download.set_defaults(func=download.airrdownload)
 
 args = parser.parse_args()
 args.func(args)                                 

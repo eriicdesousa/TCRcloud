@@ -73,7 +73,8 @@ def format_data(args):
     df['v_call'] = temp_v_call[0]
 
     # format the df to aggregate by junction and count them
-    aggregate=df.pivot_table(index=['junction_aa','v_call'], aggfunc='size').reset_index()
+    aggregate=df.pivot_table(index=['junction_aa','v_call'], 
+                                aggfunc='size').reset_index()
     
     # replace the old information in the df
     df['junction_aa']= aggregate['junction_aa']
@@ -104,21 +105,32 @@ def wordcloud(args):
         df=samples.get_group(j)
         
         if len(df) > 1:
-            # create a dict associating the junction to the gene with highest counts
-            family=df[['junction_aa','v_call']].drop_duplicates(subset='junction_aa', keep="first", inplace=False).set_index('junction_aa').squeeze().to_dict()
+            # create a dict associating the junction to the gene
+            # with highest counts
+            family=df[['junction_aa','v_call']].drop_duplicates(
+                subset='junction_aa', 
+                keep="first", 
+                inplace=False).set_index('junction_aa').squeeze().to_dict()
             # create a dict associating the junction with a count number
-            text=df[['junction_aa','counts']].groupby('junction_aa').sum().squeeze().to_dict()
+            text=df[['junction_aa',
+                'counts']].groupby('junction_aa').sum().squeeze().to_dict()
         else:
             family={df['junction_aa'].iloc[0]:df['v_call'].iloc[0]}
             text={df['junction_aa'].iloc[0]:df['counts'].iloc[0]}
 
         # create the wordcloud
         
-        wordcloud = WordCloud(width=1000, height=1000,background_color="white",relative_scaling=1,prefer_horizontal=1.0,max_words=len(df)).generate_from_frequencies(text)
-        #wordcloud = WordCloud(width=1000, height=1000,background_color="white",prefer_horizontal=1.0,max_words=len(df)).generate_from_frequencies(text)
+        wordcloud = WordCloud(
+                        width=1000, 
+                        height=1000,
+                        background_color="white",
+                        relative_scaling=1,
+                        prefer_horizontal=1.0,
+                        max_words=len(df)).generate_from_frequencies(text)
         color_to_words = {}
         for i in family:
-            color_to_words.setdefault(eval(family.get(i)[:4]).get(family.get(i)),[]).append(i)
+            color_to_words.setdefault(
+                eval(family.get(i)[:4]).get(family.get(i)),[]).append(i)
         default_color = 'grey'
         grouped_color_func = SimpleGroupedColorFunc(color_to_words, default_color)
         wordcloud.recolor(color_func=grouped_color_func)
@@ -139,5 +151,9 @@ def wordcloud(args):
             data_key = mpatches.Patch(color=colours_for_legend[key], label=key)
             patchList.append(data_key)
         outputname = args.rearrangements[:-4]+"_"+j[1]+"_"+j[0]+".png"
-        plt.legend(handles=patchList,bbox_to_anchor=(1.55, 1.0),loc='upper right',ncol=2,prop={'size': 6})
+        plt.legend(handles=patchList,
+                    bbox_to_anchor=(1.55, 1.0),
+                    loc='upper right',
+                    ncol=2,
+                    prop={'size': 6})
         plt.savefig(outputname,dpi=300,bbox_inches='tight')
