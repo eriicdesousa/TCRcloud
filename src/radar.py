@@ -126,7 +126,7 @@ def radar(args):
     for i in patients:
         patient_1 = i[1:]
         patient_1 = [*patient_1, patient_1[0]]
-        plt.plot(label_loc, patient_1, label=i[0])
+        plt.plot(label_loc, patient_1, label=i[0], linewidth=4.0)
     plt.title('Repertoire profile\ncomparison', size=20, y=1.05)
     plt.yticks([])
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
