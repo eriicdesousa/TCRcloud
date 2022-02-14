@@ -5,19 +5,19 @@ TCRcloud is a TCR repertoire visualization and comparison tool
 Works with all four chains of the TCR
 
 ## TRA
-![alpha](images/alpha.png)
+![alpha](https://github.com/oldguyeric/TCRcloud/raw/main/images/alpha.png)
 
 ## TRB
-![beta](images/beta.png)
+![beta](https://github.com/oldguyeric/TCRcloud/raw/main/images/beta.png)
 
 ## TRG
-![gamma](images/gamma.png) 
+![gamma](https://github.com/oldguyeric/TCRcloud/raw/main/images/gamma.png) 
 
 ## TRD
-![delta](images/delta.png) 
+![delta](https://github.com/oldguyeric/TCRcloud/raw/main/images/delta.png) 
 
 ## Diversity comparison
-![radar](images/radar.png)
+![radar](https://github.com/oldguyeric/TCRcloud/raw/main/images/radar.png)
 
 
 

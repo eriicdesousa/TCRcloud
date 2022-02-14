@@ -1,6 +1,7 @@
-#import glob, airr, matplotlib, json, math
+import pkg_resources
 import json
 import math
+import sys
 
 import airr
 import matplotlib
@@ -11,6 +12,7 @@ import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 
+import tcrcloud.colours
 
 # This colours the wordclouds
 class SimpleGroupedColorFunc(object):
@@ -38,10 +40,10 @@ class SimpleGroupedColorFunc(object):
         return self.word_to_color.get(word, self.default_color)
 
 # Import default colours based on the V gene
-TRAV = json.load(open("./dict/TRAV.json"))
-TRBV = json.load(open("./dict/TRBV.json"))
-TRGV = json.load(open("./dict/TRGV.json"))
-TRDV = json.load(open("./dict/TRDV.json"))
+TRAV = tcrcloud.colours.TRAV
+TRBV = tcrcloud.colours.TRBV
+TRGV = tcrcloud.colours.TRGV
+TRDV = tcrcloud.colours.TRDV
     
 
 def format_data(args):
