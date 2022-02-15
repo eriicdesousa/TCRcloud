@@ -1,4 +1,4 @@
-# TCRcloud
+![TCRcloud](images/TCRcloud.png)
 
 TCRcloud is a TCR repertoire visualization and comparison tool
 

@@ -123,13 +123,16 @@ def radar(args):
 
     plt.figure(figsize=(16,8))
     plt.subplot(polar=True)
-    for i in patients:
+    for i in patients:        
         patient_1 = i[1:]
         patient_1 = [*patient_1, patient_1[0]]
-        plt.plot(label_loc, patient_1, label=i[0], linewidth=4.0, alpha=0.6)
+        plt.plot(label_loc, patient_1, label=i[0], linewidth=4.0)
+        plt.fill(label_loc, patient_1, label=i[0], linewidth=4.0, alpha=0.6)
     plt.title('Repertoire profile\ncomparison', size=20, y=1.05)
     plt.yticks([])
+    plt.tick_params(pad=22,labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
+    
     outputname = args.rearrangements[:-4]+"_radar"+".png"
     plt.legend(loc='upper right',bbox_to_anchor=(1.7, 1.0))
     plt.savefig(outputname,dpi=300)
