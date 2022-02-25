@@ -141,7 +141,7 @@ def wordcloud(args):
         plt.imshow(wordcloud, interpolation="bilinear")
         plt.xticks([])
         plt.yticks([])
-
+        len_label=0
         colours_for_legend = {}
         for i in family:
             tempdict=eval(family.get(i)[:4]).get(family.get(i))
@@ -152,10 +152,17 @@ def wordcloud(args):
         for key in sorted_legend:
             data_key = mpatches.Patch(color=colours_for_legend[key], label=key)
             patchList.append(data_key)
-        outputname = args.rearrangements[:-4]+"_"+j[1]+"_"+j[0]+".png"
+            if len(key) > len_label:
+                len_label = len(key)
+        if len(patchList) == 1:
+            horizontallegend=1.2
+        else:
+            horizontallegend=1.2+(len_label*.03)
         plt.legend(handles=patchList,
-                    bbox_to_anchor=(1.55, 1.0),
+                    bbox_to_anchor=(horizontallegend, 1.0),
                     loc='upper right',
                     ncol=2,
                     prop={'size': 6})
+        outputname = args.rearrangements[:-4]+"_"+j[1]+"_"+j[0]+".png"
+        plt.tight_layout()
         plt.savefig(outputname,dpi=300,bbox_inches='tight')
