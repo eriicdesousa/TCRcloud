@@ -101,7 +101,7 @@ def radar(args):
         length=len(df.pivot_table(index=['junction'], 
                                 aggfunc='size').reset_index())
         counts = df['counts'].tolist()
-        distinct= np.array([0,length,50000]).reshape(-1, 1)
+        distinct= np.array([0,length,10000]).reshape(-1, 1)
         convergencelist= np.array([0,convergence(df,length),1]).reshape(-1, 1) 
         shannon= np.array([0,skbio.diversity.alpha_diversity('shannon',counts)[0],15]).reshape(-1, 1)
         simpson= np.array([0,skbio.diversity.alpha_diversity('simpson',counts)[0],1]).reshape(-1, 1)
@@ -121,19 +121,25 @@ def radar(args):
     
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(patients[0]))
 
-    plt.figure(figsize=(16,8))
+    plt.figure(figsize=(12.5,8))
     plt.subplot(polar=True)
     len_label=0
-
+    radar_colours=['#CC6677', '#332288', '#DDCC77', '#117733', '#88CCEE',
+                    '#882255', '#44AA99', '#999933', '#AA4499']
     for i in patients:        
         patient = i[1:]
         patient = [*patient, patient[0]]
-        plt.plot(label_loc, patient, label=i[0], linewidth=4.0)
-        plt.fill(label_loc, patient, linewidth=4.0, alpha=0.6)
+        try:
+            thecolour=radar_colours.pop()
+        except IndexError:
+            thecolour='#BBBBBB'
+        
+        plt.plot(label_loc, patient, label=i[0], linewidth=4.0,color=thecolour)
+        plt.fill(label_loc, patient, linewidth=4.0, alpha=0.6,color=thecolour)
         if len(i[0]) > len_label:
             len_label = len(i[0])
     plt.title('Repertoire profile\ncomparison', size=20, y=1.20)
-    plt.yticks([])
+    plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9],[])
     plt.tick_params(pad=22,labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
     horizontallegend=1.2+(len_label*.025)
