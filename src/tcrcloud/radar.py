@@ -80,13 +80,13 @@ def format_data(args):
 
 def radar(args):
     categories = [
-                    'Distinct\nCDR3',
+                    'D50\nIndex',
                     'Convergence', 
                     'Shannon\nIndex', 
                     'Simpson\nIndex', 
                     'Chao1\nIndex',
                     'Gini\nindex',
-                    'D50\nIndex']
+                    'Distinct\nCDR3',]
     categories = [*categories, categories[0]]
 
     minmax_scale = preprocessing.MinMaxScaler(feature_range=(0, 1))
@@ -110,13 +110,13 @@ def radar(args):
         dfiftylist= np.array([0,Dfifty(df,length),1]).reshape(-1, 1)
         metrics=[]
         metrics.append(j[1]+' '+j[0])
-        metrics.append(minmax_scale.fit_transform(distinct)[1].astype(np.float))
+        metrics.append(minmax_scale.fit_transform(dfiftylist)[1].astype(np.float))
         metrics.append(minmax_scale.fit_transform(convergencelist)[1].astype(np.float))
         metrics.append(minmax_scale.fit_transform(shannon)[1].astype(np.float))
         metrics.append(minmax_scale.fit_transform(simpson)[1].astype(np.float))
         metrics.append(minmax_scale.fit_transform(chao)[1].astype(np.float))
         metrics.append(minmax_scale.fit_transform(gini)[1].astype(np.float))
-        metrics.append(minmax_scale.fit_transform(dfiftylist)[1].astype(np.float))
+        metrics.append(minmax_scale.fit_transform(distinct)[1].astype(np.float))
         patients.append(metrics)
     
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(patients[0]))
@@ -139,6 +139,28 @@ def radar(args):
         if len(i[0]) > len_label:
             len_label = len(i[0])
     plt.title('Repertoire profile\ncomparison', size=20, y=1.20)
+
+    plt.text(label_loc[0], 0.06,'5',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[0], 0.26,'15',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[0], 0.46,'25',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[0], 0.66,'35',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[0], 0.86,'45',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[0], 1.03,'50',horizontalalignment='center',verticalalignment='center')
+    
+    plt.text(label_loc[1], 0.06,'0.1',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[1], 0.26,'0.3',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[1], 0.46,'0.5',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[1], 0.66,'0.7',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[1], 0.86,'0.9',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[1], 1.03,'1',horizontalalignment='center',verticalalignment='center')
+    
+    plt.text(label_loc[6], 0.06,'1000',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[6], 0.26,'3000',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[6], 0.46,'5000',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[6], 0.66,'7000',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[6], 0.86,'9000',horizontalalignment='center',verticalalignment='center')
+    plt.text(label_loc[6], 1.03,'10000',horizontalalignment='center',verticalalignment='center')
+
     plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9],[])
     plt.tick_params(pad=22,labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
