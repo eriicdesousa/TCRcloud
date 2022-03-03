@@ -47,7 +47,7 @@ TRDV = tcrcloud.colours.TRDV
     
 
 def format_data(args):
-    
+    validate = airr.validate_rearrangement(args.rearrangements)
     reader = airr.read_rearrangement(args.rearrangements)
     empty_list=[]
 

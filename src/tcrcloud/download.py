@@ -36,6 +36,7 @@ def testserver(data):
     return host_url
 
 def airrdownload(args):
+    validate = validate_repertoire(args.repertoire)
     repertoire_file = args.repertoire
     rearrangements_file = repertoire_file[:-4]+'rearrangements.tsv'
     data = airr.load_repertoire(args.repertoire)

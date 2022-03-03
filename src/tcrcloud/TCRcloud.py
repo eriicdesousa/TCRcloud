@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import argparse
 
-import tcrcloud.base
 import tcrcloud.cloud
 import tcrcloud.radar
 import tcrcloud.download
@@ -59,7 +58,7 @@ def main():
     required_group= parser_download.add_argument_group('required arguments')
 
     required_group.add_argument('-r','--repertoire', 
-        type= tcrcloud.base.jsonfile, 
+        type= str, 
         help= 'indicate the name of the AIRR Standards repertoire file',  
         metavar= 'repertoires.airr.json',
         required= True)

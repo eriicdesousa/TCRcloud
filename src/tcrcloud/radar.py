@@ -32,6 +32,7 @@ def Dfifty(df,length):
         return (counter*100)/length
 
 def format_data(args):
+    validate = airr.validate_rearrangement(args.rearrangements) 
     reader = airr.read_rearrangement(args.rearrangements)
     empty_list=[]
 
