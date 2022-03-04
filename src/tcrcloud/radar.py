@@ -106,20 +106,31 @@ def radar(args):
         counts = df['counts'].tolist()
         distinct= np.array([0,length,10000]).reshape(-1, 1)
         convergencelist= np.array([0,convergence(df,length),1]).reshape(-1, 1) 
-        shannon= np.array([0,skbio.diversity.alpha_diversity('shannon',counts)[0],15]).reshape(-1, 1)
-        simpson= np.array([0,skbio.diversity.alpha_diversity('simpson',counts)[0],1]).reshape(-1, 1)
-        chao= np.array([0,skbio.diversity.alpha_diversity('chao1',counts)[0],120000]).reshape(-1, 1)
-        gini= np.array([0,skbio.diversity.alpha_diversity('gini_index',counts)[0],1]).reshape(-1, 1)
+        shannon= np.array([0,skbio.diversity. \
+            alpha_diversity('shannon',counts)[0],15]).reshape(-1, 1)
+        simpson= np.array([0,skbio.diversity. \
+            alpha_diversity('simpson',counts)[0],1]).reshape(-1, 1)
+        chao= np.array([0,skbio.diversity. \
+            alpha_diversity('chao1',counts)[0],120000]).reshape(-1, 1)
+        gini= np.array([0,skbio.diversity. \
+            alpha_diversity('gini_index',counts)[0],1]).reshape(-1, 1)
         dfiftylist= np.array([0,Dfifty(df,length),1]).reshape(-1, 1)
         metrics=[]
         metrics.append(j[1]+' '+j[0])
-        metrics.append(minmax_scale.fit_transform(dfiftylist)[1].astype(np.float))
-        metrics.append(minmax_scale.fit_transform(chao)[1].astype(np.float))
-        metrics.append(minmax_scale.fit_transform(convergencelist)[1].astype(np.float))
-        metrics.append(minmax_scale.fit_transform(shannon)[1].astype(np.float))
-        metrics.append(minmax_scale.fit_transform(simpson)[1].astype(np.float))
-        metrics.append(minmax_scale.fit_transform(gini)[1].astype(np.float))
-        metrics.append(minmax_scale.fit_transform(distinct)[1].astype(np.float))
+        metrics.append(minmax_scale.fit_transform(dfiftylist)[1]. \
+            astype(np.float))
+        metrics.append(minmax_scale.fit_transform(chao)[1]. \
+            astype(np.float))
+        metrics.append(minmax_scale.fit_transform(convergencelist)[1]. \
+            astype(np.float))
+        metrics.append(minmax_scale.fit_transform(shannon)[1]. \
+            astype(np.float))
+        metrics.append(minmax_scale.fit_transform(simpson)[1]. \
+            astype(np.float))
+        metrics.append(minmax_scale.fit_transform(gini)[1]. \
+            astype(np.float))
+        metrics.append(minmax_scale.fit_transform(distinct)[1]. \
+            astype(np.float))
         patients.append(metrics)
     
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(patients[0]))
@@ -137,60 +148,320 @@ def radar(args):
         except IndexError:
             thecolour='#BBBBBB'
         
-        plt.plot(label_loc, patient, label=i[0], linewidth=4.0,color=thecolour)
-        plt.fill(label_loc, patient, linewidth=4.0, alpha=0.6,color=thecolour)
+        plt.plot(label_loc, 
+                patient, 
+                label=i[0], 
+                linewidth=4.0,
+                color=thecolour)
+        plt.fill(label_loc, 
+                patient, 
+                linewidth=4.0, 
+                alpha=0.6,
+                color=thecolour)
         if len(i[0]) > len_label:
             len_label = len(i[0])
     plt.title('Repertoire profile\ncomparison', size=20, y=1.10)
 
-    plt.text(label_loc[0], 0.06,'5',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[0], 0.26,'15',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[0], 0.46,'25',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[0], 0.66,'35',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[0], 0.86,'45',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[0], 1.03,'50',horizontalalignment='left',verticalalignment='center',fontsize=12,fontweight='bold')
+    plt.text(label_loc[0], 
+            0.06,
+            '5',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[0],
+            0.26,
+            '15',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[0], 
+            0.46,
+            '25',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[0],
+            0.66,
+            '35',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[0], 
+            0.86,
+            '45',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[0], 
+            1.03,
+            '50',
+            horizontalalignment='left',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
     
-    plt.text(label_loc[1], 0.06,'11000',horizontalalignment='left',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[1], 0.26,'33000',horizontalalignment='left',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[1], 0.46,'55000',horizontalalignment='left',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[1], 0.66,'77000',horizontalalignment='left',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[1], 0.86,'99000',horizontalalignment='left',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[1], 1.03,'110000',horizontalalignment='left',verticalalignment='center',fontsize=12,fontweight='bold')
+    plt.text(label_loc[1], 
+            0.06,
+            '11000',
+            horizontalalignment='left',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[1], 
+            0.26,
+            '33000',
+            horizontalalignment='left',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[1], 
+            0.46,
+            '55000',
+            horizontalalignment='left',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[1], 
+            0.66,
+            '77000',
+            horizontalalignment='left',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[1], 
+            0.86,
+            '99000',
+            horizontalalignment='left',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[1], 
+            1.03,
+            '110000',
+            horizontalalignment='left',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
     
-    plt.text(label_loc[2], 0.06,'0.1',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[2], 0.26,'0.3',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[2], 0.46,'0.5',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[2], 0.66,'0.7',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[2], 0.86,'0.9',horizontalalignment='center',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[2], 1.03,'1',horizontalalignment='center',verticalalignment='bottom',fontsize=12,fontweight='bold')
+    plt.text(label_loc[2], 
+            0.06,
+            '0.1',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[2], 
+            0.26,
+            '0.3',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[2], 
+            0.46,
+            '0.5',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[2], 
+            0.66,
+            '0.7',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[2], 
+            0.86,
+            '0.9',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[2], 
+            1.03,
+            '1',
+            horizontalalignment='center',
+            verticalalignment='bottom',
+            fontsize=12,
+            fontweight='bold')
     
-    plt.text(label_loc[3], 0.06,'1.5',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[3], 0.26,'4.5',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[3], 0.46,'7.5',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[3], 0.66,'10.5',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[3], 0.86,'13.5',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[3], 1.03,'15',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
+    plt.text(label_loc[3], 
+            0.06,
+            '1.5',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[3], 
+            0.26,
+            '4.5',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[3], 
+            0.46,
+            '7.5',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[3], 
+            0.66,
+            '10.5',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[3], 
+            0.86,
+            '13.5',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[3], 
+            1.03,
+            '15',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
     
-    plt.text(label_loc[4], 0.06,'0.1',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[4], 0.26,'0.3',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[4], 0.46,'0.5',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[4], 0.66,'0.7',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[4], 0.86,'0.9',horizontalalignment='right',verticalalignment='center',fontsize=12,fontweight='bold')
-    plt.text(label_loc[4], 1.03,'1',horizontalalignment='right',verticalalignment='top',fontsize=12,fontweight='bold')
+    plt.text(label_loc[4],
+            0.06,
+            '0.1',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4], 
+            0.26,
+            '0.3',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4],
+            0.46,
+            '0.5',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4], 
+            0.66,
+            '0.7',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4],
+            0.86,
+            '0.9',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4], 
+            1.03,
+            '1',
+            horizontalalignment='right',
+            verticalalignment='top',
+            fontsize=12,
+            fontweight='bold')
     
-    plt.text(label_loc[5], 0.06,'0.1',horizontalalignment='center',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[5], 0.26,'0.3',horizontalalignment='center',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[5], 0.46,'0.5',horizontalalignment='center',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[5], 0.66,'0.7',horizontalalignment='center',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[5], 0.86,'0.9',horizontalalignment='center',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[5], 1.03,'1',horizontalalignment='center',verticalalignment='top', fontsize=12,fontweight='bold')
+    plt.text(label_loc[5], 
+            0.06,
+            '0.1',
+            horizontalalignment='center',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[5], 
+            0.26,
+            '0.3',
+            horizontalalignment='center',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[5], 
+            0.46,
+            '0.5',
+            horizontalalignment='center',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[5], 
+            0.66,
+            '0.7',
+            horizontalalignment='center',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[5], 
+            0.86,
+            '0.9',
+            horizontalalignment='center',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[5], 
+            1.03,
+            '1',
+            horizontalalignment='center',
+            verticalalignment='top', 
+            fontsize=12,
+            fontweight='bold')
     
-    plt.text(label_loc[6], 0.06,'1000',horizontalalignment='left',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[6], 0.26,'3000',horizontalalignment='left',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[6], 0.46,'5000',horizontalalignment='left',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[6], 0.66,'7000',horizontalalignment='left',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[6], 0.86,'9000',horizontalalignment='left',verticalalignment='center', fontsize=12,fontweight='bold')
-    plt.text(label_loc[6], 1.03,'10000',horizontalalignment='left',verticalalignment='center', fontsize=12,fontweight='bold')
+    plt.text(label_loc[6], 
+            0.06,
+            '1000',
+            horizontalalignment='left',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[6], 
+            0.26,
+            '3000',
+            horizontalalignment='left',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[6], 
+            0.46,
+            '5000',
+            horizontalalignment='left',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[6], 
+            0.66,
+            '7000',
+            horizontalalignment='left',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[6], 
+            0.86,
+            '9000',
+            horizontalalignment='left',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[6], 
+            1.03,
+            '10000',
+            horizontalalignment='left',
+            verticalalignment='center', 
+            fontsize=12,
+            fontweight='bold')
     
     plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9],[])
     plt.tick_params(pad=30,labelsize=16)

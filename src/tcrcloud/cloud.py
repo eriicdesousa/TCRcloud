@@ -134,7 +134,8 @@ def wordcloud(args):
             color_to_words.setdefault(
                 eval(family.get(i)[:4]).get(family.get(i)),[]).append(i)
         default_color = 'grey'
-        grouped_color_func = SimpleGroupedColorFunc(color_to_words, default_color)
+        grouped_color_func = SimpleGroupedColorFunc(color_to_words, 
+                                default_color)
         wordcloud.recolor(color_func=grouped_color_func)
 
         plt.figure(dpi=300.0)
@@ -150,7 +151,8 @@ def wordcloud(args):
         sorted_legend=sorted(colours_for_legend)
         patchList = []
         for key in sorted_legend:
-            data_key = mpatches.Patch(color=colours_for_legend[key], label=key)
+            data_key = mpatches.Patch(color=colours_for_legend[key], 
+                                        label=key)
             patchList.append(data_key)
             if len(key) > len_label:
                 len_label = len(key)
