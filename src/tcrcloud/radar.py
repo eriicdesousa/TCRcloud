@@ -6,16 +6,14 @@ import matplotlib.pyplot as plt
 import skbio
 import airr
 
-plt.rcParams["font.family"] = "serif"
-
 def convergence(df,length):
     counts=df['counts']
     total=counts.sum()
     conv_value=0
     for i in df['counts']:
         if i > 1:
-            conv_value += (i/total)
-    return conv_value
+            conv_value += i
+    return conv_value/total
 
 def Dfifty(df,length):
     counts=df['counts']
@@ -104,7 +102,7 @@ def radar(args):
         length=len(df.pivot_table(index=['junction'], 
                                 aggfunc='size').reset_index())
         counts = df['counts'].tolist()
-        distinct= np.array([0,length,10000]).reshape(-1, 1)
+        distinct= np.array([0,length,25000]).reshape(-1, 1)
         convergencelist= np.array([0,convergence(df,length),1]).reshape(-1, 1) 
         shannon= np.array([0,skbio.diversity. \
             alpha_diversity('shannon',counts)[0],15]).reshape(-1, 1)
@@ -116,7 +114,14 @@ def radar(args):
             alpha_diversity('gini_index',counts)[0],1]).reshape(-1, 1)
         dfiftylist= np.array([0,Dfifty(df,length),1]).reshape(-1, 1)
         metrics=[]
-        metrics.append(j[1]+' '+j[0])
+        if j[0]== 'A':
+            metrics.append(j[1]+' α chain')
+        elif j[0]== 'B':
+            metrics.append(j[1]+' β chain')
+        elif j[0]== 'G':
+            metrics.append(j[1]+' γ chain')
+        elif j[0]== 'D':
+            metrics.append(j[1]+' δ chain')
         metrics.append(minmax_scale.fit_transform(dfiftylist)[1]. \
             astype(np.float))
         metrics.append(minmax_scale.fit_transform(chao)[1]. \
@@ -137,7 +142,7 @@ def radar(args):
 
     plt.figure(figsize=(10,12))
     plt.subplot(polar=True)
-    len_label=0
+    
     radar_colours=['#CC6677', '#332288', '#DDCC77', '#117733', '#88CCEE',
                     '#882255', '#44AA99', '#999933', '#AA4499']
     for i in patients:        
@@ -200,7 +205,7 @@ def radar(args):
     plt.text(label_loc[0], 
             1.03,
             '50',
-            horizontalalignment='left',
+            horizontalalignment='right',
             verticalalignment='center',
             fontsize=12,
             fontweight='bold')
@@ -287,7 +292,7 @@ def radar(args):
             1.03,
             '1',
             horizontalalignment='center',
-            verticalalignment='bottom',
+            verticalalignment='top',
             fontsize=12,
             fontweight='bold')
     
@@ -329,54 +334,54 @@ def radar(args):
     plt.text(label_loc[3], 
             1.03,
             '15',
-            horizontalalignment='right',
-            verticalalignment='center',
-            fontsize=12,
-            fontweight='bold')
-    
-    plt.text(label_loc[4],
-            0.06,
-            '0.1',
-            horizontalalignment='right',
-            verticalalignment='center',
-            fontsize=12,
-            fontweight='bold')
-    plt.text(label_loc[4], 
-            0.26,
-            '0.3',
-            horizontalalignment='right',
-            verticalalignment='center',
-            fontsize=12,
-            fontweight='bold')
-    plt.text(label_loc[4],
-            0.46,
-            '0.5',
-            horizontalalignment='right',
-            verticalalignment='center',
-            fontsize=12,
-            fontweight='bold')
-    plt.text(label_loc[4], 
-            0.66,
-            '0.7',
-            horizontalalignment='right',
-            verticalalignment='center',
-            fontsize=12,
-            fontweight='bold')
-    plt.text(label_loc[4],
-            0.86,
-            '0.9',
-            horizontalalignment='right',
-            verticalalignment='center',
-            fontsize=12,
-            fontweight='bold')
-    plt.text(label_loc[4], 
-            1.03,
-            '1',
-            horizontalalignment='right',
+            horizontalalignment='center',
             verticalalignment='top',
             fontsize=12,
             fontweight='bold')
     
+    plt.text(label_loc[4],
+            0.06,
+            '0.1',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4], 
+            0.26,
+            '0.3',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4],
+            0.46,
+            '0.5',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4], 
+            0.66,
+            '0.7',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4],
+            0.86,
+            '0.9',
+            horizontalalignment='right',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    plt.text(label_loc[4], 
+            1.03,
+            '1',
+            horizontalalignment='left',
+            verticalalignment='center',
+            fontsize=12,
+            fontweight='bold')
+    
     plt.text(label_loc[5], 
             0.06,
             '0.1',
@@ -416,7 +421,7 @@ def radar(args):
             1.03,
             '1',
             horizontalalignment='center',
-            verticalalignment='top', 
+            verticalalignment='bottom', 
             fontsize=12,
             fontweight='bold')
     
@@ -458,15 +463,17 @@ def radar(args):
     plt.text(label_loc[6], 
             1.03,
             '10000',
-            horizontalalignment='left',
+            horizontalalignment='center',
             verticalalignment='center', 
             fontsize=12,
             fontweight='bold')
-    
+
+    plt.ylim(0,1.01)
     plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9],[])
-    plt.tick_params(pad=30,labelsize=16)
+    plt.tick_params(pad=32,labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
+    verticalallegend=-0.10-(len(patients)*0.05)
     outputname = args.rearrangements[:-4]+"_radar"+".png"
-    plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.2),fontsize=16)
+    plt.legend(loc='lower center', bbox_to_anchor=(0.5, verticalallegend),fontsize=16)
     plt.tight_layout()
     plt.savefig(outputname,dpi=300)

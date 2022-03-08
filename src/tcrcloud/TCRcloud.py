@@ -5,6 +5,8 @@ import tcrcloud.cloud
 import tcrcloud.radar
 import tcrcloud.download
 
+plt.rcParams["font.family"] = "serif"
+
 def main():
     # create the top-level parser
     parser= argparse.ArgumentParser(
