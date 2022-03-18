@@ -1,4 +1,4 @@
-TRAV={
+TRAV = {
     "TRAV1-1": "black",
     "TRAV1-2": "darkslategrey",
     "TRAV2": "blueviolet",
@@ -53,7 +53,7 @@ TRAV={
     "TRAV41": "crimson"
 }
 
-TRBV={
+TRBV = {
     "TRBV1": "brown",
     "TRBV2": "chocolate",
     "TRBV3-1": "#ff7f0e",
@@ -117,7 +117,7 @@ TRBV={
     "TRBV30": "sandybrown"
 }
 
-TRGV={
+TRGV = {
     "TRGV1": "#1f77b4",
     "TRGV2": "#ff7f0e",
     "TRGV3": "#2ca02c",
@@ -131,7 +131,7 @@ TRGV={
     "TRGVA": "#bf00bf"
 }
 
-TRDV={
+TRDV = {
     "TRDV1": "#1f77b4",
     "TRDV2": "#ff7f0e",
     "TRDV3": "#2ca02c",
