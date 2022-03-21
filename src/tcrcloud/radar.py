@@ -85,15 +85,33 @@ def calculate_metrics(keys, samples):
                        astype(np.float))
         patients.append(metrics)
     # patients = []
-    # patients.append(['test1',np.array(0.1),np.array(0.9),np.array(0.1),np.array(0.9),np.array(0.1),np.array(0.9),np.array(0.1)])
-    # patients.append(['test2',np.array(0.2),np.array(0.8),np.array(0.2),np.array(0.8),np.array(0.2),np.array(0.8),np.array(0.2)])
-    # patients.append(['test3',np.array(0.3),np.array(0.7),np.array(0.3),np.array(0.7),np.array(0.3),np.array(0.7),np.array(0.3)])
-    # patients.append(['test4',np.array(0.4),np.array(0.6),np.array(0.4),np.array(0.6),np.array(0.4),np.array(0.6),np.array(0.4)])
-    # patients.append(['test5',np.array(0.5),np.array(0.5),np.array(0.5),np.array(0.5),np.array(0.5),np.array(0.5),np.array(0.5)])
-    # patients.append(['test6',np.array(0.6),np.array(0.4),np.array(0.6),np.array(0.4),np.array(0.6),np.array(0.4),np.array(0.6)])
-    # patients.append(['test7',np.array(0.7),np.array(0.3),np.array(0.7),np.array(0.3),np.array(0.7),np.array(0.3),np.array(0.7)])
-    # patients.append(['test8',np.array(0.8),np.array(0.2),np.array(0.8),np.array(0.2),np.array(0.8),np.array(0.2),np.array(0.8)])
-    # patients.append(['test9',np.array(0.9),np.array(0.1),np.array(0.9),np.array(0.1),np.array(0.9),np.array(0.1),np.array(0.9)])
+    # patients.append(['test1', np.array(0.1), np.array(0.9), np.array(0.1),
+    #                  np.array(0.9), np.array(0.1), np.array(0.9),
+    #                  np.array(0.1)])
+    # patients.append(['test2', np.array(0.2), np.array(0.8), np.array(0.2),
+    #                  np.array(0.8), np.array(0.2), np.array(0.8),
+    #                  np.array(0.2)])
+    # patients.append(['test3', np.array(0.3), np.array(0.7), np.array(0.3),
+    #                  np.array(0.7), np.array(0.3), np.array(0.7),
+    #                  np.array(0.3)])
+    # patients.append(['test4', np.array(0.4), np.array(0.6), np.array(0.4),
+    #                  np.array(0.6), np.array(0.4), np.array(0.6),
+    #                  np.array(0.4)])
+    # patients.append(['test5', np.array(0.5), np.array(0.5), np.array(0.5),
+    #                  np.array(0.5), np.array(0.5), np.array(0.5),
+    #                  np.array(0.5)])
+    # patients.append(['test6', np.array(0.6), np.array(0.4), np.array(0.6),
+    #                  np.array(0.4), np.array(0.6), np.array(0.4),
+    #                  np.array(0.6)])
+    # patients.append(['test7', np.array(0.7), np.array(0.3), np.array(0.7),
+    #                  np.array(0.3), np.array(0.7), np.array(0.3),
+    #                  np.array(0.7)])
+    # patients.append(['test8', np.array(0.8), np.array(0.2), np.array(0.8),
+    #                  np.array(0.2), np.array(0.8), np.array(0.2),
+    #                  np.array(0.8)])
+    # patients.append(['test9', np.array(0.9), np.array(0.1), np.array(0.9),
+    #                  np.array(0.1), np.array(0.9), np.array(0.1),
+    #                  np.array(0.9)])
     return patients
 
 
@@ -136,18 +154,18 @@ def radar(args):
         except IndexError:
             thecolour = '#BBBBBB'
 
-        # plt.plot(label_loc,
-        #          patient,
-        #          label=i[0],
-        #          linewidth=4.0,
-        #          alpha=0.3,
-        #          color=thecolour)
+        plt.plot(label_loc,
+                 patient,
+                 # label=i[0],
+                 linewidth=4.0,
+                 alpha=0.4,
+                 color=thecolour)
 
         plt.fill(label_loc,
                  patient,
                  label=i[0],
                  linewidth=4.0,
-                 alpha=0.9,
+                 alpha=0.6,
                  color=thecolour)
 
     plt.title('Repertoire profile\ncomparison', size=20, y=1.10)
@@ -457,9 +475,7 @@ def radar(args):
     plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9], [])
     plt.tick_params(pad=32, labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
-    verticalallegend = -0.11 - (len(patients) * 0.04)
     outputname = args.rearrangements[:-4] + "_radar" + ".png"
-    plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.5),
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1),
                fontsize=16)
-    plt.tight_layout()
-    plt.savefig(outputname, dpi=300)
+    plt.savefig(outputname, dpi=300, bbox_inches='tight')
