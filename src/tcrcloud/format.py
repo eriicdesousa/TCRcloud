@@ -68,57 +68,14 @@ def format_metrics(df):
     aggregate = aggregate.sort_values(by='counts', ascending=False)
     return aggregate
 
-# def format_cloud(df):
 
-
-# def format_data(args):
-#     validate = airr.validate_rearrangement(args.rearrangements)
-#     reader = airr.read_rearrangement(args.rearrangements)
-#     empty_list=[]
-
-#     # keep only the Junction, Vgene and Repertoire ID columns
-#     keys = ['junction_aa', 'v_call', 'repertoire_id']
-
-#     for row in reader:
-#         empty_list.append({x:row[x] for x in keys})
-
-#     df = pd.DataFrame(empty_list)
-
-#     # replace cells without junction with Nan
-#     df['junction_aa'].replace('', np.nan, inplace=True)
-    
-#     # delete lines with Nan
-#     df.dropna(subset=['junction_aa'], inplace=True)
-    
-#     # delete lines with an X on the junction
-#     df = df[~df.junction_aa.str.contains("X")]
-    
-#     # Series to select only one Vgene when there are multiple in the column
-#     temp_v_call  = df.v_call.str.split(",", n = 0, expand = True)
-    
-#     # replace the v_call column with the new one
-#     df['v_call'] = temp_v_call[0]
-
-#     # format the df to aggregate by junction and count them
-#     aggregate=df.pivot_table(index=['junction_aa','v_call'], 
-#                                 aggfunc='size').reset_index()
-    
-#     # replace the old information in the df
-#     df['junction_aa']= aggregate['junction_aa']
-#     df['v_call']= aggregate['v_call']
-#     df['counts']= aggregate[0]
-    
-#     # the size of the df changed so removing extra lines
-#     df.dropna(subset=['junction_aa'], inplace=True)
-    
-#     # sort the df by highest numbers of counts
-#     df=df.sort_values(by='counts', ascending=False)
-    
-#     # remove allele information from v_call and keep only the gene information
-#     df['v_call'] = df.apply(lambda x: x['v_call'][:-3], axis = 1)
-#     df['chain'] = df.apply(lambda x: x['v_call'][2], axis = 1)
-        
-#     return df
+def format_cloud(df):
+    aggregate = df.pivot_table(index=['junction_aa', 'v_call', 'repertoire_id',
+                                      'chain'], aggfunc='size').reset_index()
+    del df
+    aggregate.rename(columns={0: 'counts'}, inplace=True)
+    aggregate = aggregate.sort_values(by='counts', ascending=False)
+    return aggregate
 
 
 # print("""
@@ -127,4 +84,4 @@ def format_metrics(df):
 #                    | || |   | |_) / __| |/ _ \| | | |/ _` |
 #                    | || |___|  _ < (__| | (_) | |_| | (_| |
 #                    |_| \____|_| \_\___|_|\___/ \__,_|\__,_|
-#    """) 
+#    """)
