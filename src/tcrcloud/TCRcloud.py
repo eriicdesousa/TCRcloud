@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import tcrcloud.cloud
 import tcrcloud.radar
 import tcrcloud.download
+import tcrcloud.testdata
 
 plt.rcParams["font.family"] = "serif"
 
@@ -20,7 +21,7 @@ def main():
     subparsers = parser.add_subparsers(
         title='Command Options',
         help='The program has 3 modes: cloud, radar or download',
-        dest='cloud, radar, download or -h/--help',
+        dest='cloud, radar, download, testdata or -h/--help',
         required=True)
 
     # create subparser for making the wordcloud
@@ -29,13 +30,13 @@ def main():
 
     required_group = parser_cloud.add_argument_group('required arguments')
 
-    # required_group.add_argument('-r','--repertoire', 
-    #     type= tcrcloud.base.jsonfile, 
+    # required_group.add_argument('-r','--repertoire',
+    #     type= tcrcloud.base.jsonfile,
     #     help= 'indicate the name of the AIRR Standards repertoire file',
-    #     metavar= 'repertoires.airr.json', 
+    #     metavar= 'repertoires.airr.json',
     #     required= True)
 
-    required_group.add_argument('-s', '--rearrangements', type=str,
+    required_group.add_argument('-a', '--rearrangements', type=str,
                                 help='indicate the name of the AIRR Standards \
                                 rearrangements file',
                                 metavar='rearrangements.tsv', required=True)
@@ -43,16 +44,16 @@ def main():
     parser_cloud.set_defaults(func=tcrcloud.cloud.wordcloud)
 
     # create subparser for making the radar
-    parser_radar = subparsers.add_parser('radar', help='Only calculate \
-    the metrics and print to file')
+    parser_radar = subparsers.add_parser('radar', help='Create a radar plot \
+        with diversity metrics')
     required_group = parser_radar.add_argument_group('required arguments')
-    required_group.add_argument('-s', '--rearrangements', type=str,
+    required_group.add_argument('-a', '--rearrangements', type=str,
                                 help='indicate the name of the AIRR \
                                 Standards rearrangements file',
                                 metavar='rearrangements.tsv', required=True)
     parser_radar.set_defaults(func=tcrcloud.radar.radar)
 
-    # create subparser for downloading the data
+    # create subparser for downloading the rearregement data
     parser_download = subparsers.add_parser('download',
                                             help='Download TCR AIRR-seq \
                                             rearrangements data matching a \
@@ -67,6 +68,14 @@ def main():
                                 required=True)
 
     parser_download.set_defaults(func=tcrcloud.download.airrdownload)
+
+    # create subparser for downloading the test repertoire
+
+    parser_testdata = subparsers.add_parser('testdata',
+                                            help='Download TCR AIRR-seq \
+                                            repertoire file to test TCRcloud')
+
+    parser_testdata.set_defaults(func=tcrcloud.testdata.download)
 
     args = parser.parse_args()
     args.func(args)
