@@ -1,3 +1,5 @@
+import sys
+
 import requests
 import airr
 
@@ -37,10 +39,10 @@ def testserver(data):
 
 def airrdownload(args):
     try:
-        airr.validate_repertoire(args.repertoire)
+        airr.validate_repertoire(args.repertoire, True)
     except TypeError:
-        print("TCRcloud error: unknown file type for repertoire. Supported \
-file extensions are 'yaml', 'yml' or 'json'")
+        sys.stderr.write("TCRcloud error: unknown file type for repertoire. \
+Supported file extensions are 'yaml', 'yml' or 'json'\n")
     repertoire_file = args.repertoire
     rearrangements_file = repertoire_file[:-4] + "rearrangements.tsv"
     data = airr.load_repertoire(args.repertoire)
@@ -126,4 +128,4 @@ repertoire metadata file.")
 
         print("Retrieved " + str(cnt) + " rearrangements for repertoire: "
                            + r["repertoire_id"])
-        print("Saved as " + rearrangements_file)
+    print("Saved as " + rearrangements_file)

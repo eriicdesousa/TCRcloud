@@ -111,3 +111,4 @@ def wordcloud(args):
                                               + j[0] + ".png"
         plt.tight_layout()
         plt.savefig(outputname, dpi=300, bbox_inches='tight')
+        print("Word cloud saved as " + outputname)

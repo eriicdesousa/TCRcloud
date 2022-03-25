@@ -2,6 +2,7 @@
 import argparse
 import yaml
 import json
+import sys
 
 import matplotlib.pyplot as plt
 
@@ -84,14 +85,17 @@ def main():
         args.func(args)
     except FileNotFoundError:
         if dir(args)[-1] == "repertoire":
-            print("TCRcloud error: " + args.repertoire
-                  + " doesn't seem to exist")
+            sys.stderr.write("TCRcloud error: " + args.repertoire
+                             + " doesn't seem to exist\n")
         elif dir(args)[-1] == 'rearrangements':
-            print("TCRcloud error: " + args.rearrangements
-                  + " doesn't seem to exist")
+            sys.stderr.write("TCRcloud error: " + args.rearrangements
+                             + " doesn't seem to exist\n")
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
-        print("TCRcloud error: It seems you did not indicate a properly \
-formatted AIRR repertoire file")
+        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR repertoire file\n")
+    except KeyError:
+        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR rearrangements file\n")
 
 
 if __name__ == "__main__":
