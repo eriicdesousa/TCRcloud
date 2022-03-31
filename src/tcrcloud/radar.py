@@ -1,4 +1,5 @@
 from sklearn import preprocessing
+import json
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -31,7 +32,7 @@ def calculate_dfifty(df, length):
         return (counter * 100) / length
 
 
-def calculate_metrics(keys, samples):
+def calculate_metrics(keys, samples, legend_file):
     minmax_scale = preprocessing.MinMaxScaler(feature_range=(0, 1))
 
     patients = []
@@ -50,7 +51,7 @@ def calculate_metrics(keys, samples):
         shannon = np.array([0, skbio.diversity.
                             alpha_diversity("shannon", counts)[0], 15]
                            ).reshape(-1, 1)
-        simpson = np.array([0, skbio.diversity.
+        simpson = np.array([0.9, skbio.diversity.
                             alpha_diversity("simpson", counts)[0], 1]
                            ).reshape(-1, 1)
         chao = np.array([0, skbio.diversity.
@@ -60,14 +61,21 @@ def calculate_metrics(keys, samples):
                          alpha_diversity("gini_index", counts)[0], 1]
                         ).reshape(-1, 1)
         metrics = []
+
+        if legend_file is not None:
+            with open(legend_file) as json_file:
+                legend_dict = json.load(json_file)
+        else:
+            legend_dict = {}
+
         if j[0] == "A":
-            metrics.append(j[1] + " α chain")
+            metrics.append(legend_dict.get(j[1], j[1]) + " α chain")
         elif j[0] == "B":
-            metrics.append(j[1] + " β chain")
+            metrics.append(legend_dict.get(j[1], j[1]) + " β chain")
         elif j[0] == "G":
-            metrics.append(j[1] + " γ chain")
+            metrics.append(legend_dict.get(j[1], j[1]) + " γ chain")
         elif j[0] == "D":
-            metrics.append(j[1] + " δ chain")
+            metrics.append(legend_dict.get(j[1], j[1]) + " δ chain")
 
         metrics.append(minmax_scale.fit_transform(dfifty)[1].
                        astype(np.float))
@@ -129,7 +137,7 @@ def radar(args):
     samples_df = tcrcloud.format.format_data(args)
     samples = samples_df.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
-    patients = calculate_metrics(keys, samples)
+    patients = calculate_metrics(keys, samples, args.legend)
 
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(patients[0]))
 
@@ -146,9 +154,11 @@ def radar(args):
                      "#88CCEE",
                      "#DDCC77"
                      ]
+
     for i in patients:
         patient = i[1:]
         patient = [*patient, patient[0]]
+
         try:
             thecolour = radar_colours.pop(0)
         except IndexError:
@@ -301,35 +311,35 @@ def radar(args):
 
     plt.text(label_loc[3],
              0.11,
-             "0.1",
+             "0.91",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[3],
              0.26,
-             "0.3",
+             "0.93",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[3],
              0.46,
-             "0.5",
+             "0.95",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[3],
              0.66,
-             "0.7",
+             "0.97",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[3],
              0.86,
-             "0.9",
+             "0.99",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
