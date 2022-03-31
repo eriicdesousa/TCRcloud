@@ -43,7 +43,10 @@ def main():
                                 help="indicate the name of the AIRR Standards \
                                 rearrangements file",
                                 metavar="rearrangements.tsv", required=True)
-
+    required_group.add_argument("-c", "--colours", type=str,
+                                help="indicate the name of a json file to \
+                                change the colours of the wordcloud",
+                                metavar="legend.json", required=False)
     parser_cloud.set_defaults(func=tcrcloud.cloud.wordcloud)
 
     # create subparser for making the radar
@@ -54,6 +57,11 @@ def main():
                                 help="indicate the name of the AIRR \
                                 Standards rearrangements file",
                                 metavar="rearrangements.tsv", required=True)
+    required_group.add_argument("-l", "--legend", type=str,
+                                help="indicate the name of a json file to \
+                                convert repertoire_id to what you want to \
+                                appear in the legend",
+                                metavar="legend.json", required=False)
     parser_radar.set_defaults(func=tcrcloud.radar.radar)
 
     # create subparser for downloading the rearregement data
