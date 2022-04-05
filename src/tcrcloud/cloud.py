@@ -1,3 +1,5 @@
+import json
+
 import matplotlib
 
 from wordcloud import (WordCloud)
@@ -78,9 +80,14 @@ def wordcloud(args):
                               max_words=len(df)
                               ).generate_from_frequencies(text)
         color_to_words = {}
-        for i in family:
-            color_to_words.setdefault(
-                eval(family.get(i)[:4]).get(family.get(i)), []).append(i)
+        if args.colours is not None:
+            with open(args.colours) as json_file:
+                color_to_words = json.load(json_file)
+        else:
+            for i in family:
+                color_to_words.setdefault(
+                    eval(family.get(i)[:4]).get(family.get(i)), []).append(i)
+
         default_color = 'grey'
         grouped_color_func = SimpleGroupedColorFunc(color_to_words,
                                                     default_color)
@@ -91,22 +98,23 @@ def wordcloud(args):
         plt.xticks([])
         plt.yticks([])
         colours_for_legend = {}
-        for i in family:
-            tempdict = eval(family.get(i)[:4]).get(family.get(i))
-            colours_for_legend[family.get(i)] = tempdict
+        if args.colours is None:
+            for i in family:
+                tempdict = eval(family.get(i)[:4]).get(family.get(i))
+                colours_for_legend[family.get(i)] = tempdict
 
-        sorted_legend = sorted(colours_for_legend)
-        patchList = []
-        for key in sorted_legend:
-            data_key = mpatches.Patch(color=colours_for_legend[key],
-                                      label=key)
-            patchList.append(data_key)
+            sorted_legend = sorted(colours_for_legend)
+            patchList = []
+            for key in sorted_legend:
+                data_key = mpatches.Patch(color=colours_for_legend[key],
+                                          label=key)
+                patchList.append(data_key)
 
-        plt.legend(handles=patchList,
-                   bbox_to_anchor=(0.5, -0.01),
-                   loc='upper center',
-                   ncol=4,
-                   prop={'size': 6})
+            plt.legend(handles=patchList,
+                       bbox_to_anchor=(0.5, -0.01),
+                       loc='upper center',
+                       ncol=4,
+                       prop={'size': 6})
         outputname = args.rearrangements[:-4] + "_" + j[1] + "_" \
                                               + j[0] + ".png"
         plt.tight_layout()

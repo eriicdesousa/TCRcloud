@@ -20,18 +20,19 @@ def main():
         description="Create a wordcloud of CDR3 \
     sequences from TCR AIRR-seq data or a radar plot with diversity metrics.",
         prog="TCRcloud")
-
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s 0.1.0')
     subparsers = parser.add_subparsers(
-        title="Command Options",
-        help="The program has 3 modes: cloud, radar or download",
-        dest="cloud, radar, download, testdata or -h/--help",
+        title="command options",
+        help="The program has 4 options: cloud, radar, download or testdata",
+        dest="cloud, radar, download or testdata",
         required=True)
 
     # create subparser for making the wordcloud
     parser_cloud = subparsers.add_parser("cloud", help="Create a wordcloud \
         from TCR CDR3 data")
 
-    required_group = parser_cloud.add_argument_group("required arguments")
+    required_group = parser_cloud.add_argument_group("arguments")
 
     # required_group.add_argument("-r","--repertoire",
     #     type= tcrcloud.base.jsonfile,
@@ -44,23 +45,23 @@ def main():
                                 rearrangements file",
                                 metavar="rearrangements.tsv", required=True)
     required_group.add_argument("-c", "--colours", type=str,
-                                help="indicate the name of a json file to \
-                                change the colours of the wordcloud",
-                                metavar="legend.json", required=False)
+                                help="optional:indicate the name of a json \
+                                file to change the colours of the wordcloud",
+                                metavar="colours.json", required=False)
     parser_cloud.set_defaults(func=tcrcloud.cloud.wordcloud)
 
     # create subparser for making the radar
     parser_radar = subparsers.add_parser("radar", help="Create a radar plot \
         with diversity metrics")
-    required_group = parser_radar.add_argument_group("required arguments")
+    required_group = parser_radar.add_argument_group("arguments")
     required_group.add_argument("-a", "--rearrangements", type=str,
                                 help="indicate the name of the AIRR \
                                 Standards rearrangements file",
                                 metavar="rearrangements.tsv", required=True)
     required_group.add_argument("-l", "--legend", type=str,
-                                help="indicate the name of a json file to \
-                                convert repertoire_id to what you want to \
-                                appear in the legend",
+                                help="optional:indicate the name of a json \
+                                file to convert repertoire_id to what you \
+                                want to appear in the legend",
                                 metavar="legend.json", required=False)
     parser_radar.set_defaults(func=tcrcloud.radar.radar)
 
