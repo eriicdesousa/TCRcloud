@@ -44,14 +44,14 @@ def calculate_metrics(keys, samples, legend_file):
                                                          ), 1]).reshape(-1, 1)
         df = tcrcloud.format.format_metrics(df)
         length = len(df)
-        distinct = np.array([0, length, 45000]).reshape(-1, 1)
+        distinct = np.array([0, length, 55000]).reshape(-1, 1)
         counts = df["counts"].tolist()
         dfifty = np.array([0, calculate_dfifty(df, length), 50]).reshape(-1, 1)
         del df
         shannon = np.array([0, skbio.diversity.
                             alpha_diversity("shannon", counts)[0], 15]
                            ).reshape(-1, 1)
-        simpson = np.array([0.9, skbio.diversity.
+        simpson = np.array([0.75, skbio.diversity.
                             alpha_diversity("simpson", counts)[0], 1]
                            ).reshape(-1, 1)
         chao = np.array([0, skbio.diversity.
@@ -225,42 +225,42 @@ def radar(args):
 
     plt.text(label_loc[1],
              0.1,
-             "4500",
+             "5500",
              horizontalalignment="left",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              0.26,
-             "13500",
+             "16500",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              0.46,
-             "22500",
+             "27500",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              0.66,
-             "31500",
+             "38500",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              0.86,
-             "40500",
+             "49500",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              1.00,
-             "45000",
+             "55000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
@@ -311,35 +311,35 @@ def radar(args):
 
     plt.text(label_loc[3],
              0.11,
-             "0.91",
+             "0.78",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[3],
              0.26,
-             "0.93",
+             "0.83",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[3],
              0.46,
-             "0.95",
+             "0.88",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[3],
              0.66,
-             "0.97",
+             "0.92",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[3],
              0.86,
-             "0.99",
+             "0.97",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
