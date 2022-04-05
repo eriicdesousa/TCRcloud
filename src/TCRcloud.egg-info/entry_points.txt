@@ -1,0 +1,2 @@
+[console_scripts]
+TCRcloud = tcrcloud.TCRcloud:main

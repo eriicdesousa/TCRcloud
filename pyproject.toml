@@ -9,6 +9,7 @@ requires = [
     "wordcloud",
     "pandas",
     "scikit-learn",
-    "scikit-bio"
+    "scikit-bio",
+    "requests"
 ]
 build-backend = "setuptools.build_meta"

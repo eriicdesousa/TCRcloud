@@ -1,0 +1,45 @@
+Metadata-Version: 2.1
+Name: TCRcloud
+Version: 0.1.0
+Summary: TCR repertoire visualization and comparison tool
+Home-page: https://github.com/oldguyeric/TCRcloud
+Author: Eric de Sousa
+Author-email: eric.desousa@research.fchampalimaud.org
+License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/oldguyeric/TCRcloud/issues
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+![TCRcloud](images/TCRcloud.png)
+
+TCRcloud is a TCR repertoire visualization and comparison tool
+
+Works with all four chains of the TCR
+
+## TRA
+![alpha](https://github.com/oldguyeric/TCRcloud/raw/main/images/alpha.png)
+
+## TRB
+![beta](https://github.com/oldguyeric/TCRcloud/raw/main/images/beta.png)
+
+## TRG
+![gamma](https://github.com/oldguyeric/TCRcloud/raw/main/images/gamma.png) 
+
+## TRD
+![delta](https://github.com/oldguyeric/TCRcloud/raw/main/images/delta.png) 
+
+## Diversity comparison
+![radar](https://github.com/oldguyeric/TCRcloud/raw/main/images/radar.png)
+
+
+
+
+**Still in development**
+
+
