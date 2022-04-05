@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: TCRcloud
-Version: 0.1.0
+Version: 0.1.1
 Summary: TCR repertoire visualization and comparison tool
 Home-page: https://github.com/oldguyeric/TCRcloud
 Author: Eric de Sousa
@@ -16,7 +16,7 @@ Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE
 
-![TCRcloud](images/TCRcloud.png)
+![TCRcloud](https://github.com/oldguyeric/TCRcloud/raw/main/images/TCRcloud.png)
 
 TCRcloud is a TCR repertoire visualization and comparison tool
 
