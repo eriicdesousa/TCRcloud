@@ -4,7 +4,7 @@ import airr
 
 def download(args):
     # This study is stored at VDJServer data repository
-    host_url = 'https://vdjserver.org/airr/v1'
+    host_url = "https://vdjserver.org/airr/v1"
 
     # POST data is sent with the query. Here we construct an object for
     # the query ((study_id == "PRJNA300878") AND (locus == "TRB"))
@@ -51,18 +51,26 @@ def download(args):
     }
 
     # Send the query
-    resp = requests.post(host_url + '/repertoire', json=query)
+    resp = requests.post(host_url + "/repertoire", json=query)
 
     # The data is returned as JSON, use AIRR library to write out data
     data = resp.json()
-    airr.write_repertoire('testdata.airr.json',
-                          data['Repertoire'], info=data['Info'])
+    airr.write_repertoire("testdata.airr.json",
+                          data["Repertoire"], info=data["Info"])
 
     # Print out some Info
-    print('       Info: ' + data['Info']['title'])
-    print('    version: ' + str(data['Info']['version']))
-    print('description: ' + data['Info']['description'])
+    print("       Info: " + data["Info"]["title"])
+    print("    version: " + str(data["Info"]["version"]))
+    print("description: " + data["Info"]["description"])
 
     # Save them out to a file
-    print('Received ' + str(len(data['Repertoire']))
-          + ' repertoires. Saved as testdata.airr.json')
+    print("Received " + str(len(data["Repertoire"]))
+          + " repertoires. Saved as testdata.airr.json")
+    with open("testdata.json", "w") as fileout:
+        print("{", file=fileout)
+        print('    "2839362682105696746-242ac113-0001-012":"Twin 2A",',
+              file=fileout)
+        print('    "2939134772391776746-242ac113-0001-012":"Twin 2B"',
+              file=fileout)
+        print("}", file=fileout)
+    print("json file for legend saved as testdata.json")
