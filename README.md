@@ -44,19 +44,19 @@ By default TCRcloud uses repertoire_id but you can create a legend with the text
 
 	$ TCRcloud radar -a AIRR_rearrangements_file.tsv -l legend.json
 
-Using TCRcloud you can download rearragements files from the AIRR compliant databases based on AIRR repertoire files
+Using TCRcloud you can download rearragements files from the AIRR compliant databases based on AIRR repertoire metadata files
 
 **To download AIRR rearrangements files**
 
     $ TCRcloud download -a AIRR_repertoire_file.json
 
-TCRcloud provides some test data to experiment with the tool. The data is one twin pair from the monozygotic twins study from the Mark Davis lab DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112)
+TCRcloud provides some test data to experiment the tool. The data is one twin pair from the monozygotic twins study from the Mark Davis lab DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112)
 
 **To download the test data repertoire file**
 
     $ TCRcloud testdata
 
-After having the testdata.airr.json you can use the download function included in TCRcloud to get the matching rearragements file.
+After having the testdata.airr.json file you can use the download function included in TCRcloud to get the matching rearragements file.
 
 ## Examples:
 
