@@ -1,5 +1,6 @@
 from sklearn import preprocessing
 import json
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -63,8 +64,18 @@ def calculate_metrics(keys, samples, legend_file):
         metrics = []
 
         if legend_file is not None:
-            with open(legend_file) as json_file:
-                legend_dict = json.load(json_file)
+            try:
+                with open(legend_file) as json_file:
+                    legend_dict = json.load(json_file)
+            except FileNotFoundError:
+                sys.stderr.write("TCRcloud error: " + legend_file
+                                 + " doesn't seem to exist\n")
+                exit()
+            except json.decoder.JSONDecodeError:
+                sys.stderr.write("TCRcloud error: " + legend_file
+                                 + " doesn't seem properly formatted. Check \
+https://github.com/oldguyeric/TCRcloud for more information\n")
+                exit()
         else:
             legend_dict = {}
 
@@ -76,7 +87,7 @@ def calculate_metrics(keys, samples, legend_file):
             metrics.append(legend_dict.get(j[1], j[1]) + " γ chain")
         elif j[0] == "D":
             metrics.append(legend_dict.get(j[1], j[1]) + " δ chain")
-
+        breakpoint()
         metrics.append(minmax_scale.fit_transform(dfifty)[1].
                        astype(np.float))
         metrics.append(minmax_scale.fit_transform(distinct)[1].

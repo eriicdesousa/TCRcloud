@@ -1,4 +1,5 @@
 import json
+import sys
 
 import matplotlib
 
@@ -81,16 +82,32 @@ def wordcloud(args):
                               ).generate_from_frequencies(text)
         color_to_words = {}
         if args.colours is not None:
-            with open(args.colours) as json_file:
-                color_to_words = json.load(json_file)
+            try:
+                with open(args.colours) as json_file:
+                    color_to_words = json.load(json_file)
+            except FileNotFoundError:
+                sys.stderr.write("TCRcloud error: " + args.colours
+                                 + " doesn't seem to exist\n")
+                exit()
+            except json.decoder.JSONDecodeError:
+                sys.stderr.write("TCRcloud error: " + args.colours
+                                 + " doesn't seem properly formatted. Check \
+https://github.com/oldguyeric/TCRcloud for more information\n")
+                exit()
         else:
             for i in family:
                 color_to_words.setdefault(
                     eval(family.get(i)[:4]).get(family.get(i)), []).append(i)
 
         default_color = 'grey'
-        grouped_color_func = SimpleGroupedColorFunc(color_to_words,
-                                                    default_color)
+        try:
+            grouped_color_func = SimpleGroupedColorFunc(color_to_words,
+                                                        default_color)
+        except TypeError:
+            sys.stderr.write("TCRcloud error: " + args.colours
+                             + " doesn't seem properly formatted. Check \
+https://github.com/oldguyeric/TCRcloud for more information\n")
+            exit()
         wordcloud.recolor(color_func=grouped_color_func)
 
         plt.figure(dpi=300.0)

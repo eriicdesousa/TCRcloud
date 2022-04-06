@@ -66,7 +66,7 @@ def download(args):
     # Save them out to a file
     print("Received " + str(len(data["Repertoire"]))
           + " repertoires. Saved as testdata.airr.json")
-    with open("testdata.json", "w") as fileout:
+    with open("legendfortestdata.json", "w") as fileout:
         print("{", file=fileout)
         print('    "2839362682105696746-242ac113-0001-012":"Twin 2A",',
               file=fileout)

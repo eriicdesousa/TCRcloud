@@ -38,14 +38,15 @@ def testserver(data):
 
 
 def airrdownload(args):
-    try:
-        airr.validate_repertoire(args.repertoire, True)
-    except TypeError:
-        sys.stderr.write("TCRcloud error: unknown file type for repertoire. \
-Supported file extensions are 'yaml', 'yml' or 'json'\n")
+    airr.validate_repertoire(args.repertoire, True)
     repertoire_file = args.repertoire
     rearrangements_file = repertoire_file[:-4] + "rearrangements.tsv"
-    data = airr.load_repertoire(args.repertoire)
+    try:
+        data = airr.load_repertoire(args.repertoire)
+    except TypeError:
+        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR rearrangements file\n")
+        exit()
     repertoires = data["Repertoire"]
     host_url = testserver(data)
 
