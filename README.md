@@ -50,7 +50,7 @@ Using TCRcloud you can download rearragements files from the AIRR compliant data
 
     $ TCRcloud download -a AIRR_repertoire_file.json
 
-TCRcloud provides some test data to experiment the tool. The data is one twin pair from the monozygotic twins study from the Mark Davis lab DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112)
+TCRcloud provides some test data to experiment the tool. The data is one twin pair from the monozygotic twins study from the Mark Davis lab (DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112))
 
 **To download the test data repertoire file**
 
@@ -74,6 +74,6 @@ After having the testdata.airr.json file you can use the download function inclu
 
 **Diversity comparison**
 
-Comparing here the αβ repertoire from one twin pair from the monozygotic twins study from the Mark Davis lab DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112)
+Comparing here the αβ repertoire from one twin pair from the monozygotic twins study from the Mark Davis lab (DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112))
 
 ![radar](https://github.com/oldguyeric/TCRcloud/raw/main/images/radar.png)
