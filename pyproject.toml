@@ -1,15 +1,6 @@
 [build-system]
 requires = [
     "setuptools>=42",
-    "wheel",
-    "airr",
-    "numpy>=1.9.2",
-    "scipy>=1.3.0",
-    "matplotlib",
-    "wordcloud",
-    "pandas",
-    "scikit-learn",
-    "scikit-bio",
-    "requests"
+    "wheel"
 ]
 build-backend = "setuptools.build_meta"
