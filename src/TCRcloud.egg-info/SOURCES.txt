@@ -6,6 +6,7 @@ src/TCRcloud.egg-info/PKG-INFO
 src/TCRcloud.egg-info/SOURCES.txt
 src/TCRcloud.egg-info/dependency_links.txt
 src/TCRcloud.egg-info/entry_points.txt
+src/TCRcloud.egg-info/requires.txt
 src/TCRcloud.egg-info/top_level.txt
 src/tcrcloud/TCRcloud.py
 src/tcrcloud/__init__.py
