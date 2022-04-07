@@ -1,12 +1,20 @@
+![License](https://img.shields.io/github/license/oldguyeric/TCRcloud)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/TCRcloud)
+![PyPI](https://img.shields.io/pypi/v/TCRcloud)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/TCRcloud)
+![GitHub last commit](https://img.shields.io/github/last-commit/oldguyeric/TCRcloud)
+
 ![TCRcloud](https://github.com/oldguyeric/TCRcloud/raw/main/images/TCRcloud.png)
 
 ## TCRcloud is a TCR repertoire visualization and comparison tool
 
 **Instalation**
 
-TCRcloud is written in python and can be installed from PyPI using pip
+TCRcloud is written in python and can be installed from PyPI using pip:
 
     $ pip3 install TCRcloud
+
+Currently it is only compatible with linux-64 and osx-64 because one of the dependencies used is also only compatible with those operating systems. It does work on WSL if you want to use Windows.
 
 TCRcloud uses the AIRR Data Commons API and needs AIRR compliant data as input
 
