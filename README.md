@@ -1,8 +1,9 @@
-![License](https://img.shields.io/github/license/oldguyeric/TCRcloud)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/TCRcloud)
-![PyPI](https://img.shields.io/pypi/v/TCRcloud)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/TCRcloud)
 ![GitHub last commit](https://img.shields.io/github/last-commit/oldguyeric/TCRcloud)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/oldguyeric/TCRcloud)
+![PyPI](https://img.shields.io/pypi/v/TCRcloud)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/TCRcloud)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/TCRcloud)
+![License](https://img.shields.io/github/license/oldguyeric/TCRcloud)
 
 ![TCRcloud](https://github.com/oldguyeric/TCRcloud/raw/main/images/TCRcloud.png)
 
