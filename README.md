@@ -21,9 +21,9 @@ TCRcloud uses the AIRR Data Commons API and needs AIRR compliant data as input
 
 **Usage**
 
-**To create a wordcloud**
+**To create a word cloud**
 
-    $ TCRcloud cloud -a AIRR_rearrangements_file.tsv
+    $ TCRcloud cloud AIRR_rearrangements_file.tsv
 
 By default TCRcloud colours the CDR3 based on the Vgene but you can provide a json file that atributes colours in Hex format to specific sequences:
 
@@ -36,11 +36,15 @@ The sequences not in the file will be coloured grey.
 
 **To use your custom colours for the word cloud**
 
-    $ TCRcloud cloud -a AIRR_rearrangements_file.tsv -c colours.json
+    $ TCRcloud cloud AIRR_rearrangements_file.tsv -c colours.json
+
+**To create a word cloud without a legend**
+
+    $ TCRcloud cloud AIRR_rearrangements_file.tsv -l False
 
 **To create a radar plot comparing diversity metrics**
 
-    $ TCRcloud radar -a AIRR_rearrangements_file.tsv
+    $ TCRcloud radar AIRR_rearrangements_file.tsv
 
 By default TCRcloud uses repertoire_id but you can create a legend with the text you want by providing a json file:
 
@@ -51,13 +55,17 @@ By default TCRcloud uses repertoire_id but you can create a legend with the text
 
 **To create a radar plot with your desired legend**
 
-	$ TCRcloud radar -a AIRR_rearrangements_file.tsv -l legend.json
+	$ TCRcloud radar AIRR_rearrangements_file.tsv -l legend.json
+
+**To create a radar plot without a legend**
+    
+    $ TCRcloud radar AIRR_rearrangements_file.tsv -l False
 
 Using TCRcloud you can download rearragements files from the AIRR compliant databases based on AIRR repertoire metadata files
 
 **To download AIRR rearrangements files**
 
-    $ TCRcloud download -a AIRR_repertoire_file.json
+    $ TCRcloud download AIRR_repertoire_file.json
 
 TCRcloud provides some test data to experiment the tool. The data is one twin pair from the monozygotic twins study from the Mark Davis lab (DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112))
 
