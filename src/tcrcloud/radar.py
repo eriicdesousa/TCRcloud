@@ -87,7 +87,7 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
             metrics.append(legend_dict.get(j[1], j[1]) + " γ chain")
         elif j[0] == "D":
             metrics.append(legend_dict.get(j[1], j[1]) + " δ chain")
-        breakpoint()
+
         metrics.append(minmax_scale.fit_transform(dfifty)[1].
                        astype(np.float))
         metrics.append(minmax_scale.fit_transform(distinct)[1].
@@ -135,6 +135,12 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
 
 
 def radar(args):
+    if args.legend.lower() != "true":
+        if args.legend.lower() != "false":
+            sys.stderr.write("TCRcloud error: please indicate \
+True or False\n")
+            exit()
+
     categories = ["D50\nIndex",
                   "Distinct\nCDR3",
                   "Chao1\nIndex",
@@ -148,7 +154,7 @@ def radar(args):
     samples_df = tcrcloud.format.format_data(args)
     samples = samples_df.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
-    patients = calculate_metrics(keys, samples, args.legend)
+    patients = calculate_metrics(keys, samples, args.custom_legend)
 
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(patients[0]))
 
@@ -497,7 +503,8 @@ def radar(args):
     plt.tick_params(pad=32, labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
     outputname = args.rearrangements[:-4] + "_radar" + ".png"
-    plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1),
-               fontsize=16)
+    if args.legend.lower() == "true":
+        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1),
+                   fontsize=16)
     plt.savefig(outputname, dpi=300, bbox_inches="tight")
     print("Radar saved as " + outputname)

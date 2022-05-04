@@ -48,6 +48,12 @@ class SimpleGroupedColorFunc(object):
 
 def wordcloud(args):
 
+    if args.legend.lower() != "true":
+        if args.legend.lower() != "false":
+            sys.stderr.write("TCRcloud error: please indicate \
+True or False\n")
+            exit()
+
     samples_df = tcrcloud.format.format_data(args)
     formatted_samples = tcrcloud.format.format_cloud(samples_df)
     samples = formatted_samples.groupby(['chain', 'repertoire_id'])
@@ -114,24 +120,26 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
         plt.imshow(wordcloud, interpolation="bilinear")
         plt.xticks([])
         plt.yticks([])
-        colours_for_legend = {}
-        if args.colours is None:
-            for i in family:
-                tempdict = eval(family.get(i)[:4]).get(family.get(i))
-                colours_for_legend[family.get(i)] = tempdict
 
-            sorted_legend = sorted(colours_for_legend)
-            patchList = []
-            for key in sorted_legend:
-                data_key = mpatches.Patch(color=colours_for_legend[key],
-                                          label=key)
-                patchList.append(data_key)
+        if args.legend.lower() == "true":
+            colours_for_legend = {}
+            if args.colours is None:
+                for i in family:
+                    tempdict = eval(family.get(i)[:4]).get(family.get(i))
+                    colours_for_legend[family.get(i)] = tempdict
 
-            plt.legend(handles=patchList,
-                       bbox_to_anchor=(0.5, -0.01),
-                       loc='upper center',
-                       ncol=4,
-                       prop={'size': 6})
+                sorted_legend = sorted(colours_for_legend)
+                patchList = []
+                for key in sorted_legend:
+                    data_key = mpatches.Patch(color=colours_for_legend[key],
+                                              label=key)
+                    patchList.append(data_key)
+
+                plt.legend(handles=patchList,
+                           bbox_to_anchor=(0.5, -0.01),
+                           loc='upper center',
+                           ncol=4,
+                           prop={'size': 6})
         outputname = args.rearrangements[:-4] + "_" + j[1] + "_" \
                                               + j[0] + ".png"
         plt.tight_layout()
