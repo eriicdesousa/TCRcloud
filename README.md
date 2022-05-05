@@ -55,7 +55,7 @@ By default TCRcloud uses repertoire_id but you can create a legend with the text
 
 **To create a radar plot with your desired legend**
 
-	$ TCRcloud radar AIRR_rearrangements_file.tsv -l legend.json
+	$ TCRcloud radar AIRR_rearrangements_file.tsv -c legend.json
 
 **To create a radar plot without a legend**
     
