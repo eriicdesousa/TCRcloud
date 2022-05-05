@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: TCRcloud
-Version: 1.2.0
+Version: 1.2.1
 Summary: TCRcloud is a TCR repertoire visualization and comparison tool
 Home-page: https://github.com/oldguyeric/TCRcloud
 Author: Eric de Sousa
@@ -76,7 +76,7 @@ By default TCRcloud uses repertoire_id but you can create a legend with the text
 
 **To create a radar plot with your desired legend**
 
-	$ TCRcloud radar AIRR_rearrangements_file.tsv -l legend.json
+	$ TCRcloud radar AIRR_rearrangements_file.tsv -c legend.json
 
 **To create a radar plot without a legend**
     
