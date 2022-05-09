@@ -20,8 +20,8 @@ def main():
         description="Create a wordcloud of CDR3 \
     sequences from TCR AIRR-seq data or a radar plot with diversity metrics.",
         prog="TCRcloud")
-    parser.add_argument('--version', action='version',
-                        version='%(prog)s 1.2.1')
+    parser.add_argument("-v", '--version', action='version',
+                        version='%(prog)s 1.2.2')
     subparsers = parser.add_subparsers(
         title="command options",
         help="The program has 4 options: cloud, radar, download or testdata",
