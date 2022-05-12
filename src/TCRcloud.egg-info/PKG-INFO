@@ -1,13 +1,11 @@
 Metadata-Version: 2.1
 Name: TCRcloud
-Version: 1.2.2
+Version: 1.2.3
 Summary: TCRcloud is a TCR repertoire visualization and comparison tool
 Home-page: https://github.com/oldguyeric/TCRcloud
 Author: Eric de Sousa
 Author-email: eric.desousa@research.fchampalimaud.org
-License: UNKNOWN
 Project-URL: Bug Tracker, https://github.com/oldguyeric/TCRcloud/issues
-Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3 :: Only
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8
@@ -115,5 +113,3 @@ After having the testdata.airr.json file you can use the download function inclu
 Comparing here the αβ repertoire from one twin pair from the monozygotic twins study from the Mark Davis lab (DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112))
 
 ![radar](https://github.com/oldguyeric/TCRcloud/raw/main/images/radar.png)
-
-

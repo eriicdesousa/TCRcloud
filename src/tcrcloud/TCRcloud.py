@@ -21,7 +21,7 @@ def main():
     sequences from TCR AIRR-seq data or a radar plot with diversity metrics.",
         prog="TCRcloud")
     parser.add_argument("-v", '--version', action='version',
-                        version='%(prog)s 1.2.2')
+                        version='%(prog)s 1.2.3')
     subparsers = parser.add_subparsers(
         title="command options",
         help="The program has 4 options: cloud, radar, download or testdata",
