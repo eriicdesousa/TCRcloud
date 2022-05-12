@@ -8,13 +8,26 @@ def testserver(data):
     # Find which server has the matching rearragements
     query = {
         "filters": {
-            "op": "=",
-            "content": {
-                "field": "repertoire_id",
-                "value": data["Repertoire"][0]["repertoire_id"]
-            }
+            "op": "and",
+            "content": [
+                {
+                    "op": "=",
+                    "content": {
+                        "field": "repertoire_id",
+                        "value": data["Repertoire"][0]["repertoire_id"]
+                    }
+                },
+                {
+                    "op": "=",
+                    "content": {
+                        "field": "study.study_id",
+                        "value": data["Repertoire"][0]["study"]["study_id"]
+                    }
+                }
+            ]
         }
     }
+
     repositories = ["https://vdjserver.org/airr/v1",
                     "https://ipa1.ireceptor.org/airr/v1",
                     "https://ipa2.ireceptor.org/airr/v1",
@@ -32,9 +45,12 @@ def testserver(data):
     host_url = "https://vdjserver.org/airr/v1"
     for i in repositories:
         test_url = i
-        resp = requests.post(test_url + "/rearrangement", json=query)
-        if len(resp.json()["Rearrangement"]) > 0:
+        resp = requests.post(test_url + "/repertoire", json=query)
+
+        if len(resp.json()["Repertoire"]) > 0:
             host_url = i
+            print("Your repertoire was found at " + host_url)
+            break
     return host_url
 
 
@@ -71,7 +87,7 @@ repertoire metadata file.")
                     "op": "=",
                     "content": {
                         "field": "repertoire_id",
-                        "value": "XXX"
+                        "value": "random"
                     }
                 },
                 {
@@ -83,7 +99,7 @@ repertoire metadata file.")
                 }
             ]
         },
-        "size": 1000,
+        "size": 10000,
         "from": 0
     }
 
@@ -95,8 +111,10 @@ repertoire metadata file.")
     for r in repertoires:
         print("Retrieving rearrangements for repertoire: "
               + r["repertoire_id"])
+        print("It is only possible to get 10000 sequences at a time so this \
+process may take some time...")
         query["filters"]["content"][0]["content"]["value"] = r["repertoire_id"]
-        query["size"] = 1000
+        query["size"] = 10000
         query["from"] = 0
 
         cnt = 0
@@ -104,6 +122,7 @@ repertoire metadata file.")
             # send the request
             resp = requests.post(host_url + "/rearrangement", json=query)
             data = resp.json()
+            print("query sent")
             rearrangements = data["Rearrangement"]
 
             # Open a file for writing the rearrangements. We do this here
@@ -122,7 +141,7 @@ repertoire metadata file.")
 
             # looping until zero rearrangements are returned from the query.
             cnt += len(rearrangements)
-            if len(rearrangements) < 1000:
+            if len(rearrangements) < 10000:
                 break
 
             # Need to update the from parameter to get the next chunk
