@@ -38,7 +38,10 @@ def format_data(args):
     df["v_call"] = df.v_call.str.split(",", n=1, expand=True)[0]
 
     # remove allele information from v_call and keep only the gene information
-    df["v_call"] = df.apply(lambda x: x["v_call"][:-3], axis=1)
+    if '*' in df["v_call"][0]:
+        df["v_call"] = df.apply(lambda x: x["v_call"][:-3], axis=1)
+
+    # create column with chain information
     df["chain"] = df.apply(lambda x: x["v_call"][2], axis=1)
 
     return df
