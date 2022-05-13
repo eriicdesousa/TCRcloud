@@ -21,16 +21,22 @@ def calculate_convergence(df):
 
 def calculate_dfifty(df, length):
     counts = df["counts"]
-    total = counts.sum()
     counter = 0
-    for i in counts.cumsum():
-        counter += 1
-        if i > total / 2:
-            break
-    if length >= 10000:
-        return (counter * 100) / 10000
-    elif length < 10000:
+    if length < 10000:
+        total = counts.sum()
+        for i in counts.cumsum():
+            counter += 1
+            if i > total / 2:
+                break
         return (counter * 100) / length
+    elif length >= 10000:
+        counts = counts.head(10000)
+        total = counts.sum()
+        for i in counts.cumsum():
+            counter += 1
+            if i > total / 2:
+                break
+        return (counter * 100) / 10000
 
 
 def calculate_metrics(keys, samples, legend_file):
