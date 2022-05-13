@@ -87,7 +87,7 @@ repertoire metadata file.")
                     "op": "=",
                     "content": {
                         "field": "repertoire_id",
-                        "value": "random"
+                        "value": "random_value"
                     }
                 },
                 {
@@ -99,22 +99,22 @@ repertoire metadata file.")
                 }
             ]
         },
-        "size": 10000,
+        "size": 1000,
         "from": 0
     }
 
     # Loop through each repertoire and query rearrangement data for
-    # each. We download in chunks of 10000 because of the server
+    # each. We download in chunks of 1000 because of the server
     # limitations using the from and size parameters.
 
     first = True
     for r in repertoires:
         print("Retrieving rearrangements for repertoire: "
               + r["repertoire_id"])
-        print("It is only possible to get 10000 sequences at a time so this \
-process may take some time...")
+        print("It is only possible to get 1000 rearrangements per request so \
+this process may take some time...")
         query["filters"]["content"][0]["content"]["value"] = r["repertoire_id"]
-        query["size"] = 10000
+        query["size"] = 1000
         query["from"] = 0
 
         cnt = 0
@@ -122,7 +122,6 @@ process may take some time...")
             # send the request
             resp = requests.post(host_url + "/rearrangement", json=query)
             data = resp.json()
-            print("query sent")
             rearrangements = data["Rearrangement"]
 
             # Open a file for writing the rearrangements. We do this here
@@ -141,7 +140,7 @@ process may take some time...")
 
             # looping until zero rearrangements are returned from the query.
             cnt += len(rearrangements)
-            if len(rearrangements) < 10000:
+            if len(rearrangements) < 1000:
                 break
 
             # Need to update the from parameter to get the next chunk
