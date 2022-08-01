@@ -21,7 +21,7 @@ def main():
     sequences from TCR AIRR-seq data or a radar plot with diversity metrics.",
         prog="TCRcloud")
     parser.add_argument("-v", '--version', action='version',
-                        version='%(prog)s 1.2.4')
+                        version='%(prog)s 1.3.0')
     subparsers = parser.add_subparsers(
         title="command options",
         help="The program has 4 options: cloud, radar, download or testdata",
@@ -52,6 +52,10 @@ def main():
                               help="indicate if legend should be included, \
                               default = True",
                               metavar="True or False", default="True",
+                              required=False)
+    parser_cloud.add_argument("-s", "--size", type=int,
+                              help=argparse.SUPPRESS,
+                              default=1000,
                               required=False)
     parser_cloud.set_defaults(func=tcrcloud.cloud.wordcloud)
 

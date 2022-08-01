@@ -80,10 +80,12 @@ True or False\n")
         # create the wordcloud
 
         wordcloud = WordCloud(width=1000,
-                              height=1000,
+                              height=args.size,
                               background_color="white",
                               relative_scaling=0.7,
                               prefer_horizontal=1.0,
+                              scale=2.5,
+                              max_font_size=3000,
                               max_words=len(df)
                               ).generate_from_frequencies(text)
         color_to_words = {}
