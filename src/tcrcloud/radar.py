@@ -201,8 +201,6 @@ True or False\n")
                  alpha=0.6,
                  color=thecolour)
 
-    plt.title("Repertoire profile\ncomparison", size=20, y=1.10)
-
     plt.text(label_loc[0],
              0.11,
              "5",
