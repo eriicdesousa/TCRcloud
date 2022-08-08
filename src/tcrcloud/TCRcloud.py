@@ -10,6 +10,7 @@ import tcrcloud.cloud
 import tcrcloud.radar
 import tcrcloud.download
 import tcrcloud.testdata
+import tcrcloud.compare
 
 plt.rcParams["font.family"] = "serif"
 
@@ -57,6 +58,7 @@ def main():
                               help=argparse.SUPPRESS,
                               default=1000,
                               required=False)
+
     parser_cloud.set_defaults(func=tcrcloud.cloud.wordcloud)
 
     # create subparser for making the radar
@@ -99,6 +101,13 @@ def main():
                                             repertoire file to test TCRcloud")
 
     parser_testdata.set_defaults(func=tcrcloud.testdata.download)
+
+    parser_compare = subparsers.add_parser("compare")
+
+    parser_radar.add_argument("-f1", "--file1", type=str)
+    parser_radar.add_argument("-f2", "--file2", type=str)
+
+    parser_compare.set_defaults(func=tcrcloud.compare.compare)
 
     args = parser.parse_args()
     try:
