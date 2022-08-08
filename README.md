@@ -1,6 +1,6 @@
 ![TCRcloud](https://github.com/oldguyeric/TCRcloud/raw/main/images/TCRcloud.png)
 
-![GitHub last commit](https://img.shields.io/github/last-commit/oldguyeric/TCRcloud)
+![GitHub last commit](https://img.shields.io/github/last-commit/oldguyeric/TCRcloud/dev)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/oldguyeric/TCRcloud)
 ![PyPI](https://img.shields.io/pypi/v/TCRcloud)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/TCRcloud)
