@@ -21,8 +21,8 @@ def main():
         description="Create a wordcloud of CDR3 \
     sequences from TCR AIRR-seq data or a radar plot with diversity metrics.",
         prog="TCRcloud")
-    parser.add_argument("-v", '--version', action='version',
-                        version='%(prog)s 1.3.0')
+    parser.add_argument("-v", "--version", action="version",
+                        version="%(prog)s 1.3.0")
     subparsers = parser.add_subparsers(
         title="command options",
         help="The program has 4 options: cloud, radar, download or testdata",
@@ -104,8 +104,9 @@ def main():
 
     parser_compare = subparsers.add_parser("compare")
 
-    parser_radar.add_argument("-f1", "--file1", type=str)
-    parser_radar.add_argument("-f2", "--file2", type=str)
+    parser_compare.add_argument("-f1", "--file1", type=str)
+
+    parser_compare.add_argument("-f2", "--file2", type=str)
 
     parser_compare.set_defaults(func=tcrcloud.compare.compare)
 
@@ -116,7 +117,7 @@ def main():
         if dir(args)[-1] == "repertoire":
             sys.stderr.write("TCRcloud error: " + args.repertoire
                              + " doesn't seem to exist\n")
-        elif dir(args)[-1] == 'rearrangements':
+        elif dir(args)[-1] == "rearrangements":
             sys.stderr.write("TCRcloud error: " + args.rearrangements
                              + " doesn't seem to exist\n")
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
