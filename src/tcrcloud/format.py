@@ -5,12 +5,26 @@ import airr
 
 
 def format_data(args):
+
+    with open(args.rearrangements) as f:
+        first_line = f.readline()
+        if "duplicate_count" in first_line:
+            counts = True
+        else:
+            counts = False
+
     airr.validate_rearrangement(args.rearrangements, True)
     reader = airr.read_rearrangement(args.rearrangements)
     empty_list = []
 
-    # keep only the Junction, Vgene, Jgene and Repertoire ID columns
-    keys = ["junction_aa", "v_call", "j_call", "junction", "repertoire_id"]
+    if counts is True:
+        # keep only the Junction, Vgene, Jgene, Repertoire ID and Count columns
+        keys = ["junction_aa", "v_call", "j_call", "junction", "repertoire_id",
+                "duplicate_count"]
+    else:
+        # keep only the Junction, Vgene, Jgene and Repertoire ID columns
+        keys = ["junction_aa", "v_call", "j_call", "junction", "repertoire_id"]
+
     for row in reader:
         empty_list.append({x: row[x] for x in keys})
 
@@ -38,7 +52,7 @@ def format_data(args):
     df["v_call"] = df.v_call.str.split(",", n=1, expand=True)[0]
 
     # remove allele information from v_call and keep only the gene information
-    if '*' in df["v_call"][0]:
+    if "*" in df["v_call"][0]:
         df["v_call"] = df.apply(lambda x: x["v_call"][:-3], axis=1)
 
     # create column with chain information
@@ -63,20 +77,42 @@ def format_convergence(df):
 
 
 def format_metrics(df):
-    aggregate = df.pivot_table(index=["junction_aa", "repertoire_id",
-                                      "chain"], aggfunc="size").reset_index()
-    del df
-    aggregate.rename(columns={0: "counts"}, inplace=True)
-    aggregate = aggregate.sort_values(by="counts", ascending=False)
+    if "duplicate_count" in df.columns:
+        aggregate = df.loc[:, ("junction_aa", "repertoire_id",
+                               "chain", "duplicate_count")]
+        del df
+        aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
+        aggregate = aggregate.groupby(["junction_aa", "v_call",
+                                       "repertoire_id", "chain"]
+                                      ).sum().reset_index()
+        aggregate = aggregate.sort_values(by="counts", ascending=False)
+    else:
+        aggregate = df.pivot_table(index=["junction_aa", "repertoire_id",
+                                          "chain"],
+                                   aggfunc="size").reset_index()
+        del df
+        aggregate.rename(columns={0: "counts"}, inplace=True)
+        aggregate = aggregate.sort_values(by="counts", ascending=False)
     return aggregate
 
 
 def format_cloud(df):
-    aggregate = df.pivot_table(index=["junction_aa", "v_call", "repertoire_id",
-                                      "chain"], aggfunc="size").reset_index()
-    del df
-    aggregate.rename(columns={0: "counts"}, inplace=True)
-    aggregate = aggregate.sort_values(by="counts", ascending=False)
+    if "duplicate_count" in df.columns:
+        aggregate = df.loc[:, ("junction_aa", "v_call", "repertoire_id",
+                               "chain", "duplicate_count")]
+        del df
+        aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
+        aggregate = aggregate.groupby(["junction_aa", "v_call",
+                                       "repertoire_id", "chain"]
+                                      ).sum().reset_index()
+        aggregate = aggregate.sort_values(by="counts", ascending=False)
+    else:
+        aggregate = df.pivot_table(index=["junction_aa", "v_call",
+                                          "repertoire_id", "chain"],
+                                   aggfunc="size").reset_index()
+        del df
+        aggregate.rename(columns={0: "counts"}, inplace=True)
+        aggregate = aggregate.sort_values(by="counts", ascending=False)
     return aggregate
 
 
