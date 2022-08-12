@@ -2,6 +2,7 @@ import json
 import sys
 
 import matplotlib
+import numpy as np
 
 from wordcloud import (WordCloud)
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ import tcrcloud.colours
 import tcrcloud.format
 
 
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 
 # Import default colours based on the V gene
 TRAV = tcrcloud.colours.TRAV
@@ -46,39 +47,43 @@ class SimpleGroupedColorFunc(object):
         return self.word_to_color.get(word, self.default_color)
 
 
+def handle_duplicates(df):
+
+    df["junction_aa"] = np.where(df["junction_aa"].duplicated(),
+                                 " " + df["junction_aa"],
+                                 df["junction_aa"])
+
+    if df["junction_aa"].is_unique is False:
+        handle_duplicates(df)
+
+    return df
+
+
 def wordcloud(args):
 
     if args.legend.lower() != "true":
         if args.legend.lower() != "false":
-            sys.stderr.write("TCRcloud error: please indicate \
+            sys.stderr.write("TCRcloud error: please indicate legend \
 True or False\n")
             exit()
 
     samples_df = tcrcloud.format.format_data(args)
+
     formatted_samples = tcrcloud.format.format_cloud(samples_df)
-    samples = formatted_samples.groupby(['chain', 'repertoire_id'])
+
+    if formatted_samples["junction_aa"].is_unique is False:
+        handle_duplicates(formatted_samples)
+
+    samples = formatted_samples.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
 
     for j in keys:
         df = samples.get_group(j)
-
-        if len(df) > 1:
-            # create a dict associating the junction to the gene
-            # with highest counts
-            family = df[['junction_aa', 'v_call']].drop_duplicates(
-                subset='junction_aa',
-                keep="first",
-                inplace=False).set_index('junction_aa').squeeze().to_dict()
-            # create a dict associating the junction with a count number
-            text = df[['junction_aa',
-                       'counts']].groupby('junction_aa'
-                                          ).sum().squeeze().to_dict()
-        else:
-            family = {df['junction_aa'].iloc[0]: df['v_call'].iloc[0]}
-            text = {df['junction_aa'].iloc[0]: df['counts'].iloc[0]}
-
+        family = df[["junction_aa", "v_call"]].set_index("junction_aa"
+                                                         ).squeeze().to_dict()
+        text = df[["junction_aa", "counts"]].set_index("junction_aa"
+                                                       ).squeeze().to_dict()
         # create the wordcloud
-
         wordcloud = WordCloud(width=1000,
                               height=args.size,
                               background_color="white",
@@ -107,7 +112,7 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
                 color_to_words.setdefault(
                     eval(family.get(i)[:4]).get(family.get(i)), []).append(i)
 
-        default_color = 'grey'
+        default_color = "grey"
         try:
             grouped_color_func = SimpleGroupedColorFunc(color_to_words,
                                                         default_color)
@@ -139,11 +144,11 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
 
                 plt.legend(handles=patchList,
                            bbox_to_anchor=(0.5, -0.01),
-                           loc='upper center',
+                           loc="upper center",
                            ncol=4,
-                           prop={'size': 6})
+                           prop={"size": 6})
         outputname = args.rearrangements[:-4] + "_" + j[1] + "_" \
                                               + j[0] + ".png"
         plt.tight_layout()
-        plt.savefig(outputname, dpi=300, bbox_inches='tight')
+        plt.savefig(outputname, dpi=300, bbox_inches="tight")
         print("Word cloud saved as " + outputname)
