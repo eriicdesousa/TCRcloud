@@ -79,10 +79,16 @@ True or False\n")
 
     for j in keys:
         df = samples.get_group(j)
-        family = df[["junction_aa", "v_call"]].set_index("junction_aa"
-                                                         ).squeeze().to_dict()
-        text = df[["junction_aa", "counts"]].set_index("junction_aa"
-                                                       ).squeeze().to_dict()
+
+        if len(df) > 1:
+            family = df[["junction_aa", "v_call"]
+                        ].set_index("junction_aa").squeeze().to_dict()
+            text = df[["junction_aa", "counts"]
+                      ].set_index("junction_aa").squeeze().to_dict()
+        else:
+            family = {df['junction_aa'].iloc[0]: df['v_call'].iloc[0]}
+            text = {df['junction_aa'].iloc[0]: df['counts'].iloc[0]}
+
         # create the wordcloud
         wordcloud = WordCloud(width=1000,
                               height=args.size,
