@@ -9,22 +9,16 @@ def format_data(args):
     with open(args.rearrangements) as f:
         first_line = f.readline()
         if "duplicate_count" in first_line:
-            counts = True
+            keys = ["junction_aa", "v_call", "j_call", "junction",
+                    "repertoire_id", "duplicate_count"]
         else:
-            counts = False
+            keys = ["junction_aa", "v_call", "j_call", "junction",
+                    "repertoire_id"]
 
     airr.validate_rearrangement(args.rearrangements, True)
     reader = airr.read_rearrangement(args.rearrangements)
     empty_list = []
-
-    if counts is True:
-        # keep only the Junction, Vgene, Jgene, Repertoire ID and Count columns
-        keys = ["junction_aa", "v_call", "j_call", "junction", "repertoire_id",
-                "duplicate_count"]
-    else:
-        # keep only the Junction, Vgene, Jgene and Repertoire ID columns
-        keys = ["junction_aa", "v_call", "j_call", "junction", "repertoire_id"]
-
+    # keep only part of the data
     for row in reader:
         empty_list.append({x: row[x] for x in keys})
 
