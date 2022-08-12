@@ -114,10 +114,10 @@ def main():
     try:
         args.func(args)
     except FileNotFoundError:
-        if dir(args)[-1] == "repertoire":
+        if dir(args)[-2] == "repertoire":
             sys.stderr.write("TCRcloud error: " + args.repertoire
                              + " doesn't seem to exist\n")
-        elif dir(args)[-1] == "rearrangements":
+        elif dir(args)[-2] == "rearrangements":
             sys.stderr.write("TCRcloud error: " + args.rearrangements
                              + " doesn't seem to exist\n")
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
