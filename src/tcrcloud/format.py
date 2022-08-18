@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 import airr
@@ -20,27 +19,17 @@ def format_data(args):
     empty_list = []
     # keep only part of the data
     for row in reader:
-        empty_list.append({x: row[x] for x in keys})
+        CDR3 = row.get("junction_aa")
+        v_call = row.get("v_call")[2]
+        j_call = row.get("j_call")[2]
+        if CDR3 != "":
+            if "X" not in CDR3:
+                if CDR3[0] == "C":
+                    if CDR3[-1] == "F" or CDR3[-1] == "W":
+                        if v_call == j_call:
+                            empty_list.append({x: row[x] for x in keys})
 
     df = pd.DataFrame(empty_list)
-
-    # replace cells without junction with Nan
-    df["junction_aa"].replace("", np.nan, inplace=True)
-
-    # delete lines with Nan
-    df.dropna(subset=["junction_aa"], inplace=True)
-
-    # delete lines with an X on the junction_aa
-    df = df[~df.junction_aa.str.contains("X")]
-
-    # delete lines where junction_aa doesn"t start with C
-    df = df[df.junction_aa.str.startswith("C")]
-
-    # delete lines where junction_aa doesn"t end with F or W
-    df = df[df.junction_aa.str.endswith(("F", "W"))]
-
-    # delete lines where the chain in v_call and j_call doesn"t match
-    df = df[(df["v_call"].str[2] == df["j_call"].str[2])]
 
     # keep only one first Vgene when there are multiple in the column
     df["v_call"] = df.v_call.str.split(",", n=1, expand=True)[0]
@@ -111,7 +100,7 @@ def format_cloud(df):
 
 
 # print("""
-#                   _____ ____ ____      _                 _ 
+#                   _____ ____ ____      _                 _
 #                  |_   _/ ___|  _ \ ___| | ___  _   _  __| |
 #                    | || |   | |_) / __| |/ _ \| | | |/ _` |
 #                    | || |___|  _ < (__| | (_) | |_| | (_| |
