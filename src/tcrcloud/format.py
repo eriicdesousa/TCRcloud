@@ -44,7 +44,7 @@ def format_data(args):
 
     # keep only one first Vgene when there are multiple in the column
     df["v_call"] = df.v_call.str.split(",", n=1, expand=True)[0]
-   
+
     # remove allele information from v_call and keep only the gene information
     if "*" in str(df.v_call.head(1)):
         df["v_call"] = df.apply(lambda x: x["v_call"][:-3], axis=1)
@@ -76,7 +76,7 @@ def format_metrics(df):
                                "chain", "duplicate_count")]
         del df
         aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
-        aggregate = aggregate.groupby(["junction_aa", "v_call",
+        aggregate = aggregate.groupby(["junction_aa",
                                        "repertoire_id", "chain"]
                                       ).sum().reset_index()
         aggregate = aggregate.sort_values(by="counts", ascending=False)
