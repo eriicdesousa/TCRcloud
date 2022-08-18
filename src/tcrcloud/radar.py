@@ -93,6 +93,12 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
             metrics.append(legend_dict.get(j[1], j[1]) + " γ chain")
         elif j[0] == "D":
             metrics.append(legend_dict.get(j[1], j[1]) + " δ chain")
+        elif j[0] == "H":
+            metrics.append(legend_dict.get(j[1], j[1]) + " Heavy chain")
+        elif j[0] == "K":
+            metrics.append(legend_dict.get(j[1], j[1]) + " Kappa chain")
+        elif j[0] == "L":
+            metrics.append(legend_dict.get(j[1], j[1]) + " Light chain")
 
         metrics.append(minmax_scale.fit_transform(dfifty)[1].
                        astype(np.float))
