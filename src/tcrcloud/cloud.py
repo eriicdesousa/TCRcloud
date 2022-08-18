@@ -1,5 +1,6 @@
 import json
 import sys
+import re
 
 import matplotlib
 import numpy as np
@@ -19,6 +20,9 @@ TRAV = tcrcloud.colours.TRAV
 TRBV = tcrcloud.colours.TRBV
 TRGV = tcrcloud.colours.TRGV
 TRDV = tcrcloud.colours.TRDV
+IGHV = tcrcloud.colours.IGHV
+IGKV = tcrcloud.colours.IGKV
+IGLV = tcrcloud.colours.IGLV
 
 
 # This colours the wordclouds
@@ -45,6 +49,14 @@ class SimpleGroupedColorFunc(object):
 
     def __call__(self, word, **kwargs):
         return self.word_to_color.get(word, self.default_color)
+
+
+def separate(text):
+    return int(text) if text.isdigit() else text
+
+
+def natural_sort(text):
+    return [separate(c) for c in re.split(r'(\d+)', text)]
 
 
 def handle_duplicates(df):
@@ -116,7 +128,8 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
         else:
             for i in family:
                 color_to_words.setdefault(
-                    eval(family.get(i)[:4]).get(family.get(i)), []).append(i)
+                    eval(family.get(i)[:4]).get(family.get(i),
+                                                "grey"), []).append(i)
 
         default_color = "grey"
         try:
@@ -138,10 +151,12 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
             colours_for_legend = {}
             if args.colours is None:
                 for i in family:
-                    tempdict = eval(family.get(i)[:4]).get(family.get(i))
+                    tempdict = eval(family.get(i)[:4]).get(family.get(i),
+                                                           "grey")
                     colours_for_legend[family.get(i)] = tempdict
 
                 sorted_legend = sorted(colours_for_legend)
+                sorted_legend.sort(key=natural_sort)
                 patchList = []
                 for key in sorted_legend:
                     data_key = mpatches.Patch(color=colours_for_legend[key],

@@ -1,6 +1,6 @@
 ![TCRcloud](https://github.com/oldguyeric/TCRcloud/raw/main/images/TCRcloud.png)
 
-![GitHub last commit](https://img.shields.io/github/last-commit/oldguyeric/TCRcloud/dev)
+![GitHub last commit](https://img.shields.io/github/last-commit/oldguyeric/TCRcloud)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/oldguyeric/TCRcloud)
 ![PyPI](https://img.shields.io/pypi/v/TCRcloud)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/TCRcloud)
@@ -15,9 +15,11 @@ TCRcloud is written in python and can be installed from PyPI using pip:
 
     pip3 install TCRcloud
 
-Currently it is only compatible with linux-64 and osx-64 because one of the dependencies used is also only compatible with those operating systems. It does work on WSL if you want to use Windows.
+Currently it is only compatible with Linux (x86_64) and macOS (x86_64) because one of the dependencies used is also only compatible with those operating systems. It does work on WSL if you want to use Windows.
 
-TCRcloud uses the AIRR Data Commons API and needs AIRR compliant data as input
+TCRcloud uses the AIRR Data Commons API and needs AIRR compliant data as input.
+
+TCRcloud was initially developed for TCR repertoires but it is also compatiple with BCR repertoires.
 
 **Usage**
 
@@ -33,6 +35,8 @@ By default TCRcloud colours the CDR3 based on the Vgene but you can provide a js
     }
 
 The sequences not in the file will be coloured grey.
+
+Only the colours for human TCR and BCR variable genes are coded into TCRcloud.
 
 **To use your custom colours for the word cloud**
 
