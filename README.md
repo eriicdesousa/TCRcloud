@@ -19,7 +19,7 @@ Currently it is only compatible with Linux (x86_64) and macOS (x86_64) because o
 
 TCRcloud uses the AIRR Data Commons API and needs AIRR compliant data as input.
 
-TCRcloud was initially developed for TCR repertoires but it is also compatiple with BCR repertoires.
+TCRcloud was initially developed for TCR repertoires but it is also compatible with BCR repertoires.
 
 **Usage**
 
