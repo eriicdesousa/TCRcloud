@@ -39,10 +39,11 @@ def calculate_dfifty(df, length):
         return (counter * 100) / 10000
 
 
-def calculate_metrics(keys, samples, legend_file):
+def calculate_metrics(keys, samples, legend_file, export):
     minmax_scale = preprocessing.MinMaxScaler(feature_range=(0, 1))
 
     patients = []
+    list_for_printing = []
 
     for j in keys:
         df = samples.get_group(j)
@@ -100,6 +101,24 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
         elif j[0] == "L":
             metrics.append(legend_dict.get(j[1], j[1]) + " Light chain")
 
+        if export.lower() == "true":
+            metrics_for_printing = metrics.copy()
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        dfifty[1], precision=3)))
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        distinct[1], precision=3)))
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        chao[1], precision=3)))
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        simpson[1], precision=3)))
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        shannon[1], precision=3)))
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        gini[1], precision=3)))
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        convergence[1], precision=3)))
+            list_for_printing.append(metrics_for_printing)
+
         metrics.append(minmax_scale.fit_transform(dfifty)[1].
                        astype(np.float))
         metrics.append(minmax_scale.fit_transform(distinct)[1].
@@ -143,12 +162,32 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
     # patients.append(["test9", np.array(0.9), np.array(0.1), np.array(0.9),
     #                  np.array(0.1), np.array(0.9), np.array(0.1),
     #                  np.array(0.9)])
+    if export.lower() == "true":
+        with open(legend_dict.get(j[1], j[1]) + "_repertoire_metrics.txt",
+                  "w") as fileout:
+            for i in list_for_printing:
+                print("Repertoire:", i[0], file=fileout)
+                print("D50 Index:", i[1], file=fileout)
+                print("Distinct CDR3:", i[2], file=fileout)
+                print("Chao1 Index:", i[3], file=fileout)
+                print("Simpson Index:", i[4], file=fileout)
+                print("Shannon Index:", i[5], file=fileout)
+                print("Gini Index:", i[6], file=fileout)
+                print("Convergence:", i[7], file=fileout)
+                print(file=fileout)
+        print("Repertoire metrics saved as " + legend_dict.get(j[1], j[1])
+              + "_repertoire_metrics.txt")
     return patients
 
 
 def radar(args):
     if args.legend.lower() != "true":
         if args.legend.lower() != "false":
+            sys.stderr.write("TCRcloud error: please indicate \
+True or False\n")
+            exit()
+    if args.export.lower() != "true":
+        if args.export.lower() != "false":
             sys.stderr.write("TCRcloud error: please indicate \
 True or False\n")
             exit()
@@ -166,7 +205,8 @@ True or False\n")
     samples_df = tcrcloud.format.format_data(args)
     samples = samples_df.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
-    patients = calculate_metrics(keys, samples, args.custom_legend)
+    patients = calculate_metrics(keys, samples, args.custom_legend,
+                                 args.export)
 
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(patients[0]))
 

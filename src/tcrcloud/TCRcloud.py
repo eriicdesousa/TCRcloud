@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import argparse
 import yaml
 import json
@@ -78,6 +78,12 @@ def main():
                               help="indicate if legend should be included, \
                               default = True",
                               metavar="True or False", default="True",
+                              required=False)
+    parser_radar.add_argument("-e", "--export", type=str,
+                              help="indicate if the metrics from the radar \
+                              should be exported to a text file, \
+                              default = False",
+                              metavar="True or False", default="False",
                               required=False)
     parser_radar.set_defaults(func=tcrcloud.radar.radar)
 
