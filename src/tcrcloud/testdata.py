@@ -66,11 +66,11 @@ def download(args):
     # Save them out to a file
     print("Received " + str(len(data["Repertoire"]))
           + " repertoires. Saved as AIRR_repertoire_file.json")
-    with open("legend_for_testdata.json", "w") as fileout:
+    with open("legend.json", "w") as fileout:
         print("{", file=fileout)
         print('    "2839362682105696746-242ac113-0001-012":"Twin 2A",',
               file=fileout)
         print('    "2939134772391776746-242ac113-0001-012":"Twin 2B"',
               file=fileout)
         print("}", file=fileout)
-    print("json file for legend saved as legend_for_testdata.json")
+    print("json file for legend saved as legend.json")
