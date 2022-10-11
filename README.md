@@ -15,7 +15,7 @@ TCRcloud is written in python and can be installed from PyPI using pip:
 
     pip3 install TCRcloud
 
-Currently it is only compatible with Linux (x86_64) and macOS (x86_64) because one of the dependencies used is also only compatible with those operating systems. It does work on WSL if you want to use Windows.
+Currently it is only compatible with Linux (x86-64) and macOS (x86-64) because one of the dependencies used is also only compatible with those operating systems. It does work on WSL if you want to use Windows.
 
 TCRcloud uses the AIRR Data Commons API and needs AIRR compliant data as input.
 
@@ -64,6 +64,10 @@ By default TCRcloud uses repertoire_id but you can create a legend with the text
 **To create a radar plot without a legend**
     
     TCRcloud radar AIRR_rearrangements_file.tsv -l False
+
+**To export the calculated metrics from the radar to a text file**
+
+    TCRcloud radar AIRR_rearrangements_file.tsv -e True
 
 Using TCRcloud you can download rearragements files from the AIRR compliant databases based on AIRR repertoire metadata files
 
