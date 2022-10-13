@@ -1,11 +1,11 @@
-![TCRcloud](https://github.com/oldguyeric/TCRcloud/raw/main/images/TCRcloud.png)
+![TCRcloud](https://github.com/eriicdesousa/TCRcloud/raw/main/images/TCRcloud.png)
 
-![GitHub last commit](https://img.shields.io/github/last-commit/oldguyeric/TCRcloud)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/oldguyeric/TCRcloud)
+![GitHub last commit](https://img.shields.io/github/last-commit/eriicdesousa/TCRcloud)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/eriicdesousa/TCRcloud)
 ![PyPI](https://img.shields.io/pypi/v/TCRcloud)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/TCRcloud)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/TCRcloud)
-![License](https://img.shields.io/github/license/oldguyeric/TCRcloud)
+![License](https://img.shields.io/github/license/eriicdesousa/TCRcloud)
 
 ## TCRcloud is a TCR repertoire visualization and comparison tool
 
@@ -86,19 +86,19 @@ After having the testdata.airr.json file you can use the download function inclu
 ## Examples:
 
 **TRA CDR3 word cloud**
-![alpha](https://github.com/oldguyeric/TCRcloud/raw/main/images/alpha.png)
+![alpha](https://github.com/eriicdesousa/TCRcloud/raw/main/images/alpha.png)
 
 **TRB CDR3 word cloud**
-![beta](https://github.com/oldguyeric/TCRcloud/raw/main/images/beta.png)
+![beta](https://github.com/eriicdesousa/TCRcloud/raw/main/images/beta.png)
 
 **TRG CDR3 word cloud**
-![gamma](https://github.com/oldguyeric/TCRcloud/raw/main/images/gamma.png) 
+![gamma](https://github.com/eriicdesousa/TCRcloud/raw/main/images/gamma.png) 
 
 **TRD CDR3 word cloud**
-![delta](https://github.com/oldguyeric/TCRcloud/raw/main/images/delta.png) 
+![delta](https://github.com/eriicdesousa/TCRcloud/raw/main/images/delta.png) 
 
 **Diversity comparison**
 
 Comparing here the αβ repertoire from one twin pair from the monozygotic twins study from the Mark Davis lab (DOI:[ 10.1038/ncomms11112](https://doi.org/10.1038/ncomms11112))
 
-![radar](https://github.com/oldguyeric/TCRcloud/raw/main/images/radar.png)
+![radar](https://github.com/eriicdesousa/TCRcloud/raw/main/images/radar.png)
