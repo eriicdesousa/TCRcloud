@@ -39,7 +39,7 @@ def calculate_dfifty(df, length):
         return (counter * 100) / 10000
 
 
-def calculate_metrics(keys, samples, legend_file, export):
+def calculate_metrics(keys, samples, legend_file, export, filename):
     minmax_scale = preprocessing.MinMaxScaler(feature_range=(0, 1))
 
     patients = []
@@ -163,20 +163,19 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
     #                  np.array(0.1), np.array(0.9), np.array(0.1),
     #                  np.array(0.9)])
     if export.lower() == "true":
-        with open(legend_dict.get(j[1], j[1]) + "_repertoire_metrics.txt",
-                  "w") as fileout:
+        metrics_filename = filename[:-4] + "_repertoire_metrics.txt"
+        with open(metrics_filename, "w") as fileout:
             for i in list_for_printing:
                 print("Repertoire:", i[0], file=fileout)
                 print("D50 Index:", i[1], file=fileout)
-                print("Distinct CDR3:", i[2], file=fileout)
+                print("Distinct CDR3:", int(i[2]), file=fileout)
                 print("Chao1 Index:", i[3], file=fileout)
                 print("Simpson Index:", i[4], file=fileout)
                 print("Shannon Index:", i[5], file=fileout)
                 print("Gini Index:", i[6], file=fileout)
                 print("Convergence:", i[7], file=fileout)
                 print(file=fileout)
-        print("Repertoire metrics saved as " + legend_dict.get(j[1], j[1])
-              + "_repertoire_metrics.txt")
+        print("Repertoire metrics saved as " + metrics_filename)
     return patients
 
 
@@ -206,7 +205,7 @@ True or False\n")
     samples = samples_df.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
     patients = calculate_metrics(keys, samples, args.custom_legend,
-                                 args.export)
+                                 args.export, args.rearrangements)
 
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(patients[0]))
 

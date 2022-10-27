@@ -56,7 +56,7 @@ def testserver(data):
 
 
 def airrdownload(args):
-    airr.validate_repertoire(args.repertoire, True)
+    # airr.validate_repertoire(args.repertoire, True)
     repertoire_file = args.repertoire
     rearrangements_file = repertoire_file[:-4] + "rearrangements.tsv"
     try:
@@ -112,8 +112,8 @@ repertoire metadata file.")
     for r in repertoires:
         print("Retrieving rearrangements for repertoire: "
               + r["repertoire_id"])
-        print("It is only possible to get 1000 rearrangements per request so \
-this process may take some time...")
+        print("This process may take some time depending on the numbers of \
+rearrangements you are downloading")
         query["filters"]["content"][0]["content"]["value"] = r["repertoire_id"]
         query["size"] = 1000
         query["from"] = 0

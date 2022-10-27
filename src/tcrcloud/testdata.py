@@ -55,7 +55,7 @@ def download(args):
 
     # The data is returned as JSON, use AIRR library to write out data
     data = resp.json()
-    airr.write_repertoire("AIRR_repertoire_file.json",
+    airr.write_repertoire("repertoire.airr.json",
                           data["Repertoire"], info=data["Info"])
 
     # Print out some Info
@@ -65,7 +65,7 @@ def download(args):
 
     # Save them out to a file
     print("Received " + str(len(data["Repertoire"]))
-          + " repertoires. Saved as AIRR_repertoire_file.json")
+          + " repertoires. Saved as repertoire.airr.json")
     with open("legend.json", "w") as fileout:
         print("{", file=fileout)
         print('    "2839362682105696746-242ac113-0001-012":"Twin 2A",',
