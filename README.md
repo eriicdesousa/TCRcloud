@@ -83,7 +83,7 @@ By default TCRcloud uses repertoire_id but you can create a legend with the text
 
 **Simpson Index:** Originally developed by Dr Edward H. Simpson to measure diversity in a ecosystem, this metric measures the probability that two randomly selected CDR3 are different
 
-**Chao1 index:** Originally developed by Dr Anne Chao to estimate richness in a community, this metric indicates the estimated number of CDR3 in a sample 
+**Chao1 index:** Originally developed by Dr Anne Chao to estimate richness in a ecological community, this metric indicates the estimated number of CDR3 in a sample 
 
 Using TCRcloud you can download rearragements files from the AIRR compliant databases based on AIRR repertoire metadata files
 
