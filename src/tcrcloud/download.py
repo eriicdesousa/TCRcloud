@@ -60,10 +60,10 @@ def airrdownload(args):
     repertoire_file = args.repertoire
     rearrangements_file = repertoire_file[:-4] + "rearrangements.tsv"
     try:
-        data = airr.load_repertoire(args.repertoire)
+        data = airr.read_airr(args.repertoire)
     except TypeError:
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR rearrangements file\n")
+properly formatted AIRR repertoire file\n")
         exit()
     repertoires = data["Repertoire"]
     host_url = testserver(data)
