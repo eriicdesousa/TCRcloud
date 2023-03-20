@@ -120,19 +120,19 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
             list_for_printing.append(metrics_for_printing)
 
         metrics.append(minmax_scale.fit_transform(dfifty)[1].
-                       astype(np.float))
+                       astype(float))
         metrics.append(minmax_scale.fit_transform(distinct)[1].
-                       astype(np.float))
+                       astype(float))
         metrics.append(minmax_scale.fit_transform(chao)[1].
-                       astype(np.float))
+                       astype(float))
         metrics.append(minmax_scale.fit_transform(simpson)[1].
-                       astype(np.float))
+                       astype(float))
         metrics.append(minmax_scale.fit_transform(shannon)[1].
-                       astype(np.float))
+                       astype(float))
         metrics.append(minmax_scale.fit_transform(gini)[1].
-                       astype(np.float))
+                       astype(float))
         metrics.append(minmax_scale.fit_transform(convergence)[1].
-                       astype(np.float))
+                       astype(float))
         patients.append(metrics)
     # patients = []
     # patients.append(["test1", np.array(0.1), np.array(0.9), np.array(0.1),
