@@ -17,7 +17,7 @@ plt.rcParams["font.family"] = "serif"
 def main():
     # create the top-level parser
     parser = argparse.ArgumentParser(
-        description="Create a wordcloud of CDR3 \
+        description="Create a word cloud of CDR3 \
     sequences from TCR AIRR-seq data or a radar plot with diversity metrics.",
         prog="TCRcloud")
     parser.add_argument("-v", "--version", action="version",
