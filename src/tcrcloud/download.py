@@ -42,7 +42,8 @@ def testserver(data):
                     "https://scireptor.dkfz.de/airr/v1",
                     "https://airr-seq.vdjbase.org/airr/v1",
                     "https://agschwab.uni-muenster.de/airr/v1",
-                    "https://roche-airr.ireceptor.org/airr/v1"]
+                    "https://roche-airr.ireceptor.org/airr/v1",
+                    "https://t1d-1.ireceptor.org/airr/v1"]
 
     host_url = "https://vdjserver.org/airr/v1"
     for i in repositories:
