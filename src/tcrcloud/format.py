@@ -9,29 +9,40 @@ def format_data(args):
         first_line = f.readline()
         if "duplicate_count" in first_line:
             keys = ["junction_aa", "v_call", "j_call", "junction",
-                    "repertoire_id", "duplicate_count"]
+                    "repertoire_id", "duplicate_count", "productive"]
         else:
             keys = ["junction_aa", "v_call", "j_call", "junction",
-                    "repertoire_id"]
+                    "repertoire_id", "productive"]
 
     airr.validate_rearrangement(args.rearrangements, True)
     reader = airr.read_rearrangement(args.rearrangements)
+    print("Preparing data")
     empty_list = []
     # keep only part of the data
     for row in reader:
+        productive = row.get("productive")
         CDR3 = row.get("junction_aa")
-        v_call = row.get("v_call")[2]
-        j_call = row.get("j_call")[2]
-        if CDR3 != "":
-            if "X" not in CDR3:
-                if CDR3[0] == "C":
-                    if CDR3[-1] == "F" or CDR3[-1] == "W":
-                        if v_call == j_call:
-                            empty_list.append({x: row[x] for x in keys})
+        try:
+            v_call = row.get("v_call")[2]
+        except IndexError:
+            v_call = ""
+        try:
+            j_call = row.get("j_call")[2]
+        except IndexError:
+            j_call = ""
+        if productive is True:
+            if CDR3 != "":
+                if v_call != "":
+                    if j_call != "":
+                        if "X" or "\*" not in CDR3:
+                            if CDR3[0] == "C":
+                                if CDR3[-1] == "F" or CDR3[-1] == "W":
+                                    if v_call == j_call:
+                                        empty_list.append({x: row[x] for x in keys})
 
     df = pd.DataFrame(empty_list)
 
-    # keep only one first Vgene when there are multiple in the column
+    # keep only one first V gene when there are multiple in the column
     df["v_call"] = df.v_call.str.split(",", n=1, expand=True)[0]
 
     # remove allele information from v_call and keep only the gene information
