@@ -69,11 +69,14 @@ properly formatted AIRR repertoire file\n")
         exit()
     repertoires = data["Repertoire"]
     host_url = testserver(data)
-
+    try:
+        info = data["Info"]["Info"]
+    except KeyError:
+        info = data["Info"]
     # Print out some Info
-    print("       Info: " + data["Info"]["title"])
-    print("    version: " + str(data["Info"]["version"]))
-    print("description: " + data["Info"]["description"])
+    print("       Info: " + info["title"])
+    print("    version: " + str(info["version"]))
+    print("description: " + info["description"])
     print("Found " + str(len(data["Repertoire"])) + " repertoires in \
 repertoire metadata file.")
 
@@ -114,7 +117,7 @@ repertoire metadata file.")
     for r in repertoires:
         print("Retrieving rearrangements for repertoire: "
               + r["repertoire_id"])
-        print("This process may take some time depending on the numbers of \
+        print("This process may take some time depending on the number of \
 rearrangements you are downloading")
         query["filters"]["content"][0]["content"]["value"] = r["repertoire_id"]
         query["size"] = 1000
