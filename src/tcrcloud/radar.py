@@ -52,7 +52,7 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
                                                          ), 1]).reshape(-1, 1)
         df = tcrcloud.format.format_metrics(df)
         length = len(df)
-        distinct = np.array([0, length, 55000]).reshape(-1, 1)
+        distinct = np.array([0, length, 100000]).reshape(-1, 1)
         counts = df["counts"].tolist()
         dfifty = np.array([0, calculate_dfifty(df, length), 50]).reshape(-1, 1)
         del df
@@ -63,7 +63,7 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
                             alpha_diversity("simpson", counts)[0], 1]
                            ).reshape(-1, 1)
         chao = np.array([0, skbio.diversity.
-                         alpha_diversity("chao1", counts)[0], 90000]
+                         alpha_diversity("chao1", counts)[0], 170000]
                         ).reshape(-1, 1)
         gini = np.array([0, skbio.diversity.
                          alpha_diversity("gini_index", counts)[0], 1]
@@ -99,37 +99,37 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
         elif j[0] == "K":
             metrics.append(legend_dict.get(j[1], j[1]) + " Kappa chain")
         elif j[0] == "L":
-            metrics.append(legend_dict.get(j[1], j[1]) + " Light chain")
+            metrics.append(legend_dict.get(j[1], j[1]) + " Lambda chain")
 
         if export.lower() == "true":
             metrics_for_printing = metrics.copy()
             metrics_for_printing.append(float(np.format_float_positional(
                                         dfifty[1], precision=3)))
             metrics_for_printing.append(float(np.format_float_positional(
-                                        distinct[1], precision=3)))
-            metrics_for_printing.append(float(np.format_float_positional(
-                                        chao[1], precision=3)))
-            metrics_for_printing.append(float(np.format_float_positional(
-                                        simpson[1], precision=3)))
+                                        gini[1], precision=3)))
             metrics_for_printing.append(float(np.format_float_positional(
                                         shannon[1], precision=3)))
             metrics_for_printing.append(float(np.format_float_positional(
-                                        gini[1], precision=3)))
+                                        simpson[1], precision=3)))
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        distinct[1], precision=3)))
+            metrics_for_printing.append(float(np.format_float_positional(
+                                        chao[1], precision=3)))
             metrics_for_printing.append(float(np.format_float_positional(
                                         convergence[1], precision=3)))
             list_for_printing.append(metrics_for_printing)
 
         metrics.append(minmax_scale.fit_transform(dfifty)[1].
                        astype(float))
-        metrics.append(minmax_scale.fit_transform(distinct)[1].
-                       astype(float))
-        metrics.append(minmax_scale.fit_transform(chao)[1].
-                       astype(float))
-        metrics.append(minmax_scale.fit_transform(simpson)[1].
+        metrics.append(minmax_scale.fit_transform(gini)[1].
                        astype(float))
         metrics.append(minmax_scale.fit_transform(shannon)[1].
                        astype(float))
-        metrics.append(minmax_scale.fit_transform(gini)[1].
+        metrics.append(minmax_scale.fit_transform(simpson)[1].
+                       astype(float))
+        metrics.append(minmax_scale.fit_transform(distinct)[1].
+                       astype(float))
+        metrics.append(minmax_scale.fit_transform(chao)[1].
                        astype(float))
         metrics.append(minmax_scale.fit_transform(convergence)[1].
                        astype(float))
@@ -168,11 +168,11 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
             for i in list_for_printing:
                 print("Repertoire:", i[0], file=fileout)
                 print("D50 Index:", i[1], file=fileout)
-                print("Distinct CDR3:", int(i[2]), file=fileout)
-                print("Chao1 Index:", i[3], file=fileout)
+                print("Gini Index:", i[2], file=fileout)
+                print("Shannon Index:", i[3], file=fileout)
                 print("Simpson Index:", i[4], file=fileout)
-                print("Shannon Index:", i[5], file=fileout)
-                print("Gini Index:", i[6], file=fileout)
+                print("Distinct CDR3:", int(i[5]), file=fileout)
+                print("Chao1 Index:", i[6], file=fileout)
                 print("Convergence:", i[7], file=fileout)
                 print(file=fileout)
         print("Repertoire metrics saved as " + metrics_filename)
@@ -192,11 +192,11 @@ True or False\n")
             exit()
 
     categories = ["D50\nIndex",
+                  "Gini\nindex",
+                  "Shannon\nIndex",
+                  "Simpson\nIndex",
                   "Distinct\nCDR3",
                   "Chao1\nIndex",
-                  "Simpson\nIndex",
-                  "Shannon\nIndex",
-                  "Gini\nindex",
                   "Convergence"
                   ]
 
@@ -290,43 +290,43 @@ True or False\n")
              fontweight="bold")
 
     plt.text(label_loc[1],
-             0.1,
-             "5500",
-             horizontalalignment="left",
+             0.11,
+             "0.1",
+             horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              0.26,
-             "16500",
+             "0.3",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              0.46,
-             "27500",
+             "0.5",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              0.66,
-             "38500",
+             "0.7",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
              0.86,
-             "49500",
+             "0.9",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[1],
-             1.00,
-             "55000",
+             1.01,
+             "1",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
@@ -334,42 +334,42 @@ True or False\n")
 
     plt.text(label_loc[2],
              0.11,
-             "9000",
+             "1.5",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[2],
              0.26,
-             "27000",
+             "4.5",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[2],
              0.46,
-             "45000",
+             "7.5",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[2],
              0.66,
-             "63000",
+             "10.5",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[2],
              0.86,
-             "81000",
+             "13.5",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[2],
              1.00,
-             "90000",
+             "15",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
@@ -420,42 +420,42 @@ True or False\n")
 
     plt.text(label_loc[4],
              0.11,
-             "1.5",
+             "10000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[4],
              0.26,
-             "4.5",
+             "30000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[4],
              0.46,
-             "7.5",
+             "50000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[4],
              0.66,
-             "10.5",
+             "70000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[4],
              0.86,
-             "13.5",
+             "90000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[4],
              1.00,
-             "15",
+             "100000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
@@ -463,51 +463,51 @@ True or False\n")
 
     plt.text(label_loc[5],
              0.11,
-             "0.1",
+             "17000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[5],
              0.26,
-             "0.3",
+             "51000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[5],
              0.46,
-             "0.5",
+             "85000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[5],
              0.66,
-             "0.7",
+             "119000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[5],
              0.86,
-             "0.9",
+             "153000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
     plt.text(label_loc[5],
-             1.01,
-             "1",
+             1.00,
+             "170000",
              horizontalalignment="center",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
 
     plt.text(label_loc[6],
-             0.11,
+             0.09,
              "0.1",
-             horizontalalignment="center",
+             horizontalalignment="left",
              verticalalignment="center",
              fontsize=12,
              fontweight="bold")
