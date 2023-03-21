@@ -3,74 +3,105 @@ import airr
 
 
 def download(args):
-    # This study is stored at VDJServer data repository
-    host_url = "https://vdjserver.org/airr/v1"
+    host_url = " https://ipa6.ireceptor.org/airr/v1"
 
-    # POST data is sent with the query. Here we construct an object for
-    # the query ((study_id == "PRJNA300878") AND (locus == "TRB"))
-
-    query = {
+    query1 = {
         "filters": {
             "op": "and",
             "content": [
                 {
-                    "op": "=",
+                    "op": "contains",
                     "content": {
-                        "field": "study.study_id",
-                        "value": "PRJNA300878"
+                        "field": "subject.subject_id",
+                        "value": "su008"
                     }
                 },
                 {
-                    "op": "=",
+                    "op": "in",
                     "content": {
                         "field": "sample.pcr_target.pcr_target_locus",
-                        "value": "TRB"
+                        "value": ["TRA"]
                     }
-                },
-                {
-                    "op": "or",
-                    "content": [
-                        {
-                            "op": "=",
-                            "content": {
-                                "field": "sample.sample_id",
-                                "value": "TW02B_T_memory_CD8"
-                            }
-                        },
-                        {
-                            "op": "=",
-                            "content": {
-                                "field": "sample.sample_id",
-                                "value": "TW02A_T_memory_CD8"
-                            }
-                        }
-                    ]
                 }
             ]
         }
     }
 
+    query2 = {
+        "filters": {
+            "op": "and",
+            "content": [
+                {
+                    "op": "contains",
+                    "content": {
+                        "field": "subject.subject_id",
+                        "value": "su008"
+                    }
+                },
+                {
+                    "op": "in",
+                    "content": {
+                        "field": "sample.pcr_target.pcr_target_locus",
+                        "value": ["TRB"]
+                    }
+                },
+                {
+                    "op": "contains",
+                    "content": {
+                        "field": "study.keywords_study",
+                        "value": "contains_schema_rearrangement"
+                    }
+                }
+            ]
+        }
+    }
     # Send the query
-    resp = requests.post(host_url + "/repertoire", json=query)
+    resp = requests.post(host_url + "/repertoire", json=query1)
 
     # The data is returned as JSON, use AIRR library to write out data
     data = resp.json()
-    airr.write_repertoire("repertoire.airr.json",
+    airr.write_repertoire("alpharepertoire.airr.json",
                           data["Repertoire"], info=data["Info"])
 
     # Print out some Info
-    print("       Info: " + data["Info"]["title"])
-    print("    version: " + str(data["Info"]["version"]))
-    print("description: " + data["Info"]["description"])
+    print("       Info: " + data["Info"]["Info"]["title"])
+    print("    version: " + str(data["Info"]["Info"]["version"]))
+    print("description: " + data["Info"]["Info"]["description"])
 
     # Save them out to a file
     print("Received " + str(len(data["Repertoire"]))
-          + " repertoires. Saved as repertoire.airr.json")
+          + " repertoires. Saved as alpharepertoire.airr.json")
+
+    print()
+
+    # Send the query
+    resp = requests.post(host_url + "/repertoire", json=query2)
+
+    # The data is returned as JSON, use AIRR library to write out data
+    data = resp.json()
+    airr.write_repertoire("betarepertoire.airr.json",
+                          data["Repertoire"], info=data["Info"])
+
+    # Print out some Info
+    print("       Info: " + data["Info"]["Info"]["title"])
+    print("    version: " + str(data["Info"]["Info"]["version"]))
+    print("description: " + data["Info"]["Info"]["description"])
+
+    # Save them out to a file
+    print("Received " + str(len(data["Repertoire"]))
+          + " repertoires. Saved as betarepertoire.airr.json")
+
+    print()
+
     with open("legend.json", "w") as fileout:
         print("{", file=fileout)
-        print('    "2839362682105696746-242ac113-0001-012":"Twin 2A",',
+        print('    "PRJNA509910-su008_pre-TRA":"Subject 8 pre-treatment",',
               file=fileout)
-        print('    "2939134772391776746-242ac113-0001-012":"Twin 2B"',
+        print('    "PRJNA509910-su008_post-TRA":"Subject 8 post-treatment",',
+              file=fileout)
+        print('    "PRJNA509910-su008_pre-TRB":"Subject 8 pre-treatment",',
+              file=fileout)
+        print('    "PRJNA509910-su008_post-TRB":"Subject 8 post-treatment"',
               file=fileout)
         print("}", file=fileout)
     print("json file for legend saved as legend.json")
