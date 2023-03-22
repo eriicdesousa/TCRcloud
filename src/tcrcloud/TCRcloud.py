@@ -21,7 +21,7 @@ def main():
     sequences from TCR AIRR-seq data or a radar plot with diversity metrics.",
         prog="TCRcloud")
     parser.add_argument("-v", "--version", action="version",
-                        version="%(prog)s 1.3.1")
+                        version="%(prog)s 1.4.0")
     subparsers = parser.add_subparsers(
         title="command options",
         help="The program has 4 options: cloud, radar, download or testdata",
@@ -120,7 +120,7 @@ def main():
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR repertoire file\n")
-    except KeyError:
+    except (KeyError, TypeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR rearrangements file\n")
 
