@@ -49,11 +49,15 @@ def testserver(data):
     for i in repositories:
         test_url = i
         resp = requests.post(test_url + "/repertoire", json=query)
-
-        if len(resp.json()["Repertoire"]) > 0:
-            host_url = i
-            print("Your repertoire was found at " + host_url)
-            break
+        try:
+            if len(resp.json()["Repertoire"]) > 0:
+                host_url = i
+                print("Your repertoire was found at " + host_url)
+                break
+        except KeyError:
+            sys.stderr.write("TCRcloud error: It seems that " + test_url
+                             + " is down. Your download will proceed if the \
+data you want is located elsewhere\n")
     return host_url
 
 
