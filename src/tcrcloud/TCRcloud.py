@@ -10,6 +10,7 @@ import tcrcloud.cloud
 import tcrcloud.radar
 import tcrcloud.download
 import tcrcloud.testdata
+import tcrcloud.surface
 
 plt.rcParams["font.family"] = "serif"
 
@@ -24,8 +25,9 @@ def main():
                         version="%(prog)s 1.4.1")
     subparsers = parser.add_subparsers(
         title="command options",
-        help="The program has 4 options: cloud, radar, download or testdata",
-        dest="cloud, radar, download or testdata",
+        help="The program has 5 options: cloud, radar, surface, download \
+             or testdata",
+        dest="cloud, radar, surface, download or testdata",
         required=True)
 
     # create subparser for making the wordcloud
@@ -86,6 +88,48 @@ def main():
                               required=False)
     parser_radar.set_defaults(func=tcrcloud.radar.radar)
 
+    # create subparser for making the surface plot
+    parser_surface = subparsers.add_parser("surface", help="Create a surface \
+        plot from TCR CDR3 data")
+
+    parser_surface.add_argument("rearrangements", type=str,
+                                help="indicate the name of the AIRR Standards \
+                                rearrangements file",
+                                metavar="rearrangements.tsv")
+    parser_surface.add_argument("-c", "--custom_legend", type=str,
+                                help="indicate the name of a json \
+                                file to convert repertoire_id to what you \
+                                want to appear in the legend",
+                                metavar="legend.json", required=False)
+    parser_surface.add_argument("-l", "--legend", type=str,
+                                help="indicate if legend should be included, \
+                                default = True",
+                                metavar="True or False", default="True",
+                                required=False)
+
+    parser_surface.add_argument("-yt", "--ymax", type=int,
+                                help="indicate the max value for the y axis, \
+                                default = True",
+                                metavar="True or False",
+                                required=False)
+    parser_surface.add_argument("-yb", "--ymin", type=int,
+                                help="indicate the min value for the y axis, \
+                                default = True",
+                                metavar="True or False",
+                                required=False)
+    parser_surface.add_argument("-zt", "--zmax", type=float,
+                                help="indicate the max value for the z axis, \
+                                default = True",
+                                metavar="True or False",
+                                required=False)
+    # parser_surface.add_argument("-zb", "--zmin", type=float,
+    #                            help="indicate the min value for the z axis, \
+    #                             default = True",
+    #                             metavar="True or False", default="True",
+    #                             required=False)
+
+    parser_surface.set_defaults(func=tcrcloud.surface.surface)
+
     # create subparser for downloading the rearregement data
     parser_download = subparsers.add_parser("download",
                                             help="Download TCR AIRR-seq \
@@ -100,10 +144,10 @@ def main():
     parser_download.set_defaults(func=tcrcloud.download.airrdownload)
 
     # create subparser for downloading the test repertoire
-
     parser_testdata = subparsers.add_parser("testdata",
-                                            help="Download TCR AIRR-seq \
-                                            repertoire file to test TCRcloud")
+                                            help="Download example TCR \
+                                            AIRR-seq repertoire data  \
+                                            to test TCRcloud")
 
     parser_testdata.set_defaults(func=tcrcloud.testdata.download)
 
@@ -120,9 +164,9 @@ def main():
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR repertoire file\n")
-    except (KeyError, TypeError):
-        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR rearrangements file\n")
+#     except (KeyError, TypeError):
+#         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+# properly formatted AIRR rearrangements file\n")
 
 
 if __name__ == "__main__":

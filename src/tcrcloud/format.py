@@ -110,6 +110,27 @@ def format_cloud(df):
     return aggregate
 
 
+def format_surface(df):
+    if "duplicate_count" in df.columns:
+        aggregate = df.loc[:, ("junction_aa", "v_call", "repertoire_id",
+                               "chain", "duplicate_count")]
+        del df
+        aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
+        aggregate = aggregate.groupby(["junction_aa", "v_call",
+                                       "repertoire_id", "chain"]
+                                      ).sum().reset_index()
+        aggregate = aggregate.sort_values(by="counts", ascending=False)
+    else:
+        aggregate = df.pivot_table(index=["junction_aa", "v_call",
+                                          "repertoire_id", "chain"],
+                                   aggfunc="size").reset_index()
+        del df
+        aggregate.rename(columns={0: "counts"}, inplace=True)
+        aggregate = aggregate.sort_values(by="counts", ascending=False)
+    aggregate["CDR3_length"] = aggregate["junction_aa"].str.len()
+    return aggregate
+
+
 # print("""
 #                   _____ ____ ____      _                 _
 #                  |_   _/ ___|  _ \ ___| | ___  _   _  __| |
