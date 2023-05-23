@@ -168,9 +168,9 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
             for i in list_for_printing:
                 print("Repertoire:", i[0], file=fileout)
                 print("D50 Index:", i[1], file=fileout)
-                print("Gini Index:", i[2], file=fileout)
+                print("Gini Coefficient:", i[2], file=fileout)
                 print("Shannon Index:", i[3], file=fileout)
-                print("Simpson Index:", i[4], file=fileout)
+                print("Gini-Simpson Index:", i[4], file=fileout)
                 print("Distinct CDR3:", int(i[5]), file=fileout)
                 print("Chao1 Index:", i[6], file=fileout)
                 print("Convergence:", i[7], file=fileout)
@@ -192,9 +192,9 @@ True or False\n")
             exit()
 
     categories = ["D50\nIndex",
-                  "Gini\nindex",
+                  "Gini\nCoefficient",
                   "Shannon\nIndex",
-                  "Simpson\nIndex",
+                  "Gini-Simpson\nIndex",
                   "Distinct\nCDR3",
                   "Chao1\nIndex",
                   "Convergence"
