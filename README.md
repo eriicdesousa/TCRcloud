@@ -44,7 +44,7 @@ The sequences not in the json file will be coloured grey.
 
     TCRcloud cloud repertoire.airr.rearrangements.tsv -l False
 
-**To create a radar plot comparing diversity metrics**
+**To create a radar plot comparing diversity indices**
 
     TCRcloud radar repertoire.airr.rearrangements.tsv
 
@@ -65,23 +65,23 @@ By default TCRcloud uses repertoire_id but you can create a legend with the text
     
     TCRcloud radar repertoire.airr.rearrangements.tsv -l False
 
-**To export the calculated metrics from the radar to a text file**
+**To export the calculated indices from the radar to a text file**
 
     TCRcloud radar repertoire.airr.rearrangements.tsv -e True
 
-**The metrics utilized in the radar**
+**The indices utilized in the radar**
 
 **Distinct CDR3:** Count of the unique CDR3 sequences in the sample
 
 **Convergence:** Frequency of CDR3 amino acid sequences that are coded by more than one nucleotide sequence 
 
-**D50 Index:** Developed by Dr Jian Han, this metric represents the percent of dominant and unique T or B cell clones that account for the cumulative 50% of the total CDR3 counted in the sample
+**D50 Index:** Developed by Dr Jian Han, this index represents the percent of dominant and unique T or B cell clones that account for the cumulative 50% of the total CDR3 counted in the sample
 
-**Gini Index:** Originally developed by Dr Corrado Gini to represent the wealth inequality within a social group, this metric is a measure of distribution
+**Gini Coefficient:** Originally developed by Dr Corrado Gini to represent the wealth inequality within a social group
 
-**Shannon Index:** Originally developed by Dr Claude Shannon to quantify the entropy in strings of text
+**Shannon Index:** Originally developed by Dr Claude Shannon to quantify the entropy in strings of text. Calculated here using log<sub>2<sub>
 
-**Simpson Index:** Originally developed by Dr Edward H. Simpson to measure diversity in a ecosystem
+**Gini-Simpson Index:** This is a transformation of the index originally developed by Dr Edward H. Simpson to measure diversity in a ecosystem
 
 **Chao1 index:** Originally developed by Dr Anne Chao to estimate richness in a ecological community
 
