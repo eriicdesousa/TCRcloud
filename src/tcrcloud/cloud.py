@@ -98,8 +98,8 @@ True or False\n")
             text = df[["junction_aa", "counts"]
                       ].set_index("junction_aa").squeeze().to_dict()
         else:
-            family = {df['junction_aa'].iloc[0]: df['v_call'].iloc[0]}
-            text = {df['junction_aa'].iloc[0]: df['counts'].iloc[0]}
+            family = {df["junction_aa"].iloc[0]: df["v_call"].iloc[0]}
+            text = {df["junction_aa"].iloc[0]: df["counts"].iloc[0]}
 
         # create the wordcloud
         wordcloud = WordCloud(width=1000,
