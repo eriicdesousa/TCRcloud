@@ -164,9 +164,9 @@ def main():
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR repertoire file\n")
-#     except (KeyError, TypeError):
-#         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-# properly formatted AIRR rearrangements file\n")
+    except (KeyError, TypeError):
+        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR rearrangements file\n")
 
 
 if __name__ == "__main__":
