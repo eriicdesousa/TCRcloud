@@ -2,7 +2,6 @@ import json
 import sys
 import re
 
-import matplotlib
 import numpy as np
 
 from wordcloud import (WordCloud)
@@ -11,9 +10,6 @@ import matplotlib.patches as mpatches
 
 import tcrcloud.colours
 import tcrcloud.format
-
-
-matplotlib.use("Agg")
 
 # Import default colours based on the V gene
 TRAV = tcrcloud.colours.TRAV

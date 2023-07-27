@@ -44,7 +44,7 @@ def calculate_metrics(keys, samples, legend_file, export, filename, fmax,
                       gsmin, smax, smin, gmax, gmin):
     minmax_scale = preprocessing.MinMaxScaler(feature_range=(0, 1))
 
-    patients = []
+    datasets = []
     list_for_printing = []
 
     for j in keys:
@@ -138,33 +138,33 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
                        astype(float))
         metrics.append(minmax_scale.fit_transform(convergence)[1].
                        astype(float))
-        patients.append(metrics)
-    # patients = []
-    # patients.append(["test1", np.array(0.1), np.array(0.9), np.array(0.1),
+        datasets.append(metrics)
+    # datasets = []
+    # datasets.append(["test1", np.array(0.1), np.array(0.9), np.array(0.1),
     #                  np.array(0.9), np.array(0.1), np.array(0.9),
     #                  np.array(0.1)])
-    # patients.append(["test2", np.array(0.2), np.array(0.8), np.array(0.2),
+    # datasets.append(["test2", np.array(0.2), np.array(0.8), np.array(0.2),
     #                  np.array(0.8), np.array(0.2), np.array(0.8),
     #                  np.array(0.2)])
-    # patients.append(["test3", np.array(0.3), np.array(0.7), np.array(0.3),
+    # datasets.append(["test3", np.array(0.3), np.array(0.7), np.array(0.3),
     #                  np.array(0.7), np.array(0.3), np.array(0.7),
     #                  np.array(0.3)])
-    # patients.append(["test4", np.array(0.4), np.array(0.6), np.array(0.4),
+    # datasets.append(["test4", np.array(0.4), np.array(0.6), np.array(0.4),
     #                  np.array(0.6), np.array(0.4), np.array(0.6),
     #                  np.array(0.4)])
-    # patients.append(["test5", np.array(0.5), np.array(0.5), np.array(0.5),
+    # datasets.append(["test5", np.array(0.5), np.array(0.5), np.array(0.5),
     #                  np.array(0.5), np.array(0.5), np.array(0.5),
     #                  np.array(0.5)])
-    # patients.append(["test6", np.array(0.6), np.array(0.4), np.array(0.6),
+    # datasets.append(["test6", np.array(0.6), np.array(0.4), np.array(0.6),
     #                  np.array(0.4), np.array(0.6), np.array(0.4),
     #                  np.array(0.6)])
-    # patients.append(["test7", np.array(0.7), np.array(0.3), np.array(0.7),
+    # datasets.append(["test7", np.array(0.7), np.array(0.3), np.array(0.7),
     #                  np.array(0.3), np.array(0.7), np.array(0.3),
     #                  np.array(0.7)])
-    # patients.append(["test8", np.array(0.8), np.array(0.2), np.array(0.8),
+    # datasets.append(["test8", np.array(0.8), np.array(0.2), np.array(0.8),
     #                  np.array(0.2), np.array(0.8), np.array(0.2),
     #                  np.array(0.8)])
-    # patients.append(["test9", np.array(0.9), np.array(0.1), np.array(0.9),
+    # datasets.append(["test9", np.array(0.9), np.array(0.1), np.array(0.9),
     #                  np.array(0.1), np.array(0.9), np.array(0.1),
     #                  np.array(0.9)])
     if export.lower() == "true":
@@ -181,7 +181,7 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
                 print("Convergence:", i[7], file=fileout)
                 print(file=fileout)
         print("Repertoire metrics saved as " + metrics_filename)
-    return patients
+    return datasets
 
 
 def radar(args):
@@ -209,14 +209,14 @@ True or False\n")
     samples_df = tcrcloud.format.format_data(args)
     samples = samples_df.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
-    patients = calculate_metrics(keys, samples, args.custom_legend,
+    datasets = calculate_metrics(keys, samples, args.custom_legend,
                                  args.export, args.rearrangements, args.fmax,
                                  args.fmin, args.cmax, args.cmin, args.chmax,
                                  args.chmin, args.umax, args.umin, args.gsmax,
                                  args.gsmin, args.smax, args.smin, args.gmax,
                                  args.gmin)
 
-    label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(patients[0]))
+    label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(datasets[0]))
 
     plt.figure(figsize=(10, 14))
     plt.subplot(polar=True)
@@ -229,12 +229,11 @@ True or False\n")
                      "#999933",
                      # "#AA4499",
                      "#88CCEE",
-                     "#DDCC77"
-                     ]
+                     "#DDCC77"]
 
-    for i in patients:
-        patient = i[1:]
-        patient = [*patient, patient[0]]
+    for i in datasets:
+        dataset = i[1:]
+        dataset = [*dataset, dataset[0]]
 
         try:
             thecolour = radar_colours.pop(0)
@@ -242,14 +241,14 @@ True or False\n")
             thecolour = "#BBBBBB"
 
         plt.plot(label_loc,
-                 patient,
+                 dataset,
                  # label=i[0],
                  linewidth=4.0,
                  alpha=0.4,
                  color=thecolour)
 
         plt.fill(label_loc,
-                 patient,
+                 dataset,
                  label=i[0],
                  linewidth=4.0,
                  alpha=0.6,

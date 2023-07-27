@@ -110,7 +110,7 @@ def format_cloud(df):
     return aggregate
 
 
-def format_surface(df):
+def format_barplot(df):
     if "duplicate_count" in df.columns:
         aggregate = df.loc[:, ("junction_aa", "v_call", "repertoire_id",
                                "chain", "duplicate_count")]
