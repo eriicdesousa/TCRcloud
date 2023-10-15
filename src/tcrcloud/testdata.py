@@ -70,9 +70,7 @@ def download(args):
 
     # Save them out to a file
     print("Received " + str(len(data["Repertoire"]))
-          + " repertoires. Saved as alpharepertoire.airr.json")
-
-    print()
+          + " alpha repertoires. Saved as alpharepertoire.airr.json")
 
     # Send the query
     resp = requests.post(host_url + "/repertoire", json=query2)
@@ -82,14 +80,9 @@ def download(args):
     airr.write_repertoire("betarepertoire.airr.json",
                           data["Repertoire"], info=data["Info"])
 
-    # Print out some Info
-    print("       Info: " + data["Info"]["Info"]["title"])
-    print("    version: " + str(data["Info"]["Info"]["version"]))
-    print("description: " + data["Info"]["Info"]["description"])
-
     # Save them out to a file
     print("Received " + str(len(data["Repertoire"]))
-          + " repertoires. Saved as betarepertoire.airr.json")
+          + " beta repertoires. Saved as betarepertoire.airr.json")
 
     print()
 

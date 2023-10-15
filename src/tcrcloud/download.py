@@ -63,7 +63,7 @@ data you want is located elsewhere\n")
 
 
 def airrdownload(args):
-    # airr.validate_repertoire(args.repertoire, True)
+    airr.validate_repertoire(args.repertoire)
     repertoire_file = args.repertoire
     rearrangements_file = repertoire_file[:-4] + "rearrangements.tsv"
     try:
