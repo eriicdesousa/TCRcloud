@@ -34,11 +34,17 @@ def format_data(args):
             if CDR3 != "":
                 if v_call != "":
                     if j_call != "":
-                        if "X" or "\*" not in CDR3:
-                            if CDR3[0] == "C":
-                                if CDR3[-1] == "F" or CDR3[-1] == "W":
-                                    if v_call == j_call:
-                                        empty_list.append({x: row[x] for x in keys})
+                        if "X" not in CDR3:
+                            if "\*" not in CDR3:
+                                if "B" not in CDR3:
+                                    if "Z" not in CDR3:
+                                        if "J" not in CDR3:
+                                            if "_" not in CDR3:
+                                                if CDR3[0] == "C":
+                                                    if CDR3[-1] == "F" or CDR3[-1] == "W":
+                                                        if v_call == j_call:
+                                                            empty_list.append(
+                                                                {x: row[x] for x in keys})
 
     df = pd.DataFrame(empty_list)
 
@@ -110,7 +116,7 @@ def format_cloud(df):
     return aggregate
 
 
-def format_barplot(df):
+def format_vgene(df):
     if "duplicate_count" in df.columns:
         aggregate = df.loc[:, ("junction_aa", "v_call", "repertoire_id",
                                "chain", "duplicate_count")]
@@ -130,6 +136,24 @@ def format_barplot(df):
     aggregate["CDR3_length"] = aggregate["junction_aa"].str.len()
     return aggregate
 
+
+def format_aminoacids(df):
+    if "duplicate_count" in df.columns:
+        aggregate = df.loc[:, ("junction_aa", "repertoire_id",
+                               "chain", "duplicate_count")]
+        del df
+        aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
+        aggregate = aggregate.groupby(["junction_aa", "repertoire_id", "chain"]
+                                      ).sum().reset_index()
+        aggregate = aggregate.sort_values(by="counts", ascending=False)
+    else:
+        aggregate = df.pivot_table(index=["junction_aa", "repertoire_id",
+                                          "chain"],
+                                   aggfunc="size").reset_index()
+        del df
+        aggregate.rename(columns={0: "counts"}, inplace=True)
+        aggregate = aggregate.sort_values(by="counts", ascending=False)
+    return aggregate
 
 # print("""
 #                   _____ ____ ____      _                 _

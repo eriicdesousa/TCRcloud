@@ -10,7 +10,8 @@ import tcrcloud.cloud
 import tcrcloud.radar
 import tcrcloud.download
 import tcrcloud.testdata
-import tcrcloud.barplot
+import tcrcloud.vgene
+import tcrcloud.aminoacids
 
 plt.rcParams["font.family"] = "serif"
 
@@ -18,21 +19,20 @@ plt.rcParams["font.family"] = "serif"
 def main():
     # create the top-level parser
     parser = argparse.ArgumentParser(
-        description="Create a word cloud of CDR3 \
-    sequences from TCR AIRR-seq data or a radar plot with diversity metrics.",
+        description="Create visualizations from AIRR-seq data",
         prog="TCRcloud")
     parser.add_argument("-v", "--version", action="version",
                         version="%(prog)s 1.4.1")
     subparsers = parser.add_subparsers(
         title="command options",
-        help="The program has 5 options: cloud, radar, barplot, download \
-             or testdata",
-        dest="cloud, radar, barplot, download or testdata",
+        help="The program has 6 options: cloud, radar, vgene, aminoacids, \
+             download or testdata",
+        dest="cloud, radar, vgene, aminoacids, download or testdata",
         required=True)
 
     # create subparser for making the wordcloud
     parser_cloud = subparsers.add_parser("cloud", help="Create a wordcloud \
-        from TCR CDR3 data")
+        from AIRR CDR3 data")
 
     # required_group = parser_cloud.add_argument_group("arguments")
 
@@ -43,7 +43,7 @@ def main():
     #     required= True)
 
     parser_cloud.add_argument("rearrangements", type=str,
-                              help="indicate the name of the AIRR Standards \
+                              help="indicate the name of the AIRR \
                               rearrangements file",
                               metavar="rearrangements.tsv")
     parser_cloud.add_argument("-c", "--colours", type=str,
@@ -64,11 +64,11 @@ def main():
 
     # create subparser for making the radar
     parser_radar = subparsers.add_parser("radar", help="Create a radar plot \
-        with diversity metrics")
+        with diversity metrics from AIRR CDR3 data")
 
     parser_radar.add_argument("rearrangements", type=str,
                               help="indicate the name of the AIRR \
-                              Standards rearrangements file",
+                              rearrangements file",
                               metavar="rearrangements.tsv")
     parser_radar.add_argument("-c", "--custom_legend", type=str,
                               help="indicate the name of a json \
@@ -159,131 +159,176 @@ def main():
 
     parser_radar.set_defaults(func=tcrcloud.radar.radar)
 
-    # create subparser for making the barplot
-    parser_barplot = subparsers.add_parser("barplot", help="Create a barplot \
-        from TCR CDR3 data")
+    # create subparser for making the V gene plot
+    parser_vgene = subparsers.add_parser("vgene", help="Create a V gene plot \
+        from AIRR CDR3 data")
 
-    parser_barplot.add_argument("rearrangements", type=str,
-                                help="indicate the name of the AIRR Standards \
-                                rearrangements file",
-                                metavar="rearrangements.tsv")
-    parser_barplot.add_argument("-yha", "--yhighalpha", type=int,
-                                help="indicate the max value for the y axis \
-                                for alpha chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-yla", "--ylowalpha", type=int,
-                                help="indicate the min value for the y axis \
-                                for alpha chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-zha", "--zhighalpha", type=float,
-                                help="indicate the max value for the z axis \
-                                for alpha chain, default = adapts to the data",
-                                metavar="float",
-                                required=False)
-    parser_barplot.add_argument("-yhb", "--yhighbeta", type=int,
-                                help="indicate the max value for the y axis \
-                                for beta chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-ylb", "--ylowbeta", type=int,
-                                help="indicate the min value for the y axis \
-                                for beta chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-zhb", "--zhighbeta", type=float,
-                                help="indicate the max value for the z axis \
-                                for beta chain, default = adapts to the data",
-                                metavar="float",
-                                required=False)
-    parser_barplot.add_argument("-yhg", "--yhighgamma", type=int,
-                                help="indicate the max value for the y axis \
-                                for gamma chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-ylg", "--ylowgamma", type=int,
-                                help="indicate the min value for the y axis \
-                                for gamma chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-zhg", "--zhighgamma", type=float,
-                                help="indicate the max value for the z axis \
-                                for gamma chain, default = adapts to the data",
-                                metavar="float",
-                                required=False)
-    parser_barplot.add_argument("-yhd", "--yhighdelta", type=int,
-                                help="indicate the max value for the y axis \
-                                for delta chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-yld", "--ylowdelta", type=int,
-                                help="indicate the min value for the y axis \
-                                for delta chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-zhd", "--zhighdelta", type=float,
-                                help="indicate the max value for the z axis \
-                                for delta chain, default = adapts to the data",
-                                metavar="float",
-                                required=False)
-    parser_barplot.add_argument("-yhh", "--yhighheavy", type=int,
-                                help="indicate the max value for the y axis \
-                                for heavy chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-ylh", "--ylowheavy", type=int,
-                                help="indicate the min value for the y axis \
-                                for heavy chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-zhh", "--zhighheavy", type=float,
-                                help="indicate the max value for the z axis \
-                                for heavy chain, default = adapts to the data",
-                                metavar="float",
-                                required=False)
-    parser_barplot.add_argument("-yhk", "--yhighkappa", type=int,
-                                help="indicate the max value for the y axis \
-                                for kappa chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-ylk", "--ylowkappa", type=int,
-                                help="indicate the min value for the y axis \
-                                for kappa chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-zhk", "--zhighkappa", type=float,
-                                help="indicate the max value for the z axis \
-                                for kappa chain, default = adapts to the data",
-                                metavar="float",
-                                required=False)
-    parser_barplot.add_argument("-yhl", "--yhighlambda", type=int,
-                                help="indicate the max value for the y axis \
-                                for lambda chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-yll", "--ylowlambda", type=int,
-                                help="indicate the min value for the y axis \
-                                for lambda chain, default = adapts to the data",
-                                metavar="integer",
-                                required=False)
-    parser_barplot.add_argument("-zhl", "--zhighlambda", type=float,
-                                help="indicate the max value for the z axis \
-                                for lambda chain, default = adapts to the data",
-                                metavar="float",
-                                required=False)
-    # parser_barplot.add_argument("-zb", "--zmin", type=float,
-    #                             help="indicate the min value for the z axis, \
-    #                             only applies when comparing data, \
-    #                             default = depends on the data",
-    #                             metavar="float",
-    #                             required=False)
-    # parser_barplot.add_argument("-c", "--compare", type=str,
-    #                             help="indicate if you want to compare  \
-    #                             barplot plots, default = False",
-    #                             metavar="True or False", default="False",
-    #                             required=False)
-    parser_barplot.set_defaults(func=tcrcloud.barplot.barplot)
+    parser_vgene.add_argument("rearrangements", type=str,
+                              help="indicate the name of the AIRR \
+                              rearrangements file",
+                              metavar="rearrangements.tsv")
+    parser_vgene.add_argument("-yha", "--yhighalpha", type=int,
+                              help="indicate the max value for the y axis \
+                              for alpha chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-yla", "--ylowalpha", type=int,
+                              help="indicate the min value for the y axis \
+                              for alpha chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-zha", "--zhighalpha", type=float,
+                              help="indicate the max value for the z axis \
+                              for alpha chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-zla", "--zlowalpha", type=float,
+                              help="indicate the min value for the z axis \
+                              for alpha chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-yhb", "--yhighbeta", type=int,
+                              help="indicate the max value for the y axis \
+                              for beta chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-ylb", "--ylowbeta", type=int,
+                              help="indicate the min value for the y axis \
+                              for beta chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-zhb", "--zhighbeta", type=float,
+                              help="indicate the max value for the z axis \
+                              for beta chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-zlb", "--zlowbeta", type=float,
+                              help="indicate the min value for the z axis \
+                              for beta chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-yhg", "--yhighgamma", type=int,
+                              help="indicate the max value for the y axis \
+                              for gamma chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-ylg", "--ylowgamma", type=int,
+                              help="indicate the min value for the y axis \
+                              for gamma chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-zhg", "--zhighgamma", type=float,
+                              help="indicate the max value for the z axis \
+                              for gamma chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-zlg", "--zlowgamma", type=float,
+                              help="indicate the min value for the z axis \
+                              for gamma chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-yhd", "--yhighdelta", type=int,
+                              help="indicate the max value for the y axis \
+                              for delta chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-yld", "--ylowdelta", type=int,
+                              help="indicate the min value for the y axis \
+                              for delta chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-zhd", "--zhighdelta", type=float,
+                              help="indicate the max value for the z axis \
+                              for delta chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-zld", "--zlowdelta", type=float,
+                              help="indicate the min value for the z axis \
+                              for delta chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-yhh", "--yhighheavy", type=int,
+                              help="indicate the max value for the y axis \
+                              for heavy chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-ylh", "--ylowheavy", type=int,
+                              help="indicate the min value for the y axis \
+                              for heavy chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-zhh", "--zhighheavy", type=float,
+                              help="indicate the max value for the z axis \
+                              for heavy chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-zlh", "--zlowheavy", type=float,
+                              help="indicate the min value for the z axis \
+                              for heavy chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-yhk", "--yhighkappa", type=int,
+                              help="indicate the max value for the y axis \
+                              for kappa chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-ylk", "--ylowkappa", type=int,
+                              help="indicate the min value for the y axis \
+                              for kappa chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-zhk", "--zhighkappa", type=float,
+                              help="indicate the max value for the z axis \
+                              for kappa chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-zlk", "--zlowkappa", type=float,
+                              help="indicate the min value for the z axis \
+                              for kappa chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-yhl", "--yhighlambda", type=int,
+                              help="indicate the max value for the y axis \
+                              for lambda chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-yll", "--ylowlambda", type=int,
+                              help="indicate the min value for the y axis \
+                              for lambda chain, default = adapts to the data",
+                              metavar="integer",
+                              required=False)
+    parser_vgene.add_argument("-zhl", "--zhighlambda", type=float,
+                              help="indicate the max value for the z axis \
+                              for lambda chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-zll", "--zlowlambda", type=float,
+                              help="indicate the min value for the z axis \
+                              for lambda chain, default = adapts to the data",
+                              metavar="float",
+                              required=False)
+    parser_vgene.add_argument("-c", "--compare", type=str,
+                              help="indicate if you want to compare  \
+                              barplot plots, default = False",
+                              metavar="True or False", default="False",
+                              required=False)
+    parser_vgene.set_defaults(func=tcrcloud.vgene.barplot)
+
+    # create subparser for making the aminoacids plot
+    parser_aminoacids = subparsers.add_parser("aminoacids", help="Create a \
+        aminoacids plot from AIRR CDR3 data")
+
+    parser_aminoacids.add_argument("rearrangements", type=str,
+                                   help="indicate the name of the AIRR \
+                                   Standards rearrangements file",
+                                   metavar="rearrangements.tsv")
+    parser_aminoacids.add_argument("-l", "--length", type=int,
+                                   help="indicate the value for the x axis \
+                                   representing the length of the CDR3, \
+                                   default = adapts to the data",
+                                   metavar="integer",
+                                   required=False)
+    parser_aminoacids.set_defaults(func=tcrcloud.aminoacids.aminoacids)
 
     # create subparser for downloading the rearrangement data
     parser_download = subparsers.add_parser("download",
@@ -293,7 +338,7 @@ def main():
 
     parser_download.add_argument("repertoire", type=str,
                                  help="indicate the name of the \
-                                 AIRR Standards repertoire file",
+                                 AIRR repertoire file",
                                  metavar="repertoires.airr.json")
 
     parser_download.set_defaults(func=tcrcloud.download.airrdownload)
