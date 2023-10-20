@@ -141,7 +141,7 @@ True or False\n")
                                      "frequency").reset_index().rename_axis(index=None, columns=None)
         df_sorted = df_reformat.sort_values(by=["v_call"],
                                             key=natsort_keygen())
-        breakpoint()
+
         x = df_sorted["v_call"].factorize()[0]
         for i in range(len(df_sorted.columns) - 2):
             x = np.append(x, df_sorted["v_call"].factorize()[0])
@@ -268,7 +268,7 @@ def barplot(args):
             x_axis_ticks = i[9]
             x_axis_names = i[10]
             ax.set_box_aspect(aspect=plot_aspect)
-            ax.bar3d(x, y, z * 0, 1, 1, z, shade=True, color=thecolour)
+            ax.bar3d(x, y, z * 0, 0.7, 0.7, z, shade=True, color=thecolour)
             ax.set_ylim(ymin, ymax)
             ax.set_zlim(zmin, zmax)
             ax.set_xticks(x_axis_ticks)
@@ -304,8 +304,8 @@ def barplot(args):
                 ax.bar3d(x, y, z1 * 0, 1, 1, z1, shade=True,
                          color=figure_colours[0])
             else:
-                ax.bar3d(x, y, z1 * 0, 1, 1, z1,
-                         shade=True, color=alternate[-2])
+                ax.bar3d(x, y, z1 * 0, 1, 1, z1, shade=True,
+                         color=alternate[-2])
             z[z < 0] = 0
             ax.bar3d(x, y, z * 0, 1, 1, z, shade=True, color=thecolour)
             ax.set_ylim(ymin, ymax)

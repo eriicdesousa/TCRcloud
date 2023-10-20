@@ -30,8 +30,8 @@ def main():
         dest="cloud, radar, vgene, aminoacids, download or testdata",
         required=True)
 
-    # create subparser for making the wordcloud
-    parser_cloud = subparsers.add_parser("cloud", help="Create a wordcloud \
+    # create subparser for making the word cloud
+    parser_cloud = subparsers.add_parser("cloud", help="Create a word cloud \
         from AIRR CDR3 data")
 
     # required_group = parser_cloud.add_argument_group("arguments")
@@ -48,7 +48,7 @@ def main():
                               metavar="rearrangements.tsv")
     parser_cloud.add_argument("-c", "--colours", type=str,
                               help="indicate the name of a json file to \
-                              change the colours of the wordcloud",
+                              change the colours of the word cloud",
                               metavar="colours.json", required=False)
     parser_cloud.add_argument("-l", "--legend", type=str,
                               help="indicate if legend should be included, \
@@ -314,19 +314,24 @@ def main():
                               required=False)
     parser_vgene.set_defaults(func=tcrcloud.vgene.barplot)
 
-    # create subparser for making the aminoacids plot
+    # create subparser for making the amino acids plot
     parser_aminoacids = subparsers.add_parser("aminoacids", help="Create a \
-        aminoacids plot from AIRR CDR3 data")
+        amino acids plot from AIRR CDR3 data")
 
     parser_aminoacids.add_argument("rearrangements", type=str,
                                    help="indicate the name of the AIRR \
                                    Standards rearrangements file",
                                    metavar="rearrangements.tsv")
     parser_aminoacids.add_argument("-l", "--length", type=int,
-                                   help="indicate the value for the x axis \
+                                   help="indicate the value for the axis \
                                    representing the length of the CDR3, \
                                    default = adapts to the data",
                                    metavar="integer",
+                                   required=False)
+    parser_aminoacids.add_argument("-t", "--threeD", type=str,
+                                   help="indicate if you want a tridimensional  \
+                                   bar plot, default = False",
+                                   metavar="True or False", default="False",
                                    required=False)
     parser_aminoacids.set_defaults(func=tcrcloud.aminoacids.aminoacids)
 
@@ -364,9 +369,9 @@ def main():
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR repertoire file\n")
-    except (KeyError, TypeError):
-        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR rearrangements file\n")
+    # except (KeyError, TypeError):
+#         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+# properly formatted AIRR rearrangements file\n")
 
 
 if __name__ == "__main__":
