@@ -14,37 +14,39 @@ def testserver(data):
                     "op": "=",
                     "content": {
                         "field": "repertoire_id",
-                        "value": data["Repertoire"][0]["repertoire_id"]
-                    }
+                        "value": data["Repertoire"][0]["repertoire_id"],
+                    },
                 },
                 {
                     "op": "=",
                     "content": {
                         "field": "study.study_id",
-                        "value": data["Repertoire"][0]["study"]["study_id"]
-                    }
-                }
-            ]
+                        "value": data["Repertoire"][0]["study"]["study_id"],
+                    },
+                },
+            ],
         }
     }
 
-    repositories = ["https://vdjserver.org/airr/v1",
-                    "https://ipa1.ireceptor.org/airr/v1",
-                    "https://ipa2.ireceptor.org/airr/v1",
-                    "https://ipa3.ireceptor.org/airr/v1",
-                    "https://ipa4.ireceptor.org/airr/v1",
-                    "https://ipa5.ireceptor.org/airr/v1",
-                    "https://ipa6.ireceptor.org/airr/v1",
-                    "https://covid19-1.ireceptor.org/airr/v1",
-                    "https://covid19-2.ireceptor.org/airr/v1",
-                    "https://covid19-3.ireceptor.org/airr/v1",
-                    "https://covid19-4.ireceptor.org/airr/v1",
-                    "https://scireptor.dkfz.de/airr/v1",
-                    "https://airr-seq.vdjbase.org/airr/v1",
-                    "https://agschwab.uni-muenster.de/airr/v1",
-                    "https://roche-airr.ireceptor.org/airr/v1",
-                    "https://t1d-1.ireceptor.org/airr/v1",
-                    "https://hpap.ireceptor.org/airr/v1/"]
+    repositories = [
+        "https://vdjserver.org/airr/v1",
+        "https://ipa1.ireceptor.org/airr/v1",
+        "https://ipa2.ireceptor.org/airr/v1",
+        "https://ipa3.ireceptor.org/airr/v1",
+        "https://ipa4.ireceptor.org/airr/v1",
+        "https://ipa5.ireceptor.org/airr/v1",
+        "https://ipa6.ireceptor.org/airr/v1",
+        "https://covid19-1.ireceptor.org/airr/v1",
+        "https://covid19-2.ireceptor.org/airr/v1",
+        "https://covid19-3.ireceptor.org/airr/v1",
+        "https://covid19-4.ireceptor.org/airr/v1",
+        "https://scireptor.dkfz.de/airr/v1",
+        "https://airr-seq.vdjbase.org/airr/v1",
+        "https://agschwab.uni-muenster.de/airr/v1",
+        "https://roche-airr.ireceptor.org/airr/v1",
+        "https://t1d-1.ireceptor.org/airr/v1",
+        "https://hpap.ireceptor.org/airr/v1/",
+    ]
 
     host_url = "https://vdjserver.org/airr/v1"
     for i in repositories:
@@ -56,9 +58,12 @@ def testserver(data):
                 print("Your repertoire was found at " + host_url)
                 break
         except KeyError:
-            sys.stderr.write("TCRcloud error: It seems that " + test_url
-                             + " is down. Your download will proceed if the \
-data you want is located elsewhere\n")
+            sys.stderr.write(
+                "TCRcloud error: It seems that "
+                + test_url
+                + " is down. Your download will proceed if the \
+data you want is located elsewhere\n"
+            )
     return host_url
 
 
@@ -69,8 +74,10 @@ def airrdownload(args):
     try:
         data = airr.read_airr(args.repertoire)
     except TypeError:
-        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR repertoire file\n")
+        sys.stderr.write(
+            "TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR repertoire file\n"
+        )
         exit()
     repertoires = data["Repertoire"]
     host_url = testserver(data)
@@ -82,8 +89,12 @@ properly formatted AIRR repertoire file\n")
     print("       Info: " + info["title"])
     print("    version: " + str(info["version"]))
     print("description: " + info["description"])
-    print("Found " + str(len(data["Repertoire"])) + " repertoires in \
-repertoire metadata file.")
+    print(
+        "Found "
+        + str(len(data["Repertoire"]))
+        + " repertoires in \
+repertoire metadata file."
+    )
 
     # Query the rearrangement endpoint
     # Define a generic query object, and we will replace the repertoire_id
@@ -96,22 +107,13 @@ repertoire metadata file.")
             "content": [
                 {
                     "op": "=",
-                    "content": {
-                        "field": "repertoire_id",
-                        "value": "random_value"
-                    }
+                    "content": {"field": "repertoire_id", "value": "random_value"},
                 },
-                {
-                    "op": "=",
-                    "content": {
-                        "field": "productive",
-                        "value": True
-                    }
-                }
-            ]
+                {"op": "=", "content": {"field": "productive", "value": True}},
+            ],
         },
         "size": 1000,
-        "from": 0
+        "from": 0,
     }
 
     # Loop through each repertoire and query rearrangement data for
@@ -120,10 +122,11 @@ repertoire metadata file.")
 
     first = True
     for r in repertoires:
-        print("Retrieving rearrangements for repertoire: "
-              + r["repertoire_id"])
-        print("This process may take some time depending on the number of \
-rearrangements you are downloading")
+        print("Retrieving rearrangements for repertoire: " + r["repertoire_id"])
+        print(
+            "This process may take some time depending on the number of \
+rearrangements you are downloading"
+        )
         query["filters"]["content"][0]["content"]["value"] = r["repertoire_id"]
         query["size"] = 1000
         query["from"] = 0
@@ -141,8 +144,8 @@ rearrangements you are downloading")
             # the required fields will be written to the file.
             if first:
                 out_file = airr.create_rearrangement(
-                    rearrangements_file,
-                    fields=rearrangements[0].keys())
+                    rearrangements_file, fields=rearrangements[0].keys()
+                )
                 first = False
 
             # save the rearrangements to a file
@@ -157,6 +160,10 @@ rearrangements you are downloading")
             # Need to update the from parameter to get the next chunk
             query["from"] = cnt
 
-        print("Retrieved " + str(cnt) + " rearrangements for repertoire: "
-                           + r["repertoire_id"])
+        print(
+            "Retrieved "
+            + str(cnt)
+            + " rearrangements for repertoire: "
+            + r["repertoire_id"]
+        )
     print("Saved as " + rearrangements_file)

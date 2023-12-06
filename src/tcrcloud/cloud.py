@@ -4,7 +4,7 @@ import re
 
 import numpy as np
 
-from wordcloud import (WordCloud)
+from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
@@ -37,9 +37,9 @@ class SimpleGroupedColorFunc(object):
     """
 
     def __init__(self, color_to_words, default_color):
-        self.word_to_color = {word: color
-                              for (color, words) in color_to_words.items()
-                              for word in words}
+        self.word_to_color = {
+            word: color for (color, words) in color_to_words.items() for word in words
+        }
 
         self.default_color = default_color
 
@@ -52,14 +52,13 @@ def separate(text):
 
 
 def natural_sort(text):
-    return [separate(c) for c in re.split(r'(\d+)', text)]
+    return [separate(c) for c in re.split(r"(\d+)", text)]
 
 
 def handle_duplicates(df):
-
-    df["junction_aa"] = np.where(df["junction_aa"].duplicated(),
-                                 " " + df["junction_aa"],
-                                 df["junction_aa"])
+    df["junction_aa"] = np.where(
+        df["junction_aa"].duplicated(), " " + df["junction_aa"], df["junction_aa"]
+    )
 
     if df["junction_aa"].is_unique is False:
         handle_duplicates(df)
@@ -68,11 +67,12 @@ def handle_duplicates(df):
 
 
 def wordcloud(args):
-
     if args.legend.lower() != "true":
         if args.legend.lower() != "false":
-            sys.stderr.write("TCRcloud error: please indicate legend \
-True or False\n")
+            sys.stderr.write(
+                "TCRcloud error: please indicate legend \
+True or False\n"
+            )
             exit()
 
     samples_df = tcrcloud.format.format_data(args)
@@ -89,52 +89,67 @@ True or False\n")
         df = samples.get_group(j)
 
         if len(df) > 1:
-            family = df[["junction_aa", "v_call"]
-                        ].set_index("junction_aa").squeeze().to_dict()
-            text = df[["junction_aa", "counts"]
-                      ].set_index("junction_aa").squeeze().to_dict()
+            family = (
+                df[["junction_aa", "v_call"]]
+                .set_index("junction_aa")
+                .squeeze()
+                .to_dict()
+            )
+            text = (
+                df[["junction_aa", "counts"]]
+                .set_index("junction_aa")
+                .squeeze()
+                .to_dict()
+            )
         else:
             family = {df["junction_aa"].iloc[0]: df["v_call"].iloc[0]}
             text = {df["junction_aa"].iloc[0]: df["counts"].iloc[0]}
 
         # create the wordcloud
-        wordcloud = WordCloud(width=1000,
-                              height=args.size,
-                              background_color="white",
-                              relative_scaling=0.7,
-                              prefer_horizontal=1.0,
-                              scale=2.5,
-                              max_font_size=3000,
-                              max_words=len(df)
-                              ).generate_from_frequencies(text)
+        wordcloud = WordCloud(
+            width=1000,
+            height=args.size,
+            background_color="white",
+            relative_scaling=0.7,
+            prefer_horizontal=1.0,
+            scale=2.5,
+            max_font_size=3000,
+            max_words=len(df),
+        ).generate_from_frequencies(text)
         color_to_words = {}
         if args.colours is not None:
             try:
                 with open(args.colours) as json_file:
                     color_to_words = json.load(json_file)
             except FileNotFoundError:
-                sys.stderr.write("TCRcloud error: " + args.colours
-                                 + " doesn't seem to exist\n")
+                sys.stderr.write(
+                    "TCRcloud error: " + args.colours + " doesn't seem to exist\n"
+                )
                 exit()
             except json.decoder.JSONDecodeError:
-                sys.stderr.write("TCRcloud error: " + args.colours
-                                 + " doesn't seem properly formatted. Check \
-https://github.com/oldguyeric/TCRcloud for more information\n")
+                sys.stderr.write(
+                    "TCRcloud error: "
+                    + args.colours
+                    + " doesn't seem properly formatted. Check \
+https://github.com/oldguyeric/TCRcloud for more information\n"
+                )
                 exit()
         else:
             for i in family:
                 color_to_words.setdefault(
-                    eval(family.get(i)[:4]).get(family.get(i),
-                                                "grey"), []).append(i)
+                    eval(family.get(i)[:4]).get(family.get(i), "grey"), []
+                ).append(i)
 
         default_color = "grey"
         try:
-            grouped_color_func = SimpleGroupedColorFunc(color_to_words,
-                                                        default_color)
+            grouped_color_func = SimpleGroupedColorFunc(color_to_words, default_color)
         except TypeError:
-            sys.stderr.write("TCRcloud error: " + args.colours
-                             + " doesn't seem properly formatted. Check \
-https://github.com/oldguyeric/TCRcloud for more information\n")
+            sys.stderr.write(
+                "TCRcloud error: "
+                + args.colours
+                + " doesn't seem properly formatted. Check \
+https://github.com/oldguyeric/TCRcloud for more information\n"
+            )
             exit()
         wordcloud.recolor(color_func=grouped_color_func)
 
@@ -147,25 +162,24 @@ https://github.com/oldguyeric/TCRcloud for more information\n")
             colours_for_legend = {}
             if args.colours is None:
                 for i in family:
-                    tempdict = eval(family.get(i)[:4]).get(family.get(i),
-                                                           "grey")
+                    tempdict = eval(family.get(i)[:4]).get(family.get(i), "grey")
                     colours_for_legend[family.get(i)] = tempdict
 
                 sorted_legend = sorted(colours_for_legend)
                 sorted_legend.sort(key=natural_sort)
                 patchList = []
                 for key in sorted_legend:
-                    data_key = mpatches.Patch(color=colours_for_legend[key],
-                                              label=key)
+                    data_key = mpatches.Patch(color=colours_for_legend[key], label=key)
                     patchList.append(data_key)
 
-                plt.legend(handles=patchList,
-                           bbox_to_anchor=(0.5, -0.01),
-                           loc="upper center",
-                           ncol=4,
-                           prop={"size": 6})
-        outputname = args.rearrangements[:-4] + "_" + j[1] + "_" \
-                                              + j[0] + ".png"
+                plt.legend(
+                    handles=patchList,
+                    bbox_to_anchor=(0.5, -0.01),
+                    loc="upper center",
+                    ncol=4,
+                    prop={"size": 6},
+                )
+        outputname = args.rearrangements[:-4] + "_" + j[1] + "_" + j[0] + ".png"
         plt.tight_layout()
         plt.savefig(outputname, dpi=300, bbox_inches="tight")
         print("Word cloud saved as " + outputname)
