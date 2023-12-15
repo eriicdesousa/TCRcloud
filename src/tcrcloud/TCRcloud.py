@@ -280,6 +280,17 @@ def main():
         metavar="rearrangements.tsv",
     )
     parser_vgenes.add_argument(
+        "-e",
+        "--export",
+        type=str,
+        help="indicate if the metrics from the radar \
+                              should be exported to a text file, \
+                              default = False",
+        metavar="True or False",
+        default="False",
+        required=False,
+    )
+    parser_vgenes.add_argument(
         "-yha",
         "--yhighalpha",
         type=int,
@@ -573,6 +584,17 @@ def main():
         type=str,
         help="indicate if you want a tridimensional  \
                                    bar plot, default = False",
+        metavar="True or False",
+        default="False",
+        required=False,
+    )
+    parser_aminoacids.add_argument(
+        "-e",
+        "--export",
+        type=str,
+        help="indicate if the metrics from the plot \
+                              should be exported to a csv file, \
+                              default = False",
         metavar="True or False",
         default="False",
         required=False,
