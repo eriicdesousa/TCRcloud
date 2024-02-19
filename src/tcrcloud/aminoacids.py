@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 import numpy as np
 
@@ -32,6 +33,16 @@ def aminoacids(args):
     formatted_samples = tcrcloud.format.format_aminoacids(samples_df)
     samples = formatted_samples.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
+
+    datasets = []
+    for_comparison = {}
+    for_comparison["A"] = []
+    for_comparison["B"] = []
+    for_comparison["G"] = []
+    for_comparison["D"] = []
+    for_comparison["H"] = []
+    for_comparison["K"] = []
+    for_comparison["L"] = []
     for j in keys:
         df = samples.get_group(j)
         splitted = df["junction_aa"].str.split("", expand=True)
@@ -42,6 +53,9 @@ def aminoacids(args):
             positions.append(new_df.groupby(i).sum("counts"))
             names.append(i)
         final = pd.concat(positions, axis=1)
+        for i in colours.keys():
+            if i not in list(final.index):
+                final.loc[i] = np.nan
         final = final.sort_index()
         final.drop(final.head(1).index, inplace=True)
         final.columns = names
@@ -85,7 +99,14 @@ def aminoacids(args):
         transposed_df = normalized.transpose()
 
         if args.export.lower() == "true":
-            df_filename = args.rearrangements[:-4] + "_aminoacids_table.csv"
+            df_filename = (
+                args.rearrangements[:-4]
+                + "_aminoacids_table"
+                + j[1]
+                + "_"
+                + j[0]
+                + ".csv"
+            )
             normalized.to_csv(df_filename, index=True)
 
         if args.threeD.lower() == "false":
@@ -131,120 +152,203 @@ def aminoacids(args):
                 normalized = result.drop("just_empty", axis=1)
                 normalized = normalized.fillna(0)
             normalized = normalized.iloc[::-1]
-            x = normalized.index.factorize()[0]
-            # for i in range(len(normalized.columns) - 1):
-            #     x = np.append(x, normalized.index.factorize()[0])
-            # x = np.sort(x)
-            y = np.array(normalized.columns.values.tolist())
-            # for i in range(len(normalized) - 1):
-            #     y = np.append(y, np.array(normalized.columns.values.tolist()))
-            # y = np.sort(y)
-            # df_transpose = normalized.transpose()
-            z = np.array(normalized.values.tolist()[0])
-            for i in range(1, len(normalized)):
-                z = np.append(z, np.array(normalized.values.tolist()[i]))
-            # fig = plt.figure(figsize=(10, 14))
-            # ax = fig.add_subplot(projection="3d")
-            # counter = 0
-            # for i in colours:
-            #     ax.bar3d(
-            #         x[int(len(z) / 20) * counter : int(len(z) / 20) * (counter + 1)],
-            #         y[int(len(z) / 20) * counter : int(len(z) / 20) * (counter + 1)],
-            #         z[int(len(z) / 20) * counter : int(len(z) / 20) * (counter + 1)]
-            #         * 0,
-            #         0.7,
-            #         0.7,
-            #         z[int(len(z) / 20) * counter : int(len(z) / 20) * (counter + 1)],
-            #         shade=True,
-            #         color=colours[i],
-            #         alpha=0.5,
-            #     )
-            #     counter += 1
+            for_comparison[j[0]].append([normalized, j[1] + "_" + j[0]])
 
-            # ax.set_xticks(
-            #     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-            # )
-            # ax.set_xticklabels([key for key in colours], ha="right")
-            # ax.set_ylim(1.5, len(z) / 20 + 2)
-            # ax.yaxis.get_major_locator().set_params(integer=True)
-            # ax.elev = 35
-            # ax.azim = 40
+            if args.compare.lower() == "false":
+                x = normalized.index.factorize()[0]
+                y = np.array(normalized.columns.values.tolist())
+                z = np.array(normalized.values.tolist()[0])
+                for i in range(1, len(normalized)):
+                    z = np.append(z, np.array(normalized.values.tolist()[i]))
 
-            x_df = pd.Series(y)
-            y_df = pd.Series(x)
-            z_df = pd.Series(z)
+                x_df = pd.Series(y)
+                y_df = pd.Series(x)
+                z_df = pd.Series(z)
 
-            x_min = 0
-            y_min = 0
-            z_min = 0.8 * min(z_df)
-            step = 1
+                x_min = 0
+                y_min = 0
+                z_min = 0
+                step = 1
 
-            mesh_list = []
-            colors = list(colours.values())
-            color_value = 0
+                mesh_list = []
+                colors = list(colours.values())
+                color_value = 0
 
-            x_df_uniq = x_df.unique()
-            y_df_uniq = y_df.unique()
-            len_x_df_uniq = len(x_df_uniq)
+                x_df_uniq = x_df.unique()
+                y_df_uniq = y_df.unique()
+                len_x_df_uniq = len(x_df_uniq)
 
-            for idx, x_data in enumerate(x_df_uniq):
-                for idx2, y_data in enumerate(y_df_uniq):
-                    color_value = colors[idx2 % 22]
-                    x_max = x_min + step
-                    y_max = y_min + step
-                    z_max = z_df[idx + idx2 * len_x_df_uniq]
-                    mesh_list.append(
-                        generate_mesh(
-                            x_min,
-                            x_max,
-                            y_min,
-                            y_max,
-                            z_min,
-                            z_max,
-                            color_value,
+                for idx, x_data in enumerate(x_df_uniq):
+                    for idx2, y_data in enumerate(y_df_uniq):
+                        color_value = colors[idx2 % 22]
+                        x_max = x_min + step
+                        y_max = y_min + step
+                        z_max = z_df[idx + idx2 * len_x_df_uniq]
+                        mesh_list.append(
+                            generate_mesh(
+                                x_min,
+                                x_max,
+                                y_min,
+                                y_max,
+                                z_min,
+                                z_max,
+                                color_value,
+                            ),
+                        )
+                        x_min += 2 * step
+                    y_min += 2 * step
+                    x_min = 0
+
+                fig = go.Figure(mesh_list)
+                camera = dict(eye=dict(x=2.0, y=2.0, z=2.0))
+                sc = dict(
+                    aspectratio=dict(x=1, y=1, z=1),
+                    xaxis_title="Amino acids",
+                    yaxis_title="CDR3 Length",
+                    zaxis_title="Percentage of reads",
+                    xaxis=dict(
+                        tickmode="array",
+                        ticktext=[key for key in colours],
+                        tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
+                        tickfont=dict(size=7),
+                        titlefont=dict(size=8),
+                    ),
+                    yaxis=dict(
+                        tickmode="array",
+                        ticktext=[str(v) for v in range(1, y[-1] + 1)],
+                        tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
+                        tickfont=dict(size=7),
+                        titlefont=dict(size=8),
+                    ),
+                    zaxis=dict(
+                        tickfont=dict(size=8),
+                        titlefont=dict(size=8),
+                    ),
+                )
+
+                fig.update_layout(
+                    width=700,
+                    margin=dict(r=10, l=10, b=10, t=10),
+                    scene_camera=camera,
+                    scene=sc,
+                    template="plotly_white",
+                )
+                outputname = (
+                    args.rearrangements[:-4]
+                    + "_aminoacids3D_"
+                    + j[1]
+                    + "_"
+                    + j[0]
+                    + ".png"
+                )
+                fig.write_image(outputname, scale=6)
+                print("Tridimensional Amino acids plot saved as " + outputname)
+
+    if args.compare.lower() == "true":
+        for m in for_comparison:
+            if len(for_comparison[m]) < 2:
+                sys.stderr.write(
+                    "Less than 2 repertoires from the "
+                    + m
+                    + " chain were detected in the rearragements file\n"
+                )
+            if len(for_comparison[m]) > 2:
+                sys.stderr.write(
+                    "More than 2 repertoires from the "
+                    + m
+                    + " chain were detected in the rearragements file\n"
+                )
+            if len(for_comparison[m]) == 2:
+                comb = for_comparison[m]
+                comparison1 = comb[0][0] - comb[1][0]
+                comparison2 = comb[1][0] - comb[0][0]
+                comparisons = [[comparison1, comb[0][1]], [comparison2, comb[1][1]]]
+                for k in comparisons:
+                    normalized = k[0]
+                    x = normalized.index.factorize()[0]
+                    y = np.array(normalized.columns.values.tolist())
+                    z = np.array(normalized.values.tolist()[0])
+                    for i in range(1, len(normalized)):
+                        z = np.append(z, np.array(normalized.values.tolist()[i]))
+
+                    x_df = pd.Series(y)
+                    y_df = pd.Series(x)
+                    z_df = pd.Series(z)
+
+                    x_min = 0
+                    y_min = 0
+                    z_min = 0
+                    step = 1
+
+                    mesh_list = []
+                    colors = list(colours.values())
+                    color_value = 0
+
+                    x_df_uniq = x_df.unique()
+                    y_df_uniq = y_df.unique()
+                    len_x_df_uniq = len(x_df_uniq)
+
+                    for idx, x_data in enumerate(x_df_uniq):
+                        for idx2, y_data in enumerate(y_df_uniq):
+                            color_value = colors[idx2 % 22]
+                            x_max = x_min + step
+                            y_max = y_min + step
+                            z_max = z_df[idx + idx2 * len_x_df_uniq]
+                            mesh_list.append(
+                                generate_mesh(
+                                    x_min,
+                                    x_max,
+                                    y_min,
+                                    y_max,
+                                    z_min,
+                                    z_max,
+                                    color_value,
+                                ),
+                            )
+                            x_min += 2 * step
+                        y_min += 2 * step
+                        x_min = 0
+
+                    fig = go.Figure(mesh_list)
+                    camera = dict(eye=dict(x=2.0, y=2.0, z=0.5))
+                    sc = dict(
+                        aspectratio=dict(x=1, y=1, z=1),
+                        xaxis_title="Amino acids",
+                        yaxis_title="CDR3 Length",
+                        zaxis_title="Percentage of reads",
+                        xaxis=dict(
+                            tickmode="array",
+                            ticktext=[key for key in colours],
+                            tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
+                            tickfont=dict(size=7),
+                            titlefont=dict(size=8),
+                        ),
+                        yaxis=dict(
+                            tickmode="array",
+                            ticktext=[str(v) for v in range(1, y[-1] + 1)],
+                            tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
+                            tickfont=dict(size=7),
+                            titlefont=dict(size=8),
+                        ),
+                        zaxis=dict(
+                            tickfont=dict(size=8),
+                            titlefont=dict(size=8),
                         ),
                     )
-                    x_min += 2 * step
-                y_min += 2 * step
-                x_min = 0
 
-            fig = go.Figure(mesh_list)
-            camera = dict(eye=dict(x=2.0, y=2.0, z=2.0))
-            sc = dict(
-                aspectratio=dict(x=1, y=1, z=1),
-                xaxis_title="Amino acids",
-                yaxis_title="CDR3 Length",
-                zaxis_title="Percentage of reads",
-                xaxis=dict(
-                    tickmode="array",
-                    ticktext=[key for key in colours],
-                    tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
-                    tickfont=dict(size=7),
-                    titlefont=dict(size=8),
-                ),
-                yaxis=dict(
-                    tickmode="array",
-                    ticktext=[str(v) for v in range(1, y[-1] + 1)],
-                    tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
-                    tickfont=dict(size=7),
-                    titlefont=dict(size=8),
-                ),
-                zaxis=dict(
-                    tickfont=dict(size=8),
-                    titlefont=dict(size=8),
-                ),
-            )
-
-            fig.update_layout(
-                width=700,
-                margin=dict(r=10, l=10, b=10, t=10),
-                scene_camera=camera,
-                scene=sc,
-                template="plotly_white",
-            )
-            outputname = (
-                args.rearrangements[:-4] + "_aminoacids3D_" + j[1] + "_" + j[0] + ".png"
-            )
-            # plt.savefig(outputname, dpi=300, bbox_inches="tight")
-            fig.write_image(outputname, scale=6)
-            print("Tridimensional Amino acids plot saved as " + outputname)
+                    fig.update_layout(
+                        width=700,
+                        margin=dict(r=10, l=10, b=10, t=10),
+                        scene_camera=camera,
+                        scene=sc,
+                        template="plotly_white",
+                    )
+                    outputname = (
+                        args.rearrangements[:-4]
+                        + "_aminoacids3D_"
+                        + k[1]
+                        + "_comparison"
+                        + ".png"
+                    )
+                    fig.write_image(outputname, scale=6)
+                    print("Tridimensional Amino acids plot saved as " + outputname)

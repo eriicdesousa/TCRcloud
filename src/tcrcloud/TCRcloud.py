@@ -268,7 +268,7 @@ def main():
     # create subparser for making the V gene plot
     parser_vgenes = subparsers.add_parser(
         "vgenes",
-        help="Create a V gene plot \
+        help="Create a V gene surface plot \
         from AIRR CDR3 data",
     )
 
@@ -283,8 +283,8 @@ def main():
         "-e",
         "--export",
         type=str,
-        help="indicate if the metrics from the radar \
-                              should be exported to a text file, \
+        help="indicate if the metrics from the plot \
+                              should be exported to a csv file, \
                               default = False",
         metavar="True or False",
         default="False",
@@ -547,7 +547,7 @@ def main():
         "--compare",
         type=str,
         help="indicate if you want to compare  \
-                              barplot plots, default = False",
+                              surface plots, default = False",
         metavar="True or False",
         default="False",
         required=False,
@@ -584,6 +584,16 @@ def main():
         type=str,
         help="indicate if you want a tridimensional  \
                                    bar plot, default = False",
+        metavar="True or False",
+        default="False",
+        required=False,
+    )
+    parser_aminoacids.add_argument(
+        "-c",
+        "--compare",
+        type=str,
+        help="indicate if you want to compare  \
+                              3D barplot plots, default = False",
         metavar="True or False",
         default="False",
         required=False,
@@ -646,11 +656,11 @@ def main():
             "TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR repertoire file\n"
         )
-    # except (KeyError, TypeError):
-
-
-#         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-# properly formatted AIRR rearrangements file\n")
+    except (KeyError, TypeError):
+        sys.stderr.write(
+            "TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR rearrangements file\n"
+        )
 
 
 if __name__ == "__main__":

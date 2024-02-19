@@ -144,7 +144,9 @@ True or False\n"
         df_sorted = df_reformat.sort_values(by=["v_call"], key=natsort_keygen())
 
         if args.export.lower() == "true":
-            df_filename = args.rearrangements[:-4] + "_vgenes_table.csv"
+            df_filename = (
+                args.rearrangements[:-4] + "_vgenes_table" + j[1] + "_" + j[0] + ".csv"
+            )
             df_sorted.to_csv(df_filename, index=False)
 
         x = df_sorted["v_call"].factorize()[0]
@@ -154,6 +156,7 @@ True or False\n"
         for i in range(2, len(df_sorted.columns)):
             z = np.append(z, np.array(df_transpose.values.tolist()[i]))
         z = np.array_split(z, len(df_sorted.columns) - 1)
+
         datasets.append(
             [
                 x,
@@ -190,77 +193,105 @@ True or False\n"
 
     if args.compare.lower() == "false":
         return datasets
-    # elif args.compare.lower() == "true":
-    #     comparisons = []
-    #     for m in for_comparison:
-    #         for comb in itertools.combinations(for_comparison[m], 2):
-    #             num1 = comb[0][0].copy()
-    #             num1 = num1._get_numeric_data()
-    #             num2 = comb[1][0].copy()
-    #             num2 = num2._get_numeric_data()
-    #             comparison1 = num1 - num2
-    #             comparison1 = comparison1.fillna(0)
-    #             comparison2 = num2 - num1
-    #             comparison2 = comparison2.fillna(0)
+    elif args.compare.lower() == "true":
+        comparisons = []
+        for m in for_comparison:
+            if len(for_comparison[m]) < 2:
+                sys.stderr.write(
+                    "Less than 2 repertoires from the "
+                    + m
+                    + " chain were detected in the rearragements file\n"
+                )
+            if len(for_comparison[m]) > 2:
+                sys.stderr.write(
+                    "More than 2 repertoires from the "
+                    + m
+                    + " chain were detected in the rearragements file\n"
+                )
+            if len(for_comparison[m]) == 2:
+                comb = for_comparison[m]
+                num1 = comb[0][0].copy()
+                num1 = num1.drop("v_call", axis=1)
+                num2 = comb[1][0].copy()
+                num2 = num2.drop("v_call", axis=1)
+                comparison1 = num1 - num2
+                comparison1 = comparison1.fillna(0)
+                comparison2 = num2 - num1
+                comparison2 = comparison2.fillna(0)
+                comparison1.insert(0, "v_call", comb[0][0]["v_call"])
+                comparison2.insert(0, "v_call", comb[0][0]["v_call"])
 
-    #             x = comb[0][0]["v_call"].factorize()[0]
-    #             for i in range(len(comparison1.columns) - 1):
-    #                 x = np.append(x, comb[0][0]["v_call"].factorize()[0])
-    #             y = np.array(comparison1.columns.values.tolist())
-    #             for i in range(len(comparison1) - 1):
-    #                 y = np.append(y, np.array(
-    #                     comparison1.columns.values.tolist()))
-    #             y = np.sort(y)
-    #             df_transpose = comparison1.transpose()
-    #             z = np.array(df_transpose.values.tolist()[0])
-    #             for i in range(1, len(comparison1.columns)):
-    #                 z = np.append(z, np.array(df_transpose.values.tolist()[i]))
+                if comb[0][3] is not None:
+                    ymin = min(comb[0][3], comb[1][3])
+                else:
+                    ymin = None
+                if comb[0][4] is not None:
+                    ymax = max(comb[0][4], comb[1][4])
+                else:
+                    ymax = None
+                if comb[0][5] is not None:
+                    zmin = max(comb[0][5], comb[1][5])
+                else:
+                    zmin = None
+                if comb[0][6] is not None:
+                    zmax = max(comb[0][6], comb[1][6])
+                else:
+                    zmax = None
 
-    #             if comb[0][3] is not None:
-    #                 ymin = min(comb[0][3], comb[1][3])
-    #             else:
-    #                 ymin = None
-    #             if comb[0][4] is not None:
-    #                 ymax = max(comb[0][4], comb[1][4])
-    #             else:
-    #                 ymax = None
-    #             if comb[0][5] is not None:
-    #                 zmin = max(comb[0][5], comb[1][5])
-    #             else:
-    #                 zmin = z.min() - 0.1
-    #             if comb[0][6] is not None:
-    #                 zmax = max(comb[0][6], comb[1][6])
-    #             else:
-    #                 zmax = None
-    #             comparisons.append([x, y, z, comb[0][1], comb[0][2], ymin,
-    #                                 ymax, zmin, zmax, comb[0][7], comb[0][8],
-    #                                 comb[0][9], comb[0][10], True])
-    #             x = comb[0][0]["v_call"].factorize()[0]
-    #             for i in range(len(comparison2.columns) - 1):
-    #                 x = np.append(x, comb[0][0]["v_call"].factorize()[0])
-    #             y = np.array(comparison2.columns.values.tolist())
-    #             for i in range(len(comparison2) - 1):
-    #                 y = np.append(y, np.array(
-    #                     comparison2.columns.values.tolist()))
-    #             y = np.sort(y)
-    #             df_transpose = comparison2.transpose()
-    #             z = np.array(df_transpose.values.tolist()[0])
-    #             for i in range(1, len(comparison2.columns)):
-    #                 z = np.append(z, np.array(df_transpose.values.tolist()[i]))
-    #             comparisons.append([x, y, z, comb[1][1], comb[1][2], ymin,
-    #                                 ymax, zmin, zmax, comb[1][7], comb[1][8],
-    #                                 comb[1][9], comb[1][10], True])
-    # return comparisons
+                x = comparison1["v_call"].factorize()[0]
+                y = np.array(comparison1.columns.values.tolist()[1:])
+                df_transpose = comparison1.transpose()
+                z = np.array(df_transpose.values.tolist()[1])
+                for i in range(2, len(comparison1.columns)):
+                    z = np.append(z, np.array(df_transpose.values.tolist()[i]))
+                z = np.array_split(z, len(comparison1.columns) - 1)
 
+                comparisons.append(
+                    [
+                        x,
+                        y,
+                        z,
+                        comb[0][1],
+                        comb[0][2],
+                        ymin,
+                        ymax,
+                        zmin,
+                        zmax,
+                        comb[0][7],
+                        comb[0][8],
+                        comb[0][9],
+                        comb[0][10],
+                        True,
+                    ]
+                )
 
-# def surface(args):
-#     samples_df = tcrcloud.format.format_data(args)
+                x = comparison2["v_call"].factorize()[0]
+                y = np.array(comparison2.columns.values.tolist()[1:])
+                df_transpose = comparison2.transpose()
+                z = np.array(df_transpose.values.tolist()[1])
+                for i in range(2, len(comparison2.columns)):
+                    z = np.append(z, np.array(df_transpose.values.tolist()[i]))
+                z = np.array_split(z, len(comparison2.columns) - 1)
 
-#     formatted_samples = tcrcloud.format.format_vgene(samples_df)
-
-#     samples = formatted_samples.groupby(["chain", "repertoire_id"])
-#     keys = [key for key, _ in samples]
-#     datasets = get_table(keys, samples, args)
+                comparisons.append(
+                    [
+                        x,
+                        y,
+                        z,
+                        comb[1][1],
+                        comb[1][2],
+                        ymin,
+                        ymax,
+                        zmin,
+                        zmax,
+                        comb[1][7],
+                        comb[1][8],
+                        comb[1][9],
+                        comb[1][10],
+                        True,
+                    ]
+                )
+    return comparisons
 
 
 def barplot(args):
@@ -271,121 +302,140 @@ def barplot(args):
     samples = formatted_samples.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
     datasets = get_table(keys, samples, args)
-    # figure_colours = ["#847AB7",
-    #                   "#8FCCC1",
-    #                   "#B77A99",
-    #                   "#E0A3AD",
-    #                   "#70AD84",
-    #                   "#C1C184",
-    #                   "#B7E0F4",
-    #                   "#EAE0AD"]
-    # alternate = []
+
     for i in datasets:
         fig = plt.figure(figsize=(10, 14))
         dataset = i[1:]
         dataset = [*dataset, dataset[0]]
 
-        # if i[13] is False:
-        #     try:
-        #         thecolour = figure_colours.pop(0)
-        #     except IndexError:
-        #         thecolour = "#BBBBBB"
-        #     ax = fig.add_subplot(projection="3d")
-        #     x = i[0]
-        #     y = i[1]
-        #     z = i[2]
-        #     plot_aspect = i[3]
-        #     x_size = i[4]
-        #     ymin = i[5]
-        #     ymax = i[6]
-        #     zmin = i[7]
-        #     zmax = i[8]
-        #     x_axis_ticks = i[9]
-        #     x_axis_names = i[10]
-        #     ax.set_box_aspect(aspect=plot_aspect)
-        #     ax.bar3d(x, y, z * 0, 0.7, 0.7, z, shade=True, color=thecolour)
-        #     ax.set_ylim(ymin, ymax)
-        #     ax.set_zlim(zmin, zmax)
-        #     ax.set_xticks(x_axis_ticks)
-        #     ax.set_xticklabels(x_axis_names,
-        #                        rotation=45,
-        #                        ha="right",
-        #                        fontsize=x_size)
-        #     ax.yaxis.get_major_locator().set_params(integer=True)
-        #     ax.zaxis.get_major_locator().set_params(prune="lower")
+        if i[13] is False:
+            fig = go.Figure(
+                go.Surface(
+                    x=i[0], y=i[1], z=i[2], colorscale="Turbo", cmin=i[7], cmax=i[8]
+                )
+            )
+            camera = dict(eye=dict(x=2.5, y=-3.5, z=2.5))
 
-        #     if i[13] is True:
-        #         try:
-        #             thecolour = figure_colours.pop(0)
-        #             alternate.append(thecolour)
-        #         except IndexError:
-        #             thecolour = "#BBBBBB"
-        #         ax = fig.add_subplot(projection="3d")
-        #         x = i[0]
-        #         y = i[1]
-        #         z = i[2]
-        #         plot_aspect = (i[3][0], 2, i[3][2])
-        #         x_size = i[4]
-        #         ymin = i[5]
-        #         ymax = i[6]
-        #         zmin = i[7]
-        #         zmax = i[8]
-        #         x_axis_ticks = i[9]
-        #         x_axis_names = i[10]
-        #         ax.set_box_aspect(aspect=plot_aspect)
-        #         z1 = z.copy()
-        #         z1[z1 > 0] = 0
-        #         if len(alternate) == 1:
-        #             ax.bar3d(x, y, z1 * 0, 1, 1, z1, shade=True,
-        #                      color=figure_colours[0])
-        #         else:
-        #             ax.bar3d(x, y, z1 * 0, 1, 1, z1, shade=True,
-        #                      color=alternate[-2])
-        #         z[z < 0] = 0
-        #         ax.bar3d(x, y, z * 0, 1, 1, z, shade=True, color=thecolour)
-        #         ax.set_ylim(ymin, ymax)
-        #         ax.set_zlim(zmin, zmax)
-        #         ax.set_xticks(x_axis_ticks)
-        #         ax.set_xticklabels(x_axis_names,
-        #                            rotation=60,
-        #                            ha="right",
-        #                            fontsize=x_size)
-        #         ax.yaxis.get_major_locator().set_params(integer=True)
-        #         ax.zaxis.get_major_locator().set_params(prune="lower")
-        #         ax.elev = 5
+            sc = dict(
+                aspectratio=dict(x=i[3][0], y=i[3][1], z=i[3][2]),
+                xaxis_title=i[10][0][:4],
+                yaxis_title="CDR3 Length",
+                zaxis_title="Percentage of reads",
+                xaxis=dict(
+                    tickmode="array",
+                    ticktext=i[10],
+                    tickvals=i[9],
+                    tickfont=dict(size=i[4]),
+                    titlefont=dict(size=10),
+                ),
+                yaxis=dict(
+                    tickfont=dict(size=8), titlefont=dict(size=10), range=[i[5], i[6]]
+                ),
+                zaxis=dict(
+                    tickfont=dict(size=8), titlefont=dict(size=10), range=[i[7], i[8]]
+                ),
+            )
 
-        fig = go.Figure(go.Surface(x=i[0], y=i[1], z=i[2], colorscale="Viridis"))
-        camera = dict(eye=dict(x=2.5, y=-3.5, z=2.5))
-        sc = dict(
-            aspectratio=dict(x=i[3][0], y=i[3][1], z=i[3][2]),
-            xaxis_title=i[10][0][:4],
-            yaxis_title="CDR3 Length",
-            zaxis_title="Percentage of reads",
-            xaxis=dict(
-                tickmode="array",
-                ticktext=i[10],
-                tickvals=i[9],
-                tickfont=dict(size=i[4]),
-                titlefont=dict(size=10),
-            ),
-            yaxis=dict(
-                tickfont=dict(size=8), titlefont=dict(size=10), range=[i[5], i[6]]
-            ),
-            zaxis=dict(
-                tickfont=dict(size=8), titlefont=dict(size=10), range=[i[7], i[8]]
-            ),
-        )
+            fig.update_layout(
+                width=700,
+                margin=dict(r=10, l=10, b=10, t=10),
+                scene_camera=camera,
+                scene=sc,
+                template="plotly_white",
+            )
+            outputname = (
+                args.rearrangements[:-4] + "_vgenes_" + i[12] + "_" + i[11] + ".png"
+            )
+            fig.write_image(outputname, scale=6)
+            print("V genes plot saved as " + outputname)
 
-        fig.update_layout(
-            width=700,
-            margin=dict(r=10, l=10, b=10, t=10),
-            scene_camera=camera,
-            scene=sc,
-            template="plotly_white",
-        )
-        outputname = (
-            args.rearrangements[:-4] + "_vgenes_" + i[12] + "_" + i[11] + ".png"
-        )
-        # plt.savefig(outputname, dpi=300, bbox_inches="tight")
-        fig.write_image(outputname, scale=6)
-        print("V genes plot saved as " + outputname)
+        if i[13] is True:
+            i = datasets[0]
+            fig = go.Figure(
+                go.Surface(
+                    x=i[0], y=i[1], z=i[2], colorscale="Portland", cmin=i[7], cmax=i[8]
+                )
+            )
+            camera = dict(eye=dict(x=2.5, y=-5, z=0.5))
+
+            sc = dict(
+                aspectratio=dict(x=i[3][0], y=i[3][1], z=i[3][2]),
+                xaxis_title=i[10][0][:4],
+                yaxis_title="CDR3 Length",
+                zaxis_title="Percentage of reads",
+                xaxis=dict(
+                    tickmode="array",
+                    ticktext=i[10],
+                    tickvals=i[9],
+                    tickfont=dict(size=i[4]),
+                    tickangle=-45,
+                    titlefont=dict(size=10),
+                ),
+                yaxis=dict(
+                    tickfont=dict(size=6), titlefont=dict(size=10), range=[i[5], i[6]]
+                ),
+                zaxis=dict(
+                    tickfont=dict(size=8), titlefont=dict(size=10), range=[i[7], i[8]]
+                ),
+            )
+
+            fig.update_layout(
+                width=700,
+                margin=dict(r=10, l=10, b=10, t=10),
+                scene_camera=camera,
+                scene=sc,
+                template="plotly_white",
+            )
+            outputname = (
+                args.rearrangements[:-4] + "_vgenes_" + i[12] + "_" + i[11] + ".png"
+            )
+            fig.write_image(outputname, scale=6)
+            print("V genes plot saved as " + outputname)
+
+            i = datasets[1]
+            fig = go.Figure(
+                go.Surface(
+                    x=i[0],
+                    y=i[1],
+                    z=i[2],
+                    colorscale="Portland_r",
+                    cmin=i[7],
+                    cmax=i[8],
+                )
+            )
+            camera = dict(eye=dict(x=2.5, y=-5, z=0.5))
+
+            sc = dict(
+                aspectratio=dict(x=i[3][0], y=i[3][1], z=i[3][2]),
+                xaxis_title=i[10][0][:4],
+                yaxis_title="CDR3 Length",
+                zaxis_title="Percentage of reads",
+                xaxis=dict(
+                    tickmode="array",
+                    ticktext=i[10],
+                    tickvals=i[9],
+                    tickfont=dict(size=i[4]),
+                    tickangle=-45,
+                    titlefont=dict(size=10),
+                ),
+                yaxis=dict(
+                    tickfont=dict(size=6), titlefont=dict(size=10), range=[i[5], i[6]]
+                ),
+                zaxis=dict(
+                    tickfont=dict(size=8), titlefont=dict(size=10), range=[i[7], i[8]]
+                ),
+            )
+
+            fig.update_layout(
+                width=700,
+                margin=dict(r=10, l=10, b=10, t=10),
+                scene_camera=camera,
+                scene=sc,
+                template="plotly_white",
+            )
+            outputname = (
+                args.rearrangements[:-4] + "_vgenes_" + i[12] + "_" + i[11] + ".png"
+            )
+            fig.write_image(outputname, scale=6)
+            print("V genes plot saved as " + outputname)
+            break
