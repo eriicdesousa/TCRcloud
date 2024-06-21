@@ -2,9 +2,17 @@ pip3 install TCRcloud
 TCRcloud testdata
 TCRcloud download alpharepertoire.airr.json
 TCRcloud download betarepertoire.airr.json
-TCRcloud cloud alpharepertoire.airr.rearrangements.tsv -l false
-TCRcloud cloud betarepertoire.airr.rearrangements.tsv -l false
-TCRcloud radar alpharepertoire.airr.rearrangements.tsv -l false -ut 2000 -cht 2000 -ct 0.1
-TCRcloud radar betarepertoire.airr.rearrangements.tsv -l false -ut 2000 -cht 2000 -ct 0.1
-TCRcloud surface alpharepertoire.airr.rearrangements.tsv -zt 3.5 -yt 25 -yb 5 
-TCRcloud surface betarepertoire.airr.rearrangements.tsv -zt 3.5 -yt 28 -yb 8 
+TCRcloud cloud alpharepertoire.airr.rearrangements.tsv
+TCRcloud cloud betarepertoire.airr.rearrangements.tsv
+TCRcloud radar alpharepertoire.airr.rearrangements.tsv -l false -uh 2000 -chh 2000 -ch 0.1
+TCRcloud radar betarepertoire.airr.rearrangements.tsv -l false -uh 2000 -chh 2000 -ch 0.1
+TCRcloud vgenes alpharepertoire.airr.rearrangements.tsv -zla -0.01 -zha 3.5 -yha 23 -yla 5 
+TCRcloud vgenes betarepertoire.airr.rearrangements.tsv -zlb -0.01 -zhb 3.5 -yhb 28
+TCRcloud vgenes alpharepertoire.airr.rearrangements.tsv -c True
+TCRcloud vgenes betarepertoire.airr.rearrangements.tsv -c True
+TCRcloud aminoacids alpharepertoire.airr.rearrangements.tsv -l 21
+TCRcloud aminoacids betarepertoire.airr.rearrangements.tsv -l 26
+TCRcloud aminoacids alpharepertoire.airr.rearrangements.tsv -l 21 -t True
+TCRcloud aminoacids betarepertoire.airr.rearrangements.tsv -l 26 -t True
+TCRcloud aminoacids alpharepertoire.airr.rearrangements.tsv -l 21 -t True -c True
+TCRcloud aminoacids betarepertoire.airr.rearrangements.tsv -l 26 -t True -c True
