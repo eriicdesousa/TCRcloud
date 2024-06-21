@@ -85,6 +85,26 @@ By default TCRcloud uses repertoire_id but you can create a legend with the text
 
 **Chao1 index:** Originally developed by Dr Anne Chao to estimate richness in a ecological community
 
+**To create an amino V-genes plot**
+
+    TCRcloud vgenes repertoire.airr.rearrangements.tsv
+
+**To export the processed data from the V-genes plot to a text file**
+
+    TCRcloud vgenes repertoire.airr.rearrangements.tsv -e True
+
+**To create a 2-D amino acid plot**
+
+    TCRcloud aminoacids repertoire.airr.rearrangements.tsv
+
+**To create a 3-D amino acid plot**
+
+    TCRcloud aminoacids repertoire.airr.rearrangements.tsv -t True
+
+**To export the processed data from the amino acid plot to a text file**
+
+    TCRcloud aminoacids repertoire.airr.rearrangements.tsv -e True
+
 Using TCRcloud you can download rearragements files from the AIRR compliant databases based on AIRR repertoire metadata files
 
 **To download AIRR rearrangements files**
@@ -109,3 +129,12 @@ After having the alpharepertoire.airr.json  and betarepertoire.airr.json file yo
 
 **Diversity comparison**
 ![radar](https://github.com/eriicdesousa/TCRcloud/raw/main/images/radar.png)
+
+**V-genes plot**
+![vgene](https://github.com/eriicdesousa/TCRcloud/raw/main/images/vgene.png)
+
+**2-D Amino acid plot**
+![2amino](https://github.com/eriicdesousa/TCRcloud/raw/main/images/2amino.png)
+
+**3-D Amino acid plot**
+![3amino](https://github.com/eriicdesousa/TCRcloud/raw/main/images/3amino.png)
