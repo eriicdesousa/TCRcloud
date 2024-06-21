@@ -1,9 +1,11 @@
-airr
+airr>=1.5.0
 numpy>=1.9.2
 scipy>=1.3.0
-matplotlib
+matplotlib>=3.7.0
+plotly>=5.18.0
 wordcloud
 pandas
 scikit-learn
 scikit-bio
 requests
+kaleido
