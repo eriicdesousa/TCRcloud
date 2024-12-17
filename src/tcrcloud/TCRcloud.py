@@ -21,7 +21,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create visualizations from AIRR-seq data", prog="TCRcloud"
     )
-    parser.add_argument("-v", "--version", action="version", version="%(prog)s 1.5.0")
+    parser.add_argument("-v", "--version", action="version", version="%(prog)s 1.5.1")
     subparsers = parser.add_subparsers(
         title="command options",
         help="The program has 6 options: cloud, radar, vgenes, aminoacids, \

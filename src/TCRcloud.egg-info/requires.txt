@@ -8,4 +8,4 @@ pandas
 scikit-learn
 scikit-bio
 requests
-kaleido
+kaleido==0.2.1

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: TCRcloud
-Version: 1.5.0
+Version: 1.5.1
 Summary: TCRcloud is an AIRR visualization and comparison tool
 Home-page: https://github.com/eriicdesousa/TCRcloud
 Author: Eric de Sousa
@@ -26,7 +26,7 @@ Requires-Dist: pandas
 Requires-Dist: scikit-learn
 Requires-Dist: scikit-bio
 Requires-Dist: requests
-Requires-Dist: kaleido
+Requires-Dist: kaleido==0.2.1
 
 ![TCRcloud](https://github.com/eriicdesousa/TCRcloud/raw/main/images/TCRcloud.png)
 
