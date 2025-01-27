@@ -83,7 +83,7 @@ True or False\n"
             plot_aspect = (3.5, 1, 1)
             x_size = 2
             ymax = args.yhighkappa
-            ymin = args.ylowhkappa
+            ymin = args.ylowkappa
             zmax = args.zhighkappa
             zmin = args.zlowkappa
         if j[0] == "L":
@@ -91,7 +91,7 @@ True or False\n"
             plot_aspect = (3.5, 1, 1)
             x_size = 4
             ymax = args.yhighlambda
-            ymin = args.ylowhlambda
+            ymin = args.ylowlambda
             zmax = args.zhighlambda
             zmin = args.zlowlambda
 
