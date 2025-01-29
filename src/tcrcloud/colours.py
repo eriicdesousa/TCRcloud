@@ -435,24 +435,47 @@ IGLV = {
 }
 
 aminoacids = {
-    "F": "#fabed4",
-    "Y": "#f4a460",
-    "W": "#808000",
-    "G": "#cc80ff",
-    "A": "#3cb44b",
-    "V": "#a9a9a9",
-    "L": "#469990",
-    "M": "#9a6324",
-    "I": "#911eb4",
-    "S": "#800000",
-    "T": "#006666",
-    "C": "#e6194B",
-    "P": "#cc8900",
-    "N": "#4363d8",
-    "Q": "#ffe119",
-    "K": "#8a2be2",
-    "R": "#000075",
-    "H": "#3cb371",
-    "D": "#f58231",
-    "E": "#42d4f4",
+    "A": "#D55E00",  # Deep Orange
+    "V": "#E69F00",  # Amber
+    "I": "#F0B642",  # Goldenrod
+    "L": "#F4C842",  # Mustard Yellow
+    "M": "#E7A825",  # Yellow-Orange
+    "F": "#CC7722",  # Burnt Orange
+    "W": "#8B572A",  # Dark Brown-Orange
+    "S": "#0077BB",  # Deep Teal
+    "T": "#56B4E9",  # Sky Blue
+    "N": "#89D0F0",  # Light Cyan
+    "Q": "#33BBC0",  # Aqua Blue
+    "Y": "#77AADD",  # Soft Blue
+    "R": "#AA3377",  # Deep Magenta
+    "K": "#BB4488",  # Plum
+    "H": "#CC79A7",  # Soft Purple
+    "D": "#882255",  # Dark Red
+    "E": "#CC3311",  # Bright Red
+    "C": "#DDAA33",  # Gold
+    "G": "#999933",  # Olive Green
+    "P": "#AA8800",  # Dark Mustard
 }
+
+#swiched for a_a_Biochem_Colorblind_friendly = {
+#    "F": "#fabed4",
+#    "Y": "#f4a460",
+#    "W": "#808000",
+#    "G": "#cc80ff",
+#    "A": "#3cb44b",
+#    "V": "#a9a9a9",
+#    "L": "#469990",
+#    "M": "#9a6324",
+#    "I": "#911eb4",
+#    "S": "#800000",
+#    "T": "#006666",
+#    "C": "#e6194B",
+#    "P": "#cc8900",
+#    "N": "#4363d8",
+#    "Q": "#ffe119",
+#    "K": "#8a2be2",
+#    "R": "#000075",
+#    "H": "#3cb371",
+#    "D": "#f58231",
+#    "E": "#42d4f4",
+#}
