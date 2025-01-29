@@ -126,27 +126,13 @@ def aminoacids(args):
                     np.zeros((20, 1)),
                     columns=["just_empty"],
                     index=[
-                        "F",
-                        "Y",
-                        "W",
-                        "G",
-                        "A",
-                        "V",
-                        "L",
-                        "M",
-                        "I",
-                        "S",
-                        "T",
-                        "C",
-                        "P",
-                        "N",
-                        "Q",
-                        "K",
-                        "R",
-                        "H",
-                        "D",
-                        "E",
-                    ],
+            	            "A", "V", "I", "L", "M", # Aliphatic
+	                        "F", "W", "Y", # Aromatic
+	                        "S", "T", "N", "Q", # Polar Uncharged
+	                        "D", "E", # Negatively Charged
+	                        "C", "G", "P", # Special Cases
+	                        "R", "K", "H", # Positively Charged
+	                      ],
                 )
                 result = pd.concat([normalized, all_aa], axis=1)
                 normalized = result.drop("just_empty", axis=1)
