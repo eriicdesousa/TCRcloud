@@ -161,7 +161,7 @@ def format_vgene(df):
         del df
         aggregate.rename(columns={0: "counts"}, inplace=True)
         aggregate = aggregate.sort_values(by="counts", ascending=False)
-    aggregate["CDR3_length"] = aggregate["junction_aa"].str.len()
+    aggregate["CDR3_length"] = aggregate["junction_aa"].str[1:-1].str.len() # Removing the flanking a.a. from length for true CDR3 count
     return aggregate
 
 
