@@ -1,13 +1,15 @@
 import sys
+import os
+import argparse
 import pandas as pd
 import numpy as np
-
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from natsort import natsort_keygen
 
 import tcrcloud.format
 import tcrcloud.colours
+import tcrcloud.vlength
 
 # Import default dicts that contain V gene information
 TRAV = tcrcloud.colours.TRAV
@@ -143,7 +145,7 @@ True or False\n"
         )
         df_sorted = df_reformat.sort_values(by=["v_call"], key=natsort_keygen())
 
-        if args.export.lower() == "true":
+        if args.export.lower() in ["true"]:
             df_filename = (
                 args.rearrangements[:-4] + "_vgenes_table" + j[1] + "_" + j[0] + ".csv"
             )
@@ -293,7 +295,6 @@ True or False\n"
                 )
     return comparisons
 
-
 def barplot(args):
     samples_df = tcrcloud.format.format_data(args)
 
@@ -439,3 +440,11 @@ def barplot(args):
             fig.write_image(outputname, scale=6)
             print("V genes plot saved as " + outputname)
             break
+
+    if args.export.lower() in ["true"]:
+        output_folder = os.getcwd()
+        try:
+            tcrcloud.vlength.process_csv_files(output_folder)
+            print("vlength analysis completed and saved in the 'analysis' subfolder.")
+        except Exception as e:
+            print(f"An error occurred in vlength processing: {e}")
