@@ -32,12 +32,11 @@ def aminoacids(args):
 		np.zeros((20, 1)),
 		columns=["just_empty"],
 		index=[
-				"H", "K", "R",				# Positively Charged
-				"P", "G", "C",				# Special Cases
-				"E", "D",					# Negatively Charged
-				"Q", "N", "T", "S",			# Polar Uncharged
-				"Y", "W", "F",				# Aromatic
-				"M", "L", "I", "V", "A",	# Aliphatic
+				"H", "K", "R",						# Polar Positively Charged (Basic)
+				"D", "E",							# Polar Negatively Charged (Acidic)
+				"C", "N", "Q", "S", "T",			# Polar Uncharged
+				"Y", "W", "F",						# Aromatic Hydrophobic
+				"G", "P", "A", "M", "V", "I", "L",	# Aliphatic Hydrophobic
 				],
 	)
 
@@ -114,12 +113,11 @@ def aminoacids(args):
 					np.zeros((20, 1)),
 					columns=["just_empty"],
 					index=[
-							"A", "V", "I", "L", "M", # Aliphatic
-							"F", "W", "Y", # Aromatic
-							"S", "T", "N", "Q", # Polar Uncharged
-							"D", "E", # Negatively Charged
-							"C", "G", "P", # Special Cases
-							"R", "K", "H", # Positively Charged
+							"L", "I", "V", "M", "A", "P", "G",	# Aliphatic Hydrophobic
+							"F", "W", "Y", 						# Aromatic Hydrophobic
+							"T", "S", "Q", "N", "C", 			# Polar Uncharged
+							"E", "D", 							# Polar Negatively Charged (Acidic)
+							"R", "K", "H",						# Polar Positively Charged (Basic)
 						  ],
 				)
 				result = pd.concat([normalized, all_aa], axis=1)
@@ -168,12 +166,11 @@ def aminoacids(args):
 					np.zeros((20, 1)),
 					columns=["just_empty"],
 					index=[
-							"A", "V", "I", "L", "M", # Aliphatic
-							"F", "W", "Y", # Aromatic
-							"S", "T", "N", "Q", # Polar Uncharged
-							"D", "E", # Negatively Charged
-							"C", "G", "P", # Special Cases
-							"R", "K", "H", # Positively Charged
+							"L", "I", "V", "M", "A", "P", "G",	# Aliphatic Hydrophobic
+							"F", "W", "Y", 						# Aromatic Hydrophobic
+							"T", "S", "Q", "N", "C", 			# Polar Uncharged
+							"E", "D", 							# Polar Negatively Charged (Acidic)
+							"R", "K", "H",						# Polar Positively Charged (Basic)
 						  ],
 				)
 				result = pd.concat([normalized, all_aa], axis=1)
@@ -228,7 +225,7 @@ def aminoacids(args):
 					x_min = 0
 
 				desired_order = [
-						"H", "K", "R", "P", "G", "C", "E", "D", "Q", "N", "T", "S", "Y", "W", "F", "M", "L", "I", "V", "A"]
+						"H", "K", "R", "D", "E", "C", "N", "Q", "S", "T", "Y", "W", "F", "G", "P", "A", "M", "V", "I", "L"]
 				fig = go.Figure(mesh_list)
 				camera = dict(eye=dict(x=2.0, y=2.0, z=2.0))
 				sc = dict(
