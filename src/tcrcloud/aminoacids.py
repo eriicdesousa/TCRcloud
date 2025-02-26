@@ -1,10 +1,10 @@
 import sys
 import pandas as pd
 import numpy as np
-
+import copy
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-
+import plotly.io as pio
 import tcrcloud.format
 import tcrcloud.colours
 
@@ -252,6 +252,31 @@ def aminoacids(args):
 						titlefont=dict(size=8),
 					),
 				)
+				
+				sc_html = dict(
+					aspectratio=dict(x=1, y=1, z=1),
+					xaxis_title="Amino acids",
+					yaxis_title="CDR3 Length",
+					zaxis_title="Percentage of reads",
+					xaxis=dict(
+						tickmode="array",
+						ticktext=desired_order,
+						tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
+						tickfont=dict(size=13),     # bigger
+						titlefont=dict(size=18),    # bigger
+					),
+					yaxis=dict(
+						tickmode="array",
+						ticktext=[str(v) for v in range(1, y[-1] + 1)],
+						tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
+						tickfont=dict(size=14),     # bigger
+						titlefont=dict(size=18),    # bigger
+					),
+					zaxis=dict(
+						tickfont=dict(size=14),     # bigger
+						titlefont=dict(size=18),    # bigger
+					),
+				)
 
 				fig.update_layout(
 					width=700,
@@ -269,7 +294,19 @@ def aminoacids(args):
 					+ ".png"
 				)
 				fig.write_image(outputname, scale=6)
+				fig_html = copy.deepcopy(fig)
+				fig_html.update_layout(
+					width=1920,
+					height=1080,
+					scene=sc_html,  # apply the bigger fonts
+    				template="plotly_white"
+				)
+
+				# Export interactive HTML version
+				html_outputname = outputname.replace(".png", ".html")
+				fig_html.write_html(html_outputname)
 				print("Tridimensional Amino acids plot saved as " + outputname)
+				print("Interactive HTML plot saved as", html_outputname)
 
 	if args.compare.lower() == "true":
 		for m in for_comparison:
@@ -363,6 +400,31 @@ def aminoacids(args):
 						),
 					)
 
+					sc_html = dict(
+						aspectratio=dict(x=1, y=1, z=1),
+						xaxis_title="Amino acids",
+						yaxis_title="CDR3 Length",
+						zaxis_title="Percentage of reads",
+						xaxis=dict(
+							tickmode="array",
+							ticktext=desired_order,
+							tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
+							tickfont=dict(size=13),     # bigger
+							titlefont=dict(size=18),    # bigger
+						),
+						yaxis=dict(
+							tickmode="array",
+							ticktext=[str(v) for v in range(1, y[-1] + 1)],
+							tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
+							tickfont=dict(size=14),     # bigger
+							titlefont=dict(size=18),    # bigger
+						),
+						zaxis=dict(
+							tickfont=dict(size=14),     # bigger
+							titlefont=dict(size=18),    # bigger
+						),
+					)
+
 					fig.update_layout(
 						width=700,
 						margin=dict(r=10, l=10, b=10, t=10),
@@ -378,7 +440,19 @@ def aminoacids(args):
 						+ ".png"
 					)
 					fig.write_image(outputname, scale=6)
+					fig_html = copy.deepcopy(fig)
+					fig_html.update_layout(
+						width=1920,
+						height=1080,
+						scene=sc_html,  # apply the bigger fonts
+    					template="plotly_white"
+					)
+
+					# Export interactive HTML version
+					html_outputname = outputname.replace(".png", ".html")
+					fig_html.write_html(html_outputname)
 					print("Tridimensional Amino acids plot saved as " + outputname)
+					print("Interactive HTML plot saved as", html_outputname)
 
 				x_min = 0
 				y_min = 0
@@ -441,6 +515,31 @@ def aminoacids(args):
 					),
 				)
 
+				sc_html = dict(
+					aspectratio=dict(x=1, y=1, z=1),
+					xaxis_title="Amino acids",
+					yaxis_title="CDR3 Length",
+					zaxis_title="Percentage of reads",
+					xaxis=dict(
+						tickmode="array",
+						ticktext=desired_order,
+						tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
+						tickfont=dict(size=13),     # bigger
+						titlefont=dict(size=18),    # bigger
+					),
+					yaxis=dict(
+						tickmode="array",
+						ticktext=[str(v) for v in range(1, y[-1] + 1)],
+						tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
+						tickfont=dict(size=14),     # bigger
+						titlefont=dict(size=18),    # bigger
+					),
+					zaxis=dict(
+						tickfont=dict(size=14),     # bigger
+						titlefont=dict(size=18),    # bigger
+					),
+				)
+
 				fig.update_layout(
 					width=700,
 					margin=dict(r=10, l=10, b=10, t=10),
@@ -457,7 +556,19 @@ def aminoacids(args):
 					+ ".png"
 				)
 				fig.write_image(outputname, scale=6)
+				fig_html = copy.deepcopy(fig)
+				fig_html.update_layout(
+					width=1920,
+					height=1080,
+					scene=sc_html,  # apply the bigger fonts
+    				template="plotly_white"
+					)
+
+				# Export interactive HTML version
+				html_outputname = outputname.replace(".png", ".html")
+				fig_html.write_html(html_outputname)
 				print("Tridimensional Amino acids plot saved as " + outputname)
+				print("Interactive HTML plot saved as", html_outputname)
 
 	if args.compare.lower() == "true":
 		for m in for_comparison:
@@ -551,6 +662,31 @@ def aminoacids(args):
 						),
 					)
 
+					sc_html = dict(
+						aspectratio=dict(x=1, y=1, z=1),
+						xaxis_title="Amino acids",
+						yaxis_title="CDR3 Length",
+						zaxis_title="Percentage of reads",
+						xaxis=dict(
+							tickmode="array",
+							ticktext=desired_order,
+							tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
+							tickfont=dict(size=13),     # bigger
+							titlefont=dict(size=18),    # bigger
+						),
+						yaxis=dict(
+							tickmode="array",
+							ticktext=[str(v) for v in range(1, y[-1] + 1)],
+							tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
+							tickfont=dict(size=14),     # bigger
+							titlefont=dict(size=18),    # bigger
+						),
+						zaxis=dict(
+							tickfont=dict(size=14),     # bigger
+							titlefont=dict(size=18),    # bigger
+						),
+					)
+
 					fig.update_layout(
 						width=700,
 						margin=dict(r=10, l=10, b=10, t=10),
@@ -566,4 +702,16 @@ def aminoacids(args):
 						+ ".png"
 					)
 					fig.write_image(outputname, scale=6)
+					fig_html = copy.deepcopy(fig)
+					fig_html.update_layout(
+						width=1920,
+						height=1080,
+						scene=sc_html,  # apply the bigger fonts
+    					template="plotly_white"
+					)
+
+					# Export interactive HTML version
+					html_outputname = outputname.replace(".png", ".html")
+					fig_html.write_html(html_outputname)
 					print("Tridimensional Amino acids plot saved as " + outputname)
+					print("Interactive HTML plot saved as", html_outputname)
