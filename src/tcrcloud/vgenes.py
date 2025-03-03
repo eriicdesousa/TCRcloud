@@ -295,6 +295,7 @@ True or False\n"
                 )
     return comparisons
 
+
 def barplot(args):
     samples_df = tcrcloud.format.format_data(args)
 
