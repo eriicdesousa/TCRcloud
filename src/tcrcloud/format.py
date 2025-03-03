@@ -36,6 +36,7 @@ def format_data(args):
         CDR3 = row.get("junction_aa")
         try:
             v_call = row.get("v_call")[2]
+            v_call2 = row.get("v_call")[-6]
         except IndexError:
             v_call = ""
         try:
@@ -47,7 +48,7 @@ def format_data(args):
                 if v_call != "":
                     if j_call != "":
                         if "X" not in CDR3:
-                            if "\*" not in CDR3:
+                            if "*" not in CDR3:
                                 if "B" not in CDR3:
                                     if "Z" not in CDR3:
                                         if "J" not in CDR3:
@@ -58,6 +59,13 @@ def format_data(args):
                                                         or CDR3[-1] == "W"
                                                     ):
                                                         if v_call == j_call:
+                                                            empty_list.append(
+                                                                {
+                                                                    x: row[x]
+                                                                    for x in keys
+                                                                }
+                                                            )
+                                                        elif v_call2 == j_call:
                                                             empty_list.append(
                                                                 {
                                                                     x: row[x]
@@ -75,7 +83,14 @@ def format_data(args):
         df["v_call"] = df.apply(lambda x: x["v_call"][:-3], axis=1)
 
     # create column with chain information
-    df["chain"] = df.apply(lambda x: x["v_call"][2], axis=1)
+    df["chain"] = df.apply(
+        lambda x: (
+            x["v_call"][-3]
+            if "DV" in x["v_call"] and "DJ" in x["j_call"]
+            else x["v_call"][2]
+        ),
+        axis=1,
+    )
 
     return df
 

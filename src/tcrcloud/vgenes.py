@@ -67,7 +67,7 @@ True or False\n"
         if j[0] == "D":
             x_axis = TRDV
             plot_aspect = (1.5, 1, 1)
-            x_size = 10
+            x_size = 8
             ymax = args.yhighdelta
             ymin = args.ylowdelta
             zmax = args.zhighdelta
@@ -75,7 +75,7 @@ True or False\n"
         if j[0] == "H":
             x_axis = IGHV
             plot_aspect = (5, 1, 1)
-            x_size = 2
+            x_size = 4
             ymax = args.yhighheavy
             ymin = args.ylowheavy
             zmax = args.zhighheavy
@@ -83,7 +83,7 @@ True or False\n"
         if j[0] == "K":
             x_axis = IGKV
             plot_aspect = (3.5, 1, 1)
-            x_size = 2
+            x_size = 4
             ymax = args.yhighkappa
             ymin = args.ylowkappa
             zmax = args.zhighkappa
@@ -217,9 +217,9 @@ True or False\n"
                 num2 = comb[1][0].copy()
                 num2 = num2.drop("v_call", axis=1)
                 comparison1 = num1 - num2
-                comparison1 = comparison1.fillna(0)
+                comparison1 = comparison1.infer_objects(copy=False).fillna(0)
                 comparison2 = num2 - num1
-                comparison2 = comparison2.fillna(0)
+                comparison2 = comparison2.infer_objects(copy=False).fillna(0)
                 comparison1.insert(0, "v_call", comb[0][0]["v_call"])
                 comparison2.insert(0, "v_call", comb[0][0]["v_call"])
 
@@ -442,10 +442,10 @@ def barplot(args):
             print("V genes plot saved as " + outputname)
             break
 
-    if args.export.lower() in ["true"]:
-        output_folder = os.getcwd()
-        try:
-            tcrcloud.vlength.process_csv_files(output_folder)
-            print("vlength analysis completed and saved in the 'analysis' subfolder.")
-        except Exception as e:
-            print(f"An error occurred in vlength processing: {e}")
+    # if args.export.lower() in ["true"]:
+    #     output_folder = os.getcwd()
+    #     try:
+    #         tcrcloud.vlength.process_csv_files(output_folder)
+    #         print("vlength analysis completed and saved in the 'analysis' subfolder.")
+    #     except Exception as e:
+    #         print(f"An error occurred in vlength processing: {e}")

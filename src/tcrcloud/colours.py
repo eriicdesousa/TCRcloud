@@ -155,6 +155,11 @@ TRDV = {
     "TRDV1": "#1f77b4",
     "TRDV2": "#ff7f0e",
     "TRDV3": "#2ca02c",
+    "TRAV14/DV4": "#d62728",
+    "TRAV29/DV5": "#9467bd",
+    "TRAV23/DV6": "#e377c2",
+    "TRAV36/DV7": "#bcbd22",
+    "TRAV38-2/DV8": "#17becf",
 }
 
 IGHV = {
