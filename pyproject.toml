@@ -4,3 +4,43 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "TCRcloud"
+version = "1.5.1"
+description = "TCRcloud is an AIRR visualization and comparison tool"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+authors = [
+    { name = "Eric de Sousa", email = "eric.desousa@research.fchampalimaud.org" },
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "airr >=1.5.0",
+    "kaleido == 0.2.1",
+    "matplotlib >=3.7.0",
+    "numpy >=1.9.2",
+    "pandas",
+    "plotly >=5.18.0",
+    "requests",
+    "scikit-bio",
+    "scikit-learn",
+    "scipy >=1.3.0",
+    "wordcloud",
+]
+
+[project.scripts]
+TCRcloud = "tcrcloud.TCRcloud:main"
+
+[project.urls]
+"Bug Tracker" = "https://github.com/eriicdesousa/TCRcloud/issues"
+Homepage = "https://github.com/eriicdesousa/TCRcloud"
