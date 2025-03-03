@@ -14,14 +14,7 @@ def testserver(data):
                     "op": "=",
                     "content": {
                         "field": "repertoire_id",
-                        "value": data["Repertoire"][0]["repertoire_id"],
-                    },
-                },
-                {
-                    "op": "=",
-                    "content": {
-                        "field": "study.study_id",
-                        "value": data["Repertoire"][0]["study"]["study_id"],
+                        "value": "67941fc93fc51debae0ab8c8",
                     },
                 },
             ],
@@ -45,7 +38,10 @@ def testserver(data):
         "https://agschwab.uni-muenster.de/airr/v1",
         "https://roche-airr.ireceptor.org/airr/v1",
         "https://t1d-1.ireceptor.org/airr/v1",
+        "https://t1d-2.ireceptor.org/airr/v1",
+        "https://t1d-3.ireceptor.org/airr/v1",
         "https://hpap.ireceptor.org/airr/v1/",
+        "https://greifflab-1.ireceptor.org/airr/v1",
     ]
 
     host_url = "https://vdjserver.org/airr/v1"
