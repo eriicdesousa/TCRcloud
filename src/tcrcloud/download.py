@@ -14,7 +14,14 @@ def testserver(data):
                     "op": "=",
                     "content": {
                         "field": "repertoire_id",
-                        "value": "67941fc93fc51debae0ab8c8",
+                        "value": data["Repertoire"][0]["repertoire_id"],
+                    },
+                },
+                {
+                    "op": "=",
+                    "content": {
+                        "field": "study.study_id",
+                        "value": data["Repertoire"][0]["study"]["study_id"],
                     },
                 },
             ],
