@@ -1,10 +1,11 @@
 import sys
+import copy
 import pandas as pd
 import numpy as np
-import copy
+
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-import plotly.io as pio
+
 import tcrcloud.format
 import tcrcloud.colours
 
@@ -29,33 +30,6 @@ def generate_mesh(x_min, x_max, y_min, y_max, z_min, z_max, color_value):
 
 
 def aminoacids(args):
-    all_aa = pd.DataFrame(
-        np.zeros((20, 1)),
-        columns=["just_empty"],
-        index=[
-            "H",
-            "K",
-            "R",  # Polar Positively Charged (Basic)
-            "D",
-            "E",  # Polar Negatively Charged (Acidic)
-            "C",
-            "N",
-            "Q",
-            "S",
-            "T",  # Polar Uncharged
-            "Y",
-            "W",
-            "F",  # Aromatic Hydrophobic
-            "G",
-            "P",
-            "A",
-            "M",
-            "V",
-            "I",
-            "L",  # Aliphatic Hydrophobic
-        ],
-    )
-
     samples_df = tcrcloud.format.format_data(args)
     formatted_samples = tcrcloud.format.format_aminoacids(samples_df)
     samples = formatted_samples.groupby(["chain", "repertoire_id"])
@@ -96,79 +70,35 @@ def aminoacids(args):
                 for number in range(1, diff + 1):
                     final[len(final.columns) + 1] = np.nan
         final = final.replace(np.nan, 0)
-        normalized = final.apply(lambda x: x * 100 / sum(x), axis=0).fillna(0)
+        normalized = final.apply(lambda x: x * 100 / sum(x), axis=0)
         normalized = normalized.replace(np.nan, 0)
-        normalized = normalized.reindex(
-            all_aa.index, fill_value=0
-        )  # and fill missing a.a value to 0 if absent
-        transposed_df = normalized.transpose()  # Convert for plotting
+        aa_rank = [
+            16,
+            6,
+            4,
+            5,
+            13,
+            14,
+            1,
+            19,
+            2,
+            20,
+            17,
+            7,
+            15,
+            8,
+            3,
+            9,
+            10,
+            18,
+            12,
+            11,
+        ]
+        normalized["rank"] = aa_rank
+        normalized.sort_values(by=["rank"], inplace=True)
+        normalized.drop("rank", inplace=True, axis=1)
+        transposed_df = normalized.transpose()
 
-        if args.export.lower() == "true":
-            df_filename = (
-                args.rearrangements[:-4]
-                + "_aminoacids_table"
-                + j[1]
-                + "_"
-                + j[0]
-                + ".csv"
-            )
-            normalized.to_csv(df_filename, index=True)
-
-        if args.threeD.lower() == "false":
-            transposed_df.plot(
-                kind="bar", stacked=True, color=colours, figsize=(10, 14)
-            )
-            outputname = (
-                args.rearrangements[:-4] + "_aminoacids_" + j[1] + "_" + j[0] + ".png"
-            )
-            plt.legend(bbox_to_anchor=(1.01, 1), reverse=False, loc="upper left")
-            plt.savefig(outputname, dpi=300, bbox_inches="tight")
-            print("Amino acids plot saved as " + outputname)
-
-        elif args.threeD.lower() == "true":
-            if len(normalized) < 20:
-                all_aa = pd.DataFrame(
-                    np.zeros((20, 1)),
-                    columns=["just_empty"],
-                    index=[
-                        "L",
-                        "I",
-                        "V",
-                        "M",
-                        "A",
-                        "P",
-                        "G",  # Aliphatic Hydrophobic
-                        "F",
-                        "W",
-                        "Y",  # Aromatic Hydrophobic
-                        "T",
-                        "S",
-                        "Q",
-                        "N",
-                        "C",  # Polar Uncharged
-                        "E",
-                        "D",  # Polar Negatively Charged (Acidic)
-                        "R",
-                        "K",
-                        "H",  # Polar Positively Charged (Basic)
-                    ],
-                )
-                result = pd.concat([normalized, all_aa], axis=1)
-                normalized = result.drop("just_empty", axis=1)
-                normalized = normalized.fillna(0)
-            normalized = normalized.iloc[::-1]
-            for_comparison[j[0]].append([normalized, j[1] + "_" + j[0]])
-
-            if args.compare.lower() == "false":
-                x = normalized.index.tolist()
-                y = np.array(normalized.columns.values.tolist())
-                z = np.array(normalized.values.tolist()[0])
-                for i in range(1, len(normalized)):
-                    z = np.append(z, np.array(normalized.values.tolist()[i]))
-
-                x_df = pd.Series(y)
-                y_df = pd.Series(x)
-                z_df = pd.Series(z)
         if args.export.lower() == "true":
             df_filename = (
                 args.rearrangements[:-4]
@@ -197,26 +127,26 @@ def aminoacids(args):
                     np.zeros((20, 1)),
                     columns=["just_empty"],
                     index=[
-                        "L",
-                        "I",
-                        "V",
-                        "M",
-                        "A",
-                        "P",
-                        "G",  # Aliphatic Hydrophobic
-                        "F",
-                        "W",
-                        "Y",  # Aromatic Hydrophobic
-                        "T",
-                        "S",
-                        "Q",
-                        "N",
-                        "C",  # Polar Uncharged
-                        "E",
-                        "D",  # Polar Negatively Charged (Acidic)
-                        "R",
+                        "H",
                         "K",
-                        "H",  # Polar Positively Charged (Basic)
+                        "R",  # Polar Positively Charged (Basic)
+                        "D",
+                        "E",  # Polar Negatively Charged (Acidic)
+                        "C",
+                        "N",
+                        "Q",
+                        "S",
+                        "T",  # Polar Uncharged
+                        "Y",
+                        "W",
+                        "F",  # Aromatic Hydrophobic
+                        "G",
+                        "P",
+                        "A",
+                        "M",
+                        "V",
+                        "I",
+                        "L",  # Aliphatic Hydrophobic
                     ],
                 )
                 result = pd.concat([normalized, all_aa], axis=1)
@@ -226,7 +156,7 @@ def aminoacids(args):
             for_comparison[j[0]].append([normalized, j[1] + "_" + j[0]])
 
             if args.compare.lower() == "false":
-                x = normalized.index.tolist()
+                x = normalized.index.factorize()[0]
                 y = np.array(normalized.columns.values.tolist())
                 z = np.array(normalized.values.tolist()[0])
                 for i in range(1, len(normalized)):
@@ -235,290 +165,6 @@ def aminoacids(args):
                 x_df = pd.Series(y)
                 y_df = pd.Series(x)
                 z_df = pd.Series(z)
-
-                x_min = 0
-                y_min = 0
-                z_min = 0
-                step = 1
-
-                mesh_list = []
-                colors = list(colours.values())
-                color_value = 0
-
-                x_df_uniq = x_df.unique()
-                y_df_uniq = y_df.unique()
-                len_x_df_uniq = len(x_df_uniq)
-
-                for idx, x_data in enumerate(x_df_uniq):
-                    for idx2, y_data in enumerate(y_df_uniq):
-                        color_value = colours[y_data]
-                        x_max = x_min + step
-                        y_max = y_min + step
-                        z_max = z_df[idx + idx2 * len_x_df_uniq]
-                        mesh_list.append(
-                            generate_mesh(
-                                x_min,
-                                x_max,
-                                y_min,
-                                y_max,
-                                z_min,
-                                z_max,
-                                color_value,
-                            ),
-                        )
-                        x_min += 2 * step
-                    y_min += 2 * step
-                    x_min = 0
-
-                desired_order = [
-                    "H",
-                    "K",
-                    "R",
-                    "D",
-                    "E",
-                    "C",
-                    "N",
-                    "Q",
-                    "S",
-                    "T",
-                    "Y",
-                    "W",
-                    "F",
-                    "G",
-                    "P",
-                    "A",
-                    "M",
-                    "V",
-                    "I",
-                    "L",
-                ]
-                fig = go.Figure(mesh_list)
-                camera = dict(eye=dict(x=2.0, y=2.0, z=2.0))
-                sc = dict(
-                    aspectratio=dict(x=1, y=1, z=1),
-                    xaxis_title="Amino acids",
-                    yaxis_title="CDR3 Length",
-                    zaxis_title="Percentage of reads",
-                    xaxis=dict(
-                        tickmode="array",
-                        ticktext=desired_order,
-                        tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
-                        tickfont=dict(size=7),
-                        titlefont=dict(size=8),
-                    ),
-                    yaxis=dict(
-                        tickmode="array",
-                        ticktext=[str(v) for v in range(1, y[-1] + 1)],
-                        tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
-                        tickfont=dict(size=7),
-                        titlefont=dict(size=8),
-                    ),
-                    zaxis=dict(
-                        tickfont=dict(size=8),
-                        titlefont=dict(size=8),
-                    ),
-                )
-
-                sc_html = dict(
-                    aspectratio=dict(x=1, y=1, z=1),
-                    xaxis_title="Amino acids",
-                    yaxis_title="CDR3 Length",
-                    zaxis_title="Percentage of reads",
-                    xaxis=dict(
-                        tickmode="array",
-                        ticktext=desired_order,
-                        tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
-                        tickfont=dict(size=13),  # bigger
-                        titlefont=dict(size=18),  # bigger
-                    ),
-                    yaxis=dict(
-                        tickmode="array",
-                        ticktext=[str(v) for v in range(1, y[-1] + 1)],
-                        tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
-                        tickfont=dict(size=14),  # bigger
-                        titlefont=dict(size=18),  # bigger
-                    ),
-                    zaxis=dict(
-                        tickfont=dict(size=14),  # bigger
-                        titlefont=dict(size=18),  # bigger
-                    ),
-                )
-
-                fig.update_layout(
-                    width=700,
-                    margin=dict(r=10, l=10, b=10, t=10),
-                    scene_camera=camera,
-                    scene=sc,
-                    template="plotly_white",
-                )
-                outputname = (
-                    args.rearrangements[:-4]
-                    + "_aminoacids3D_"
-                    + j[1]
-                    + "_"
-                    + j[0]
-                    + ".png"
-                )
-                fig.write_image(outputname, scale=6)
-                fig_html = copy.deepcopy(fig)
-                fig_html.update_layout(
-                    width=1920,
-                    height=1080,
-                    scene=sc_html,  # apply the bigger fonts
-                    template="plotly_white",
-                )
-
-                # Export interactive HTML version
-                html_outputname = outputname.replace(".png", ".html")
-                fig_html.write_html(html_outputname)
-                print("Tridimensional Amino acids plot saved as " + outputname)
-                print("Interactive HTML plot saved as", html_outputname)
-
-    if args.compare.lower() == "true":
-        for m in for_comparison:
-            if len(for_comparison[m]) < 2:
-                sys.stderr.write(
-                    "Less than 2 repertoires from the "
-                    + m
-                    + " chain were detected in the rearragements file\n"
-                )
-            if len(for_comparison[m]) > 2:
-                sys.stderr.write(
-                    "More than 2 repertoires from the "
-                    + m
-                    + " chain were detected in the rearragements file\n"
-                )
-            if len(for_comparison[m]) == 2:
-                comb = for_comparison[m]
-                comparison1 = comb[0][0] - comb[1][0]
-                comparison2 = comb[1][0] - comb[0][0]
-                comparisons = [[comparison1, comb[0][1]], [comparison2, comb[1][1]]]
-                for k in comparisons:
-                    normalized = k[0]
-                    x = normalized.index.factorize()[0]
-                    y = np.array(normalized.columns.values.tolist())
-                    z = np.array(normalized.values.tolist()[0])
-                    for i in range(1, len(normalized)):
-                        z = np.append(z, np.array(normalized.values.tolist()[i]))
-
-                    x_df = pd.Series(y)
-                    y_df = pd.Series(x)
-                    z_df = pd.Series(z)
-
-                    x_min = 0
-                    y_min = 0
-                    z_min = 0
-                    step = 1
-
-                    mesh_list = []
-                    colors = list(colours.values())
-                    color_value = 0
-
-                    x_df_uniq = x_df.unique()
-                    y_df_uniq = y_df.unique()
-                    len_x_df_uniq = len(x_df_uniq)
-
-                    for idx, x_data in enumerate(x_df_uniq):
-                        for idx2, y_data in enumerate(y_df_uniq):
-                            color_value = colors[idx2 % 22]
-                            x_max = x_min + step
-                            y_max = y_min + step
-                            z_max = z_df[idx + idx2 * len_x_df_uniq]
-                            mesh_list.append(
-                                generate_mesh(
-                                    x_min,
-                                    x_max,
-                                    y_min,
-                                    y_max,
-                                    z_min,
-                                    z_max,
-                                    color_value,
-                                ),
-                            )
-                            x_min += 2 * step
-                        y_min += 2 * step
-                        x_min = 0
-
-                    fig = go.Figure(mesh_list)
-                    camera = dict(eye=dict(x=2.0, y=2.0, z=0.5))
-                    sc = dict(
-                        aspectratio=dict(x=1, y=1, z=1),
-                        xaxis_title="Amino acids",
-                        yaxis_title="CDR3 Length",
-                        zaxis_title="Percentage of reads",
-                        xaxis=dict(
-                            tickmode="array",
-                            ticktext=[key for key in colours],
-                            tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
-                            tickfont=dict(size=7),
-                            titlefont=dict(size=8),
-                        ),
-                        yaxis=dict(
-                            tickmode="array",
-                            ticktext=[str(v) for v in range(1, y[-1] + 1)],
-                            tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
-                            tickfont=dict(size=7),
-                            titlefont=dict(size=8),
-                        ),
-                        zaxis=dict(
-                            tickfont=dict(size=8),
-                            titlefont=dict(size=8),
-                        ),
-                    )
-
-                    sc_html = dict(
-                        aspectratio=dict(x=1, y=1, z=1),
-                        xaxis_title="Amino acids",
-                        yaxis_title="CDR3 Length",
-                        zaxis_title="Percentage of reads",
-                        xaxis=dict(
-                            tickmode="array",
-                            ticktext=desired_order,
-                            tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
-                            tickfont=dict(size=13),  # bigger
-                            titlefont=dict(size=18),  # bigger
-                        ),
-                        yaxis=dict(
-                            tickmode="array",
-                            ticktext=[str(v) for v in range(1, y[-1] + 1)],
-                            tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
-                            tickfont=dict(size=14),  # bigger
-                            titlefont=dict(size=18),  # bigger
-                        ),
-                        zaxis=dict(
-                            tickfont=dict(size=14),  # bigger
-                            titlefont=dict(size=18),  # bigger
-                        ),
-                    )
-
-                    fig.update_layout(
-                        width=700,
-                        margin=dict(r=10, l=10, b=10, t=10),
-                        scene_camera=camera,
-                        scene=sc,
-                        template="plotly_white",
-                    )
-                    outputname = (
-                        args.rearrangements[:-4]
-                        + "_aminoacids3D_"
-                        + k[1]
-                        + "_comparison"
-                        + ".png"
-                    )
-                    fig.write_image(outputname, scale=6)
-                    fig_html = copy.deepcopy(fig)
-                    fig_html.update_layout(
-                        width=1920,
-                        height=1080,
-                        scene=sc_html,  # apply the bigger fonts
-                        template="plotly_white",
-                    )
-
-                    # Export interactive HTML version
-                    html_outputname = outputname.replace(".png", ".html")
-                    fig_html.write_html(html_outputname)
-                    print("Tridimensional Amino acids plot saved as " + outputname)
-                    print("Interactive HTML plot saved as", html_outputname)
 
                 x_min = 0
                 y_min = 0
@@ -581,31 +227,6 @@ def aminoacids(args):
                     ),
                 )
 
-                sc_html = dict(
-                    aspectratio=dict(x=1, y=1, z=1),
-                    xaxis_title="Amino acids",
-                    yaxis_title="CDR3 Length",
-                    zaxis_title="Percentage of reads",
-                    xaxis=dict(
-                        tickmode="array",
-                        ticktext=desired_order,
-                        tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
-                        tickfont=dict(size=13),  # bigger
-                        titlefont=dict(size=18),  # bigger
-                    ),
-                    yaxis=dict(
-                        tickmode="array",
-                        ticktext=[str(v) for v in range(1, y[-1] + 1)],
-                        tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
-                        tickfont=dict(size=14),  # bigger
-                        titlefont=dict(size=18),  # bigger
-                    ),
-                    zaxis=dict(
-                        tickfont=dict(size=14),  # bigger
-                        titlefont=dict(size=18),  # bigger
-                    ),
-                )
-
                 fig.update_layout(
                     width=700,
                     margin=dict(r=10, l=10, b=10, t=10),
@@ -622,6 +243,32 @@ def aminoacids(args):
                     + ".png"
                 )
                 fig.write_image(outputname, scale=6)
+                print("Tridimensional Amino acids plot saved as " + outputname)
+
+                sc_html = dict(
+                    aspectratio=dict(x=1, y=1, z=1),
+                    xaxis_title="Amino acids",
+                    yaxis_title="CDR3 Length",
+                    zaxis_title="Percentage of reads",
+                    xaxis=dict(
+                        tickmode="array",
+                        ticktext=[key for key in colours],
+                        tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
+                        tickfont=dict(size=13),  # bigger
+                        titlefont=dict(size=18),  # bigger
+                    ),
+                    yaxis=dict(
+                        tickmode="array",
+                        ticktext=[str(v) for v in range(1, y[-1] + 1)],
+                        tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
+                        tickfont=dict(size=14),  # bigger
+                        titlefont=dict(size=18),  # bigger
+                    ),
+                    zaxis=dict(
+                        tickfont=dict(size=14),  # bigger
+                        titlefont=dict(size=18),  # bigger
+                    ),
+                )
                 fig_html = copy.deepcopy(fig)
                 fig_html.update_layout(
                     width=1920,
@@ -633,7 +280,6 @@ def aminoacids(args):
                 # Export interactive HTML version
                 html_outputname = outputname.replace(".png", ".html")
                 fig_html.write_html(html_outputname)
-                print("Tridimensional Amino acids plot saved as " + outputname)
                 print("Interactive HTML plot saved as", html_outputname)
 
     if args.compare.lower() == "true":
@@ -728,6 +374,23 @@ def aminoacids(args):
                         ),
                     )
 
+                    fig.update_layout(
+                        width=700,
+                        margin=dict(r=10, l=10, b=10, t=10),
+                        scene_camera=camera,
+                        scene=sc,
+                        template="plotly_white",
+                    )
+                    outputname = (
+                        args.rearrangements[:-4]
+                        + "_aminoacids3D_"
+                        + k[1]
+                        + "_comparison"
+                        + ".png"
+                    )
+                    fig.write_image(outputname, scale=6)
+                    print("Tridimensional Amino acids plot saved as " + outputname)
+
                     sc_html = dict(
                         aspectratio=dict(x=1, y=1, z=1),
                         xaxis_title="Amino acids",
@@ -735,7 +398,7 @@ def aminoacids(args):
                         zaxis_title="Percentage of reads",
                         xaxis=dict(
                             tickmode="array",
-                            ticktext=desired_order,
+                            ticktext=[key for key in colours],
                             tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
                             tickfont=dict(size=13),  # bigger
                             titlefont=dict(size=18),  # bigger
@@ -752,22 +415,6 @@ def aminoacids(args):
                             titlefont=dict(size=18),  # bigger
                         ),
                     )
-
-                    fig.update_layout(
-                        width=700,
-                        margin=dict(r=10, l=10, b=10, t=10),
-                        scene_camera=camera,
-                        scene=sc,
-                        template="plotly_white",
-                    )
-                    outputname = (
-                        args.rearrangements[:-4]
-                        + "_aminoacids3D_"
-                        + k[1]
-                        + "_comparison"
-                        + ".png"
-                    )
-                    fig.write_image(outputname, scale=6)
                     fig_html = copy.deepcopy(fig)
                     fig_html.update_layout(
                         width=1920,
@@ -779,5 +426,4 @@ def aminoacids(args):
                     # Export interactive HTML version
                     html_outputname = outputname.replace(".png", ".html")
                     fig_html.write_html(html_outputname)
-                    print("Tridimensional Amino acids plot saved as " + outputname)
                     print("Interactive HTML plot saved as", html_outputname)
