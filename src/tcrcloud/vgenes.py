@@ -66,6 +66,11 @@ True or False\n"
             zmin = args.zlowgamma
         if j[0] == "D":
             x_axis = TRDV
+            x_axis.pop("TRAV14/DV4", None)
+            x_axis.pop("TRAV29/DV5", None)
+            x_axis.pop("TRAV23/DV6", None)
+            x_axis.pop("TRAV36/DV7", None)
+            x_axis.pop("TRAV38-2/DV8", None)
             plot_aspect = (1.5, 1, 1)
             x_size = 8
             ymax = args.yhighdelta
@@ -74,7 +79,7 @@ True or False\n"
             zmin = args.zlowdelta
         if j[0] == "H":
             x_axis = IGHV
-            plot_aspect = (5, 1, 1)
+            plot_aspect = (3.5, 1, 1)
             x_size = 4
             ymax = args.yhighheavy
             ymin = args.ylowheavy
@@ -103,7 +108,22 @@ True or False\n"
 
         df = samples.get_group(j)
 
-        new_df = df.pivot_table(
+        jic = df.copy()
+
+        if "D" in jic["chain"].values:
+            jic.replace(
+                [
+                    "TRAV14/DV4",
+                    "TRAV29/DV5",
+                    "TRAV23/DV6",
+                    "TRAV36/DV7",
+                    "TRAV38-2/DV8",
+                ],
+                ["TRDV4", "TRDV5", "TRDV6", "TRDV7", "TRDV8"],
+                inplace=True,
+            )
+
+        new_df = jic.pivot_table(
             index=["v_call", "CDR3_length"], aggfunc="size"
         ).reset_index()
         new_df.rename(columns={0: "counts"}, inplace=True)
@@ -145,7 +165,7 @@ True or False\n"
         )
         df_sorted = df_reformat.sort_values(by=["v_call"], key=natsort_keygen())
 
-        if args.export.lower() in ["true"]:
+        if args.export.lower() == "true":
             df_filename = (
                 args.rearrangements[:-4] + "_vgenes_table" + j[1] + "_" + j[0] + ".csv"
             )
@@ -328,13 +348,17 @@ def barplot(args):
                     ticktext=i[10],
                     tickvals=i[9],
                     tickfont=dict(size=i[4]),
-                    titlefont=dict(size=10),
+                    title=dict(font=dict(size=10)),
                 ),
                 yaxis=dict(
-                    tickfont=dict(size=8), titlefont=dict(size=10), range=[i[5], i[6]]
+                    tickfont=dict(size=8),
+                    title=dict(font=dict(size=10)),
+                    range=[i[5], i[6]],
                 ),
                 zaxis=dict(
-                    tickfont=dict(size=8), titlefont=dict(size=10), range=[i[7], i[8]]
+                    tickfont=dict(size=8),
+                    title=dict(font=dict(size=10)),
+                    range=[i[7], i[8]],
                 ),
             )
 
@@ -371,13 +395,17 @@ def barplot(args):
                     tickvals=i[9],
                     tickfont=dict(size=i[4]),
                     tickangle=-45,
-                    titlefont=dict(size=10),
+                    title=dict(font=dict(size=10)),
                 ),
                 yaxis=dict(
-                    tickfont=dict(size=6), titlefont=dict(size=10), range=[i[5], i[6]]
+                    tickfont=dict(size=6),
+                    title=dict(font=dict(size=10)),
+                    range=[i[5], i[6]],
                 ),
                 zaxis=dict(
-                    tickfont=dict(size=8), titlefont=dict(size=10), range=[i[7], i[8]]
+                    tickfont=dict(size=8),
+                    title=dict(font=dict(size=10)),
+                    range=[i[7], i[8]],
                 ),
             )
 
@@ -418,13 +446,17 @@ def barplot(args):
                     tickvals=i[9],
                     tickfont=dict(size=i[4]),
                     tickangle=-45,
-                    titlefont=dict(size=10),
+                    title=dict(font=dict(size=10)),
                 ),
                 yaxis=dict(
-                    tickfont=dict(size=6), titlefont=dict(size=10), range=[i[5], i[6]]
+                    tickfont=dict(size=6),
+                    title=dict(font=dict(size=10)),
+                    range=[i[5], i[6]],
                 ),
                 zaxis=dict(
-                    tickfont=dict(size=8), titlefont=dict(size=10), range=[i[7], i[8]]
+                    tickfont=dict(size=8),
+                    title=dict(font=dict(size=10)),
+                    range=[i[7], i[8]],
                 ),
             )
 
