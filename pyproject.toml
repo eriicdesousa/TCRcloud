@@ -30,7 +30,7 @@ dependencies = [
     "matplotlib >=3.7.0",
     "numpy >=1.9.2",
     "pandas",
-    "plotly >=5.18.0",
+    "plotly >=6.0.1",
     "requests",
     "scikit-bio",
     "scikit-learn",

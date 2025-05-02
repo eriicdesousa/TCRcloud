@@ -212,18 +212,18 @@ def aminoacids(args):
                         ticktext=[key for key in colours],
                         tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
                         tickfont=dict(size=7),
-                        titlefont=dict(size=8),
+                        title=dict(font=dict(size=8)),
                     ),
                     yaxis=dict(
                         tickmode="array",
                         ticktext=[str(v) for v in range(1, y[-1] + 1)],
                         tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
                         tickfont=dict(size=7),
-                        titlefont=dict(size=8),
+                        title=dict(font=dict(size=8)),
                     ),
                     zaxis=dict(
                         tickfont=dict(size=8),
-                        titlefont=dict(size=8),
+                        title=dict(font=dict(size=8)),
                     ),
                 )
 
@@ -255,18 +255,18 @@ def aminoacids(args):
                         ticktext=[key for key in colours],
                         tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
                         tickfont=dict(size=13),  # bigger
-                        titlefont=dict(size=18),  # bigger
+                        title=dict(font=dict(size=18)),  # bigger
                     ),
                     yaxis=dict(
                         tickmode="array",
                         ticktext=[str(v) for v in range(1, y[-1] + 1)],
                         tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
                         tickfont=dict(size=14),  # bigger
-                        titlefont=dict(size=18),  # bigger
+                        ttitle=dict(font=dict(size=18)),  # bigger
                     ),
                     zaxis=dict(
                         tickfont=dict(size=14),  # bigger
-                        titlefont=dict(size=18),  # bigger
+                        title=dict(font=dict(size=18)),  # bigger
                     ),
                 )
                 fig_html = copy.deepcopy(fig)
@@ -359,18 +359,18 @@ def aminoacids(args):
                             ticktext=[key for key in colours],
                             tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
                             tickfont=dict(size=7),
-                            titlefont=dict(size=8),
+                            title=dict(font=dict(size=8)),
                         ),
                         yaxis=dict(
                             tickmode="array",
                             ticktext=[str(v) for v in range(1, y[-1] + 1)],
                             tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
                             tickfont=dict(size=7),
-                            titlefont=dict(size=8),
+                            title=dict(font=dict(size=8)),
                         ),
                         zaxis=dict(
                             tickfont=dict(size=8),
-                            titlefont=dict(size=8),
+                            title=dict(font=dict(size=8)),
                         ),
                     )
 
@@ -401,18 +401,18 @@ def aminoacids(args):
                             ticktext=[key for key in colours],
                             tickvals=[v for v in range(1, 40 + 1) if v % 2 != 0],
                             tickfont=dict(size=13),  # bigger
-                            titlefont=dict(size=18),  # bigger
+                            title=dict(font=dict(size=18)),  # bigger
                         ),
                         yaxis=dict(
                             tickmode="array",
                             ticktext=[str(v) for v in range(1, y[-1] + 1)],
                             tickvals=[v for v in range(1, y[-1] * 2 + 1) if v % 2 != 0],
                             tickfont=dict(size=14),  # bigger
-                            titlefont=dict(size=18),  # bigger
+                            title=dict(font=dict(size=18)),  # bigger
                         ),
                         zaxis=dict(
                             tickfont=dict(size=14),  # bigger
-                            titlefont=dict(size=18),  # bigger
+                            title=dict(font=dict(size=18)),  # bigger
                         ),
                     )
                     fig_html = copy.deepcopy(fig)
