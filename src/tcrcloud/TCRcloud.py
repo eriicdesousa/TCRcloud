@@ -12,7 +12,6 @@ import tcrcloud.download
 import tcrcloud.testdata
 import tcrcloud.vgenes
 import tcrcloud.aminoacids
-import tcrcloud.vlength
 
 plt.rcParams["font.family"] = "serif"
 
@@ -555,21 +554,7 @@ def main():
     )
     parser_vgenes.set_defaults(func=tcrcloud.vgenes.barplot)
 
-    # parser_vlength = subparsers.add_parser(
-    #     "vlength",
-    #     help="Run additional V-gene length analysis from previously exported V-gene data",
-    # )
-    # parser_vlength.add_argument(
-    #     "folder",
-    #     type=str,
-    #     help="Path to the folder containing exported V-gene CSV files",
-    #     metavar="V-genes_plot_to_a_text_file",
-    # )
-    # parser_vlength.set_defaults(
-    #     func=lambda args: tcrcloud.vlength.process_csv_files(args.folder)
-    # )
-
-    # create subparser for making the amino acids plot
+       # create subparser for making the amino acids plot
     parser_aminoacids = subparsers.add_parser(
         "aminoacids",
         help="Create a \
@@ -623,6 +608,11 @@ def main():
         metavar="True or False",
         default="False",
         required=False,
+    )
+    parser_aminoacids.add_argument(
+    "--by_length",
+    action="store_true",
+    help="Generate output images for each CDR3 length group (only process groups with ≥2.5% of total reads)"
     )
     parser_aminoacids.set_defaults(func=tcrcloud.aminoacids.aminoacids)
 
