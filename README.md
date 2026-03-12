@@ -6,8 +6,15 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/TCRcloud)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/TCRcloud)
 ![License](https://img.shields.io/github/license/eriicdesousa/TCRcloud)
+[![DOI](https://img.shields.io/badge/DOI-10.1186/s12967--025--07619--4-blue.svg)](https://doi.org/10.1186/s12967-025-07619-4)
 
 ## TCRcloud is an Adaptive Immune Receptor Repertoire (AIRR) visualization and comparison tool
+
+
+If you use this tool, please cite our paper:
+
+**de Sousa et al., *TCRcloud: a global visualization tool for T‑ and B‑cell receptor transcripts*, Journal of Translational Medicine, 2026.** https://doi.org/10.1186/s12967-025-07619-4
+
 
 **Instalation**
 
