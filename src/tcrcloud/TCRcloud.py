@@ -6,6 +6,18 @@ import sys
 
 import matplotlib.pyplot as plt
 
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, str):
+        if v.lower() in ("yes", "true", "t", "y", "1"):
+            return True
+        if v.lower() in ("no", "false", "f", "n", "0"):
+            return False
+    raise argparse.ArgumentTypeError("Expected a boolean value (true/false)")
+
+
 import tcrcloud.cloud
 import tcrcloud.radar
 import tcrcloud.download
@@ -24,9 +36,8 @@ def main():
     parser.add_argument("-v", "--version", action="version", version="%(prog)s 1.5.1")
     subparsers = parser.add_subparsers(
         title="command options",
-        help="The program has 6 options: cloud, radar, vgenes, aminoacids, \
-             download or testdata",
-        dest="cloud, radar, vgenes, aminoacids, download or testdata",
+        help="The program has 6 options: cloud, radar, vgenes, aminoacids, download or testdata",
+        dest="command",
         required=True,
     )
 
@@ -64,11 +75,10 @@ def main():
     parser_cloud.add_argument(
         "-l",
         "--legend",
-        type=str,
-        help="indicate if legend should be included, \
-                              default = True",
+        type=str2bool,
+        help="Include a legend in the word cloud (True/False)",
         metavar="True or False",
-        default="True",
+        default=True,
         required=False,
     )
     parser_cloud.add_argument(
@@ -554,7 +564,7 @@ def main():
     )
     parser_vgenes.set_defaults(func=tcrcloud.vgenes.barplot)
 
-       # create subparser for making the amino acids plot
+    # create subparser for making the amino acids plot
     parser_aminoacids = subparsers.add_parser(
         "aminoacids",
         help="Create a \
@@ -610,9 +620,9 @@ def main():
         required=False,
     )
     parser_aminoacids.add_argument(
-    "--by_length",
-    action="store_true",
-    help="Generate output images for each CDR3 length group (only process groups with ≥2.5% of total reads)"
+        "--by_length",
+        action="store_true",
+        help="Generate output images for each CDR3 length group (only process groups with ≥2.5% of total reads)",
     )
     parser_aminoacids.set_defaults(func=tcrcloud.aminoacids.aminoacids)
 
@@ -647,25 +657,26 @@ def main():
     args = parser.parse_args()
     try:
         args.func(args)
-    except FileNotFoundError:
-        if dir(args)[-2] == "repertoire":
-            sys.stderr.write(
-                "TCRcloud error: " + args.repertoire + " doesn't seem to exist\n"
-            )
-        elif dir(args)[-2] == "rearrangements":
-            sys.stderr.write(
-                "TCRcloud error: " + args.rearrangements + " doesn't seem to exist\n"
-            )
-    except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
-        sys.stderr.write(
-            "TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR repertoire file\n"
+    except FileNotFoundError as exc:
+        filename = getattr(args, "repertoire", None) or getattr(
+            args, "rearrangements", None
         )
-    except (KeyError, TypeError):
-        sys.stderr.write(
-            "TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR rearrangements file\n"
-        )
+        if filename:
+            sys.stderr.write(f"TCRcloud error: {filename} doesn't seem to exist\n")
+        else:
+            sys.stderr.write(str(exc) + "\n")
+    except ValueError as exc:
+        sys.stderr.write(str(exc) + "\n")
+#     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
+#         sys.stderr.write(
+#             "TCRcloud error: It seems you did not indicate a \
+# properly formatted AIRR repertoire file\n"
+#         )
+#     except (KeyError, TypeError):
+#         sys.stderr.write(
+#             "TCRcloud error: It seems you did not indicate a \
+# properly formatted AIRR rearrangements file\n"
+#         )
 
 
 if __name__ == "__main__":
