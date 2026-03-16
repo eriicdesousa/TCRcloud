@@ -1,9 +1,55 @@
+"""Formatting utilities for TCRcloud.
+
+This module provides helpers to load and clean AIRR rearrangement data and to
+produce summary tables used by the downstream TCRcloud analysis pipeline.
+
+Expected input is an AIRR rearrangement file (TSV) that may include a
+`duplicate_count` column. The downstream pipeline assumes the output contains
+cleaned `junction_aa`, `v_call`, `j_call`, and an inferred `chain` value.
+"""
+
+from __future__ import annotations
+
+from typing import Sequence
+
 import pandas as pd
 
 import airr
 
 
+INVALID_CDR3_CHARS = {"X", "*", "B", "Z", "J", "_"}
+
+
+def _clean_v_calls(v_call: str) -> tuple[str, str]:
+    """Extract two key characters from a V call string for matching."""
+
+    if not v_call:
+        return "", ""
+
+    return (
+        v_call[2] if len(v_call) > 2 else "",
+        v_call[-6] if len(v_call) > 5 else "",
+    )
+
+
+def _is_valid_cdr3(cdr3: str) -> bool:
+    """Return True if CDR3 sequence meets expected quality filters."""
+
+    if not cdr3:
+        return False
+    if not cdr3.startswith("C"):
+        return False
+    if cdr3[-1] not in {"F", "W"}:
+        return False
+    if INVALID_CDR3_CHARS.intersection(cdr3):
+        return False
+    return True
+
+
 def format_data(args):
+    # Determine which columns are present in the input rearrangement file.
+    # Some AIRR exports include a `duplicate_count` column; we need to keep it if
+    # present so that downstream aggregates can sum properly.
     with open(args.rearrangements) as f:
         first_line = f.readline()
         if "duplicate_count" in first_line:
@@ -26,183 +72,132 @@ def format_data(args):
                 "productive",
             ]
 
+    # Validate the file in-place with AIRR schema rules and open a streaming reader.
     airr.validate_rearrangement(args.rearrangements, True)
     reader = airr.read_rearrangement(args.rearrangements)
-    print("Preparing data")
-    empty_list = []
-    # keep only part of the data
+
+    # Collect filtered rows in a list so we can build a DataFrame at the end.
+    valid_rows: list[dict] = []
+    # Iterate over each rearrangement record and keep only the rows that
+    # satisfy a set of biological quality filters.
     for row in reader:
+        # Keep only productive rearrangements (per AIRR definition).
         productive = row.get("productive")
-        CDR3 = row.get("junction_aa")
-        try:
-            v_call = row.get("v_call")[2]
-            v_call2 = row.get("v_call")[-6]
-        except IndexError:
-            v_call = ""
-        try:
-            j_call = row.get("j_call")[2]
-        except IndexError:
-            j_call = ""
-        if productive is True:
-            if CDR3 != "":
-                if v_call != "":
-                    if j_call != "":
-                        if "X" not in CDR3:
-                            if "*" not in CDR3:
-                                if "B" not in CDR3:
-                                    if "Z" not in CDR3:
-                                        if "J" not in CDR3:
-                                            if "_" not in CDR3:
-                                                if CDR3[0] == "C":
-                                                    if (
-                                                        CDR3[-1] == "F"
-                                                        or CDR3[-1] == "W"
-                                                    ):
-                                                        if v_call == j_call:
-                                                            empty_list.append(
-                                                                {
-                                                                    x: row[x]
-                                                                    for x in keys
-                                                                }
-                                                            )
-                                                        elif v_call2 == j_call:
-                                                            empty_list.append(
-                                                                {
-                                                                    x: row[x]
-                                                                    for x in keys
-                                                                }
-                                                            )
+        if productive is not True:
+            continue
 
-    df = pd.DataFrame(empty_list)
+        # Filter invalid or low-quality CDR3 sequences.
+        cdr3 = row.get("junction_aa") or ""
+        if not _is_valid_cdr3(cdr3):
+            continue
 
-    # keep only one first V gene when there are multiple in the column
-    df["v_call"] = df.v_call.str.split(",", n=1, expand=True)[0]
+        # Extract the key matching characters from the V and J calls.
+        v_call_raw = row.get("v_call") or ""
+        j_call_raw = row.get("j_call") or ""
 
-    # remove allele information from v_call and keep only the gene information
-    if "*" in str(df.v_call.head(1)):
-        df["v_call"] = df.apply(lambda x: x["v_call"][:-3], axis=1)
+        v_call, v_call2 = _clean_v_calls(v_call_raw)
+        j_call = j_call_raw[2] if len(j_call_raw) > 2 else ""
+        if not (v_call and j_call):
+            continue
 
-    # create column with chain information
-    df["chain"] = df.apply(
-        lambda x: (
-            x["v_call"][-3]
-            if "DV" in x["v_call"] and "DJ" in x["j_call"]
-            else x["v_call"][2]
-        ),
-        axis=1,
+        # Keep only rows where the V and J calls agree (either exact or via
+        # the secondary position in the V call string).
+        if v_call != j_call and v_call2 != j_call:
+            continue
+
+        valid_rows.append({k: row[k] for k in keys})
+
+    # Build a DataFrame from the filtered records.
+    df = pd.DataFrame(valid_rows)
+
+    # If multiple V gene assignments are present (comma-separated), keep only the
+    # first one.
+    df["v_call"] = df["v_call"].str.split(",", n=1, expand=True)[0]
+
+    # Drop allele suffixes (e.g. '*01' etc.) from v_call for consistent grouping.
+    if df["v_call"].astype(str).str.contains(r"\*", regex=True).any():
+        df["v_call"] = df["v_call"].str.replace(r"\*.*$", "", regex=True)
+
+    # Infer chain information (TCR alpha/beta etc.) from V/J calls.
+    is_dv_dj = df["v_call"].str.contains("DV", na=False) & df["j_call"].str.contains(
+        "DJ", na=False
     )
+
+    df["chain"] = pd.NA
+    df.loc[is_dv_dj, "chain"] = df.loc[is_dv_dj, "v_call"].str[-3]
+    df.loc[~is_dv_dj, "chain"] = df.loc[~is_dv_dj, "v_call"].str[2]
 
     return df
 
 
-def format_convergence(df):
-    # format the df to aggregate by junction
-    aggregate = df.pivot_table(
-        index=["junction_aa", "junction", "repertoire_id", "chain"], aggfunc="size"
-    ).reset_index()
-    del df
-    for_convergence = aggregate.pivot_table(
-        index=["junction_aa", "repertoire_id", "chain"], aggfunc="size"
-    ).reset_index()
+def _aggregate_counts(df: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame:
+    """Aggregate counts by group, using duplicate_count when available."""
 
-    for_convergence.rename(columns={0: "counts"}, inplace=True)
-    for_convergence = for_convergence.sort_values(by="counts", ascending=False)
-    return for_convergence
-
-
-def format_metrics(df):
+    # If the input carries explicit counts per row, sum them; otherwise count
+    # each row as a single unit.
     if "duplicate_count" in df.columns:
-        aggregate = df.loc[
-            :, ("junction_aa", "repertoire_id", "chain", "duplicate_count")
-        ]
-        del df
-        aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
-        aggregate = (
-            aggregate.groupby(["junction_aa", "repertoire_id", "chain"])
+        agg = (
+            df.loc[:, list(group_by) + ["duplicate_count"]]
+            .rename(columns={"duplicate_count": "counts"})
+            .groupby(list(group_by), dropna=False)
             .sum()
             .reset_index()
         )
-        aggregate = aggregate.sort_values(by="counts", ascending=False)
     else:
-        aggregate = df.pivot_table(
-            index=["junction_aa", "repertoire_id", "chain"], aggfunc="size"
-        ).reset_index()
-        del df
-        aggregate.rename(columns={0: "counts"}, inplace=True)
-        aggregate = aggregate.sort_values(by="counts", ascending=False)
-    return aggregate
-
-
-def format_cloud(df):
-    if "duplicate_count" in df.columns:
-        aggregate = df.loc[
-            :, ("junction_aa", "v_call", "repertoire_id", "chain", "duplicate_count")
-        ]
-        del df
-        aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
-        aggregate = (
-            aggregate.groupby(["junction_aa", "v_call", "repertoire_id", "chain"])
-            .sum()
+        agg = (
+            df.pivot_table(index=list(group_by), aggfunc="size")
             .reset_index()
+            .rename(columns={0: "counts"})
         )
-        aggregate = aggregate.sort_values(by="counts", ascending=False)
-    else:
-        aggregate = df.pivot_table(
-            index=["junction_aa", "v_call", "repertoire_id", "chain"], aggfunc="size"
-        ).reset_index()
-        del df
-        aggregate.rename(columns={0: "counts"}, inplace=True)
-        aggregate = aggregate.sort_values(by="counts", ascending=False)
-    return aggregate
+
+    return agg.sort_values(by="counts", ascending=False)
 
 
-def format_vgene(df):
-    if "duplicate_count" in df.columns:
-        aggregate = df.loc[
-            :, ("junction_aa", "v_call", "repertoire_id", "chain", "duplicate_count")
-        ]
-        del df
-        aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
-        aggregate = (
-            aggregate.groupby(["junction_aa", "v_call", "repertoire_id", "chain"])
-            .sum()
-            .reset_index()
-        )
-        aggregate = aggregate.sort_values(by="counts", ascending=False)
-    else:
-        aggregate = df.pivot_table(
-            index=["junction_aa", "v_call", "repertoire_id", "chain"], aggfunc="size"
-        ).reset_index()
-        del df
-        aggregate.rename(columns={0: "counts"}, inplace=True)
-        aggregate = aggregate.sort_values(by="counts", ascending=False)
-    aggregate["CDR3_length"] = (
-        aggregate["junction_aa"].str[1:-1].str.len()
-    )  # Removing the flanking a.a. from length for true CDR3 count
-    return aggregate
+def format_convergence(df: pd.DataFrame) -> pd.DataFrame:
+    """Compute convergence (# unique junctions per CDR3/repertoire/chain)."""
+
+    # Count how many unique junctions exist for each (CDR3, repertoire, chain).
+    per_junction = (
+        df.groupby(
+            ["junction_aa", "junction", "repertoire_id", "chain"]
+        )  # noqa: WPS221
+        .size()
+        .reset_index(name="count")
+    )
+
+    # Then count how many distinct junctions each CDR3 has across repertoires.
+    return (
+        per_junction.groupby(["junction_aa", "repertoire_id", "chain"])  # noqa: WPS221
+        .size()
+        .reset_index(name="counts")
+        .sort_values(by="counts", ascending=False)
+    )
 
 
-def format_aminoacids(df):
-    if "duplicate_count" in df.columns:
-        aggregate = df.loc[
-            :, ("junction_aa", "repertoire_id", "chain", "duplicate_count")
-        ]
-        del df
-        aggregate.rename(columns={"duplicate_count": "counts"}, inplace=True)
-        aggregate = (
-            aggregate.groupby(["junction_aa", "repertoire_id", "chain"])
-            .sum()
-            .reset_index()
-        )
-        aggregate = aggregate.sort_values(by="counts", ascending=False)
-    else:
-        aggregate = df.pivot_table(
-            index=["junction_aa", "repertoire_id", "chain"], aggfunc="size"
-        ).reset_index()
-        del df
-        aggregate.rename(columns={0: "counts"}, inplace=True)
-        aggregate = aggregate.sort_values(by="counts", ascending=False)
-    return aggregate
+def format_metrics(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate sequence counts for metrics."""
+
+    return _aggregate_counts(df, ["junction_aa", "repertoire_id", "chain"])
+
+
+def format_cloud(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate sequence counts for cloud visualization."""
+
+    return _aggregate_counts(df, ["junction_aa", "v_call", "repertoire_id", "chain"])
+
+
+def format_vgene(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate v-gene counts and annotate CDR3 length."""
+
+    agg = _aggregate_counts(df, ["junction_aa", "v_call", "repertoire_id", "chain"])
+    agg["CDR3_length"] = agg["junction_aa"].str[1:-1].str.len()
+    return agg
+
+
+def format_aminoacids(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate amino-acid composition counts."""
+
+    return _aggregate_counts(df, ["junction_aa", "repertoire_id", "chain"])
 
 
 # print("""
