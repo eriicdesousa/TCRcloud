@@ -114,164 +114,23 @@ def main():
     parser_radar.add_argument(
         "-l",
         "--legend",
-        type=str,
-        help="indicate if legend should be included, \
-                              default = True",
+        type=str2bool,
+        help="Include legend in the radar plot (True/False)",
         metavar="True or False",
-        default="True",
+        default=True,
         required=False,
     )
     parser_radar.add_argument(
         "-e",
         "--export",
-        type=str,
-        help="indicate if the metrics from the radar \
-                              should be exported to a text file, \
-                              default = False",
+        type=str2bool,
+        help="Export computed radar metrics to a text file (True/False)",
         metavar="True or False",
-        default="False",
+        default=False,
         required=False,
     )
-    parser_radar.add_argument(
-        "-fh",
-        "--fmax",
-        type=float,
-        help="define the max value for the D50 \
-                              Index axis, default = 50",
-        metavar="float",
-        default=50,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-fl",
-        "--fmin",
-        type=float,
-        help="define the min value for the D50 \
-                              Index axis, default = 0",
-        metavar="float",
-        default=0,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-ch",
-        "--cmax",
-        type=float,
-        help="define the max value for the Convergence \
-                              axis, default = 1",
-        metavar="float",
-        default=1,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-cl",
-        "--cmin",
-        type=float,
-        help="define the min value for the Convergence \
-                              axis, default = 0",
-        metavar="float",
-        default=0,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-chh",
-        "--chmax",
-        type=int,
-        help="define the max value for the Chao1 \
-                              Index axis, default = 17000",
-        metavar="int",
-        default=17000,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-chl",
-        "--chmin",
-        type=int,
-        help="define the min value for the Chao1 \
-                              Index axis, default = 0",
-        metavar="int",
-        default=0,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-uh",
-        "--umax",
-        type=int,
-        help="define the max value for the Distinct \
-                              CDR3 axis, default = 10000",
-        metavar="int",
-        default=10000,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-ul",
-        "--umin",
-        type=int,
-        help="define the min value for the Distinct \
-                              CDR3 axis, default = 0",
-        metavar="int",
-        default=0,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-gsh",
-        "--gsmax",
-        type=float,
-        help="define the max value for the Gini-Simpson \
-                              Index axis, default = 1",
-        metavar="float",
-        default=1,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-gsl",
-        "--gsmin",
-        type=float,
-        help="define the min value for the Gini-Simpson \
-                              Index axis, default = 0.90",
-        metavar="float",
-        default=0.90,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-sh",
-        "--smax",
-        type=float,
-        help="define the max value for the Shannon \
-                              Index axis, default = 15",
-        metavar="float",
-        default=15,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-sl",
-        "--smin",
-        type=float,
-        help="define the min value for the Shannon \
-                              Index axis, default = 0",
-        metavar="float",
-        default=0,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-gh",
-        "--gmax",
-        type=float,
-        help="define the max value for the Gini \
-                              Coefficient axis, default = 1",
-        metavar="float",
-        default=1,
-        required=False,
-    )
-    parser_radar.add_argument(
-        "-gl",
-        "--gmin",
-        type=float,
-        help="define the min value for the Gini \
-                              Coefficent axis, default = 0",
-        metavar="float",
-        default=0,
-        required=False,
-    )
+    # Note: min/max scaling for radar metrics is fixed / computed automatically.
+    # Removed CLI options for explicit min/max values to simplify usage.
 
     parser_radar.set_defaults(func=tcrcloud.radar.radar)
 
