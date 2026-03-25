@@ -83,7 +83,11 @@ def format_data(args):
     for row in reader:
         # Keep only productive rearrangements (per AIRR definition).
         productive = row.get("productive")
-        if productive is not True:
+        if productive is not True and str(productive).lower() not in (
+            "true",
+            "t",
+            "1",
+        ):
             continue
 
         # Filter invalid or low-quality CDR3 sequences.
@@ -136,9 +140,10 @@ def _aggregate_counts(df: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame
     # If the input carries explicit counts per row, sum them; otherwise count
     # each row as a single unit.
     if "duplicate_count" in df.columns:
+        dup = df.loc[:, list(group_by) + ["duplicate_count"]].copy()
+        dup["duplicate_count"] = pd.to_numeric(dup["duplicate_count"], errors="coerce").fillna(1)
         agg = (
-            df.loc[:, list(group_by) + ["duplicate_count"]]
-            .rename(columns={"duplicate_count": "counts"})
+            dup.rename(columns={"duplicate_count": "counts"})
             .groupby(list(group_by), dropna=False)
             .sum()
             .reset_index()

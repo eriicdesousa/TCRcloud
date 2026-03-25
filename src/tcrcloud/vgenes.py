@@ -11,14 +11,20 @@ import tcrcloud.format
 import tcrcloud.colours
 import tcrcloud.vlength
 
-# Import default dicts that contain V gene information
-TRAV = tcrcloud.colours.TRAV
-TRBV = tcrcloud.colours.TRBV
-TRGV = tcrcloud.colours.TRGV
-TRDV = tcrcloud.colours.TRDV
-IGHV = tcrcloud.colours.IGHV
-IGKV = tcrcloud.colours.IGKV
-IGLV = tcrcloud.colours.IGLV
+def _palette_for_chain(chain_letter: str, species: str = "homo_sapiens"):
+    mapping = {
+        "A": "TRAV",
+        "B": "TRBV",
+        "G": "TRGV",
+        "D": "TRDV",
+        "H": "IGHV",
+        "K": "IGKV",
+        "L": "IGLV",
+    }
+    vgene_type = mapping.get(chain_letter.upper())
+    if vgene_type is None:
+        return {}
+    return tcrcloud.colours.get_vgene_palette(vgene_type, species)
 
 
 def get_table(keys, samples, args):
@@ -40,8 +46,9 @@ True or False\n"
     for_comparison["K"] = []
     for_comparison["L"] = []
     for j in keys:
+        species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
         if j[0] == "A":
-            x_axis = TRAV
+            x_axis = _palette_for_chain("A", species)
             plot_aspect = (3.5, 1, 1)
             x_size = 6
             ymax = args.yhighalpha
@@ -49,7 +56,7 @@ True or False\n"
             zmax = args.zhighalpha
             zmin = args.zlowalpha
         if j[0] == "B":
-            x_axis = TRBV
+            x_axis = _palette_for_chain("B", species)
             plot_aspect = (3, 1, 1)
             x_size = 4
             ymax = args.yhighbeta
@@ -57,7 +64,7 @@ True or False\n"
             zmax = args.zhighbeta
             zmin = args.zlowbeta
         if j[0] == "G":
-            x_axis = TRGV
+            x_axis = _palette_for_chain("G", species)
             plot_aspect = (2, 1, 1)
             x_size = 10
             ymax = args.yhighgamma
@@ -65,7 +72,7 @@ True or False\n"
             zmax = args.zhighgamma
             zmin = args.zlowgamma
         if j[0] == "D":
-            x_axis = TRDV
+            x_axis = dict(_palette_for_chain("D", species))
             x_axis.pop("TRAV14/DV4", None)
             x_axis.pop("TRAV29/DV5", None)
             x_axis.pop("TRAV23/DV6", None)
@@ -78,7 +85,7 @@ True or False\n"
             zmax = args.zhighdelta
             zmin = args.zlowdelta
         if j[0] == "H":
-            x_axis = IGHV
+            x_axis = _palette_for_chain("H", species)
             plot_aspect = (3.5, 1, 1)
             x_size = 4
             ymax = args.yhighheavy
@@ -86,7 +93,7 @@ True or False\n"
             zmax = args.zhighheavy
             zmin = args.zlowheavy
         if j[0] == "K":
-            x_axis = IGKV
+            x_axis = _palette_for_chain("K", species)
             plot_aspect = (3.5, 1, 1)
             x_size = 4
             ymax = args.yhighkappa
@@ -94,7 +101,7 @@ True or False\n"
             zmax = args.zhighkappa
             zmin = args.zlowkappa
         if j[0] == "L":
-            x_axis = IGLV
+            x_axis = _palette_for_chain("L", species)
             plot_aspect = (3.5, 1, 1)
             x_size = 4
             ymax = args.yhighlambda

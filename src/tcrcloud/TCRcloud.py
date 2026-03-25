@@ -73,6 +73,15 @@ def main():
         required=False,
     )
     parser_cloud.add_argument(
+        "-p",
+        "--species",
+        type=str,
+        help="Species to use for built-in V-gene colours (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
+        metavar="species",
+        default="homo_sapiens",
+        required=False,
+    )
+    parser_cloud.add_argument(
         "-l",
         "--legend",
         type=str2bool,
@@ -193,6 +202,15 @@ def main():
         help="indicate the min value for the z axis \
                               for alpha chain, default = adapts to the data",
         metavar="float",
+        required=False,
+    )
+    parser_vgenes.add_argument(
+        "-p",
+        "--species",
+        type=str,
+        help="Species to use for built-in V-gene colours (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
+        metavar="species",
+        default="homo_sapiens",
         required=False,
     )
     parser_vgenes.add_argument(
@@ -526,16 +544,16 @@ def main():
             sys.stderr.write(str(exc) + "\n")
     except ValueError as exc:
         sys.stderr.write(str(exc) + "\n")
-#     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
-#         sys.stderr.write(
-#             "TCRcloud error: It seems you did not indicate a \
-# properly formatted AIRR repertoire file\n"
-#         )
-#     except (KeyError, TypeError):
-#         sys.stderr.write(
-#             "TCRcloud error: It seems you did not indicate a \
-# properly formatted AIRR rearrangements file\n"
-#         )
+    except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
+        sys.stderr.write(
+            "TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR repertoire file\n"
+        )
+    except (KeyError, TypeError):
+        sys.stderr.write(
+            "TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR rearrangements file\n"
+        )
 
 
 if __name__ == "__main__":

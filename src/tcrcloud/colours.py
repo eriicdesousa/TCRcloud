@@ -688,3 +688,76 @@ aminoacids = {
     "K": "#8400CD",
     "H": "#FF3CFE",
 }
+
+# Species-specific palettes in additional modules
+from . import colours_mus_musculus, colours_macaca_mulatta, colours_macaca_fascicularis
+
+HOMO_SAPIENS = {
+    "TRAV": TRAV,
+    "TRBV": TRBV,
+    "TRGV": TRGV,
+    "TRDV": TRDV,
+    "IGHV": IGHV,
+    "IGKV": IGKV,
+    "IGLV": IGLV,
+}
+
+MUS_MUSCULUS = {
+    "TRAV": colours_mus_musculus.TRAV,
+    "TRBV": colours_mus_musculus.TRBV,
+    "TRGV": colours_mus_musculus.TRGV,
+    "TRDV": colours_mus_musculus.TRDV,
+    "IGHV": colours_mus_musculus.IGHV,
+    "IGKV": colours_mus_musculus.IGKV,
+    "IGLV": colours_mus_musculus.IGLV,
+}
+
+MACACA_MULATTA = {
+    "TRAV": colours_macaca_mulatta.TRAV,
+    "TRBV": colours_macaca_mulatta.TRBV,
+    "TRGV": colours_macaca_mulatta.TRGV,
+    "TRDV": colours_macaca_mulatta.TRDV,
+    "IGHV": colours_macaca_mulatta.IGHV,
+    "IGKV": colours_macaca_mulatta.IGKV,
+    "IGLV": colours_macaca_mulatta.IGLV,
+}
+
+MACACA_FASCICULARIS = {
+    "TRAV": colours_macaca_fascicularis.TRAV,
+    "TRBV": colours_macaca_fascicularis.TRBV,
+    "TRGV": colours_macaca_fascicularis.TRGV,
+    "TRDV": colours_macaca_fascicularis.TRDV,
+    "IGHV": colours_macaca_fascicularis.IGHV,
+    "IGKV": IGKV,
+    "IGLV": IGLV,
+}
+
+SPECIES_VGENES = {
+    "human": HOMO_SAPIENS,
+    "homo_sapiens": HOMO_SAPIENS,
+    "mus_musculus": MUS_MUSCULUS,
+    "mouse": MUS_MUSCULUS,
+    "macaca_mulatta": MACACA_MULATTA,
+    "macaca fascicularis": MACACA_FASCICULARIS,
+}
+
+
+def _normalize_species(species):
+    if not species:
+        return "homo_sapiens"
+    return species.strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def get_vgene_palette(chain_name, species=None):
+    """Get the V-gene palette for chain_name in the given species."""
+    species_norm = _normalize_species(species)
+    species_map = SPECIES_VGENES.get(species_norm, HOMO_SAPIENS)
+    return species_map.get(chain_name.upper(), {})
+
+
+def get_color_from_vcall(vcall, species=None, default="grey"):
+    """Get hex color for a vcall (like TRAV1-2) in a species-specific palette."""
+    if not vcall or len(vcall) < 4:
+        return default
+    palette = get_vgene_palette(vcall[:4], species)
+    return palette.get(vcall, default)

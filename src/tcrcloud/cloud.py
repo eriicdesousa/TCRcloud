@@ -20,25 +20,14 @@ import matplotlib.patches as mpatches
 import tcrcloud.colours
 import tcrcloud.format
 
-# Import default colours based on the V gene
-TRAV = tcrcloud.colours.TRAV
-TRBV = tcrcloud.colours.TRBV
-TRGV = tcrcloud.colours.TRGV
-TRDV = tcrcloud.colours.TRDV
-IGHV = tcrcloud.colours.IGHV
-IGKV = tcrcloud.colours.IGKV
-IGLV = tcrcloud.colours.IGLV
+# No fixed species default here; per-chain color lookup is dynamic via tcrcloud.colours helpers.
 
-# Map V gene prefix to the palette mapping so we can avoid `eval`
-VGENE_MAP = {
-    "TRAV": TRAV,
-    "TRBV": TRBV,
-    "TRGV": TRGV,
-    "TRDV": TRDV,
-    "IGHV": IGHV,
-    "IGKV": IGKV,
-    "IGLV": IGLV,
-}
+
+def _vcall_color(
+    vcall: str, species: str = "homo_sapiens", default: str = "grey"
+) -> str:
+    """Resolve a V-gene call to a color string using the requested species palette."""
+    return tcrcloud.colours.get_color_from_vcall(vcall, species, default)
 
 
 # This colours the wordclouds
@@ -73,21 +62,6 @@ def separate(text):
 
 def natural_sort(text):
     return [separate(c) for c in re.split(r"(\d+)", text)]
-
-
-def _vcall_color(vcall: str, default: str = "grey") -> str:
-    """Resolve a V-gene call to a color string.
-
-    The existing palette dictionaries use the full V gene call as the key
-    (e.g., "TRAV1-1"), but we first need to select the right palette based
-    on the prefix ("TRAV", "TRBV", etc.).
-
-    This helper centralises that logic so changes are applied consistently
-    throughout the module.
-    """
-
-    palette = VGENE_MAP.get(vcall[:4], {})
-    return palette.get(vcall, default)
 
 
 def handle_duplicates(df):
@@ -165,7 +139,9 @@ def _load_colour_mapping(colours_path: str) -> dict:
         ) from exc
 
 
-def _build_color_to_words(family: dict, colours_path: str | None) -> dict:
+def _build_color_to_words(
+    family: dict, colours_path: str | None, species: str = "homo_sapiens"
+) -> dict:
     """Build mapping from colours -> list of words for WordCloud.
 
     If `colours_path` is set, the JSON file is treated as the source of truth.
@@ -179,7 +155,7 @@ def _build_color_to_words(family: dict, colours_path: str | None) -> dict:
 
     color_to_words: dict[str, list[str]] = {}
     for aa, vcall in family.items():
-        colour = _vcall_color(vcall)
+        colour = _vcall_color(vcall, species)
         color_to_words.setdefault(colour, []).append(aa)
     return color_to_words
 
@@ -249,7 +225,8 @@ def wordcloud(args):
         ).generate_from_frequencies(text)
 
         # Determine the colors used for each token.
-        color_to_words = _build_color_to_words(family, args.colours)
+        species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
+        color_to_words = _build_color_to_words(family, args.colours, species)
         try:
             grouped_color_func = SimpleGroupedColorFunc(color_to_words, "grey")
         except TypeError as exc:
@@ -258,19 +235,23 @@ def wordcloud(args):
             ) from exc
         wordcloud_obj.recolor(color_func=grouped_color_func)
 
-        # Plot the wordcloud and optionally add a legend.
-        plt.figure(dpi=300.0)
-        plt.imshow(wordcloud_obj, interpolation="bilinear")
-        plt.xticks([])
-        plt.yticks([])
+        # Plot the wordcloud in a fixed square area (5x5) and put legend below.
+        fig = plt.figure(figsize=(7, 7), dpi=300)
+        # wordcloud axis as large as possible while keeping legend just underneath
+        ax_wordcloud = fig.add_axes([0.05, 0.28, 0.9, 0.68])
+        ax_wordcloud.imshow(wordcloud_obj, interpolation="bilinear")
+        ax_wordcloud.set_xticks([])
+        ax_wordcloud.set_yticks([])
 
         if legend and args.colours is None:
-            # Legend only supported for the built-in V-gene colour mapping.
-            colour_map = {v: _vcall_color(v) for v in set(family.values())}
-            _add_legend(colour_map)
+            colour_map = {v: _vcall_color(v, species) for v in set(family.values())}
+            ax_legend = fig.add_axes([0.05, 0.25, 0.9, 0.22])
+            ax_legend.axis("off")
+            with plt.rc_context({"axes.axisbelow": True}):
+                plt.sca(ax_legend)
+                _add_legend(colour_map)
 
         outputname = f"{input_stem}_{repertoire_id}_{chain}.svg"
-        plt.tight_layout()
-        plt.savefig(outputname, dpi=300, bbox_inches="tight")
-        plt.close()
+        fig.savefig(outputname, dpi=300, bbox_inches="tight", pad_inches=0.2)
+        plt.close(fig)
         print("Word cloud saved as " + outputname)
