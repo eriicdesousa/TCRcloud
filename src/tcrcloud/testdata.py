@@ -8,14 +8,19 @@ example workflows.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any, Mapping
 
 import airr
 import requests
 
+from tcrcloud.download import get_session
 
 # Base URL for the iReceptor AIRR API.
+# This specific node is hardcoded (rather than discovered, unlike download.py)
+# because the TCRcloud example dataset (subject "su008" from Yost et al. 2019,
+# study PRJNA509910) is known to live on this repository only.
 HOST_URL = "https://ipa6.ireceptor.org/airr/v1"
 
 
@@ -62,29 +67,77 @@ def _make_query(
     return {"filters": {"op": "and", "content": filters}}
 
 
-def _download_repertoire(query: Mapping[str, Any], output_path: str) -> None:
-    """Download a repertoire and write it to disk using the AIRR library."""
+def _download_repertoire(
+    session: requests.Session, query: Mapping[str, Any], output_path: str
+) -> None:
+    """Download a single repertoire and write it to disk using the AIRR library.
 
-    # Query iReceptor for the requested repertoire.
-    resp = requests.post(f"{HOST_URL}/repertoire", json=query)
-    resp.raise_for_status()
+    ``session`` should be a retry-enabled `requests.Session` (see
+    `tcrcloud.download.get_session`) so transient failures (rate limits,
+    5xx errors) are retried automatically instead of failing the whole
+    `testdata` command on the first hiccup.
+
+    Any failure (network error, bad/non-JSON response, or an empty
+    ``Repertoire`` list) is reported as a friendly "TCRcloud error: ..."
+    message on stderr and exits the process, matching the error-handling
+    style used elsewhere in the CLI (e.g. `tcrcloud.download.testserver`).
+    """
+
+    # Query iReceptor for the requested repertoire. `timeout` prevents the
+    # CLI from hanging indefinitely if the server stops responding.
+    try:
+        resp = session.post(f"{HOST_URL}/repertoire", json=query, timeout=30)
+        resp.raise_for_status()
+    except requests.exceptions.RequestException as exc:
+        sys.stderr.write(f"TCRcloud error: could not reach {HOST_URL} ({exc})\n")
+        sys.exit(1)
 
     # Parse JSON response and write using the airr library.
-    data = resp.json()
-    airr.write_repertoire(output_path, data["Repertoire"], info=data["Info"])
+    try:
+        data = resp.json()
+    except ValueError as exc:
+        sys.stderr.write(
+            f"TCRcloud error: invalid JSON response from {HOST_URL} ({exc})\n"
+        )
+        sys.exit(1)
 
-    print(f"Received {len(data['Repertoire'])} repertoires. Saved as {output_path}")
+    # Guard against a "successful" response that has no actual data, which
+    # would otherwise silently produce an empty repertoire file.
+    repertoires = data.get("Repertoire") or []
+    if not repertoires:
+        sys.stderr.write(
+            f"TCRcloud error: no repertoires were returned by {HOST_URL} for {output_path}\n"
+        )
+        sys.exit(1)
+
+    airr.write_repertoire(output_path, repertoires, info=data["Info"])
+
+    print(f"Received {len(repertoires)} repertoires. Saved as {output_path}")
 
 
 def download(args):
-    """Download example test-data repertoires and generate a legend file."""
+    """Download example test-data repertoires and generate a legend file.
+
+    This is the entry point for the `TCRcloud testdata` CLI command (see
+    the ``testdata`` subparser in `tcrcloud.TCRcloud`). ``args`` is accepted
+    for consistency with the other subcommand entry points but is currently
+    unused, since this command always fetches the same fixed example dataset.
+    """
+
+    # Reuse a single retry-enabled session for both requests so connections
+    # are pooled and transient failures are retried consistently.
+    session = get_session()
 
     # Download alpha and beta repertoires using pre-defined query parameters.
     # The TRA query is a basic locus filter; the TRB query also requires the
     # presence of the rearrangement schema so we get full AIRR rearrangement data.
-    _download_repertoire(_make_query("su008", "TRA"), "alpharepertoire.airr.json")
     _download_repertoire(
-        _make_query("su008", "TRB", require_schema=True), "betarepertoire.airr.json"
+        session, _make_query("su008", "TRA"), "alpharepertoire.airr.json"
+    )
+    _download_repertoire(
+        session,
+        _make_query("su008", "TRB", require_schema=True),
+        "betarepertoire.airr.json",
     )
 
     # A small legend mapping the output identifiers used by the example pipeline
