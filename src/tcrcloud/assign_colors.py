@@ -55,12 +55,32 @@ if __name__ == "__main__":
     import argparse
     import json
 
-    parser = argparse.ArgumentParser(description="Assign Glasbey colors to V-gene dictionaries")
-    parser.add_argument("--source", default="tcrcloud.colours", help="Python module path containing dicts")
-    parser.add_argument("--output", default="trav_colors_glassbey.json", help="Output JSON file")
-    parser.add_argument("--grey-threshold", type=int, default=30, help="Threshold for grey filtering")
-    parser.add_argument("--no-black", action="store_true", default=True, help="Exclude black and near-black")
-    parser.add_argument("--overwrite", action="store_true", default=True, help="Overwrite existing values")
+    parser = argparse.ArgumentParser(
+        description="Assign Glasbey colors to V-gene dictionaries"
+    )
+    parser.add_argument(
+        "--source",
+        default="tcrcloud.colours",
+        help="Python module path containing dicts",
+    )
+    parser.add_argument(
+        "--output", default="trav_colors_glassbey.json", help="Output JSON file"
+    )
+    parser.add_argument(
+        "--grey-threshold", type=int, default=30, help="Threshold for grey filtering"
+    )
+    parser.add_argument(
+        "--no-black",
+        action="store_true",
+        default=True,
+        help="Exclude black and near-black",
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        default=True,
+        help="Overwrite existing values",
+    )
     args = parser.parse_args()
 
     module = importlib.import_module(args.source)
@@ -91,7 +111,9 @@ if __name__ == "__main__":
     is_white_or_grey = override_is_white_or_grey
 
     for name, d in dicts.items():
-        assign_glassbey_colors_to_dict(d, no_black=args.no_black, overwrite=args.overwrite)
+        assign_glassbey_colors_to_dict(
+            d, no_black=args.no_black, overwrite=args.overwrite
+        )
         print(f"  {name}: {len(d)} keys (generated)")
 
     if "TRAV" in dicts:
