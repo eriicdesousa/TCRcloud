@@ -3,8 +3,15 @@ import argparse
 import yaml
 import json
 import sys
+from importlib.metadata import PackageNotFoundError, version
 
 import matplotlib.pyplot as plt
+
+try:
+    __version__ = version("TCRcloud")
+except PackageNotFoundError:
+    # Package isn't installed (e.g. running directly from a source checkout).
+    __version__ = "0.0.0.dev0"
 
 
 def str2bool(v):
@@ -33,7 +40,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create visualizations from AIRR-seq data", prog="TCRcloud"
     )
-    parser.add_argument("-v", "--version", action="version", version="%(prog)s 1.5.1")
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"%(prog)s {__version__}"
+    )
     subparsers = parser.add_subparsers(
         title="command options",
         help="The program has 6 options: cloud, radar, vgenes, aminoacids, download or testdata",
@@ -545,15 +554,11 @@ def main():
     except ValueError as exc:
         sys.stderr.write(str(exc) + "\n")
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
-        sys.stderr.write(
-            "TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR repertoire file\n"
-        )
+        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR repertoire file\n")
     except (KeyError, TypeError):
-        sys.stderr.write(
-            "TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR rearrangements file\n"
-        )
+        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR rearrangements file\n")
 
 
 if __name__ == "__main__":
