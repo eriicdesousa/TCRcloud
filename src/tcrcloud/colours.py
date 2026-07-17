@@ -738,7 +738,7 @@ SPECIES_VGENES = {
     "mus_musculus": MUS_MUSCULUS,
     "mouse": MUS_MUSCULUS,
     "macaca_mulatta": MACACA_MULATTA,
-    "macaca fascicularis": MACACA_FASCICULARIS,
+    "macaca_fascicularis": MACACA_FASCICULARIS,
 }
 
 

@@ -21,7 +21,21 @@ INVALID_CDR3_CHARS = {"X", "*", "B", "Z", "J", "_"}
 
 
 def _clean_v_calls(v_call: str) -> tuple[str, str]:
-    """Extract two key characters from a V call string for matching."""
+    """Extract the locus letter(s) from a V call string for V/J matching.
+
+    Returns a `(primary, secondary)` pair of single characters used to check
+    that a V call agrees with a J call:
+
+    - `primary` is `v_call[2]`, the locus letter in a standard call, e.g.
+      "TRBV20-1" -> "B", matching `j_call[2]` of "TRBJ2-3" -> "B".
+    - `secondary` is `v_call[-6]`, which lands on the "D" of the "/DV"
+      suffix for ambiguous alpha/delta calls like "TRAV1-2/DV8*01", so they
+      can also match a "TRDJ..." j_call.
+
+    NOTE: both offsets assume a fixed-width allele suffix ("*01") and a
+    single-digit DV gene number; unusual formatting (e.g. two-digit DV gene
+    numbers, or no allele suffix) can shift these positions.
+    """
 
     if not v_call:
         return "", ""
@@ -47,12 +61,23 @@ def _is_valid_cdr3(cdr3: str) -> bool:
 
 
 def format_data(args):
+    """Load, validate and filter an AIRR rearrangements TSV file.
+
+    Rows are kept only if they are marked `productive`, have a CDR3
+    (`junction_aa`) that passes `_is_valid_cdr3`, and have V/J calls that
+    agree with each other (see `_clean_v_calls`).
+
+    Returns a DataFrame with cleaned `junction_aa`/`v_call` columns and an
+    inferred `chain` column, ready for the `format_*` aggregation helpers.
+    """
+
     # Determine which columns are present in the input rearrangement file.
     # Some AIRR exports include a `duplicate_count` column; we need to keep it if
     # present so that downstream aggregates can sum properly.
     with open(args.rearrangements) as f:
         first_line = f.readline()
-        if "duplicate_count" in first_line:
+        header_columns = first_line.rstrip("\n").split("\t")
+        if "duplicate_count" in header_columns:
             keys = [
                 "junction_aa",
                 "v_call",
@@ -72,7 +97,9 @@ def format_data(args):
                 "productive",
             ]
 
-    # Validate the file in-place with AIRR schema rules and open a streaming reader.
+    # Validate the file against the AIRR rearrangement schema; the second
+    # positional argument (`debug=True`) makes `airr` raise on the first
+    # validation error instead of only logging warnings.
     airr.validate_rearrangement(args.rearrangements, True)
     reader = airr.read_rearrangement(args.rearrangements)
 
@@ -111,6 +138,16 @@ def format_data(args):
 
         valid_rows.append({k: row[k] for k in keys})
 
+    if not valid_rows:
+        # `pd.DataFrame([])` has no columns, which would turn the next few
+        # lines into a confusing `KeyError: 'v_call'` instead of explaining
+        # that the file simply had no rows passing the quality filters
+        # (productive, valid CDR3, matching V/J calls).
+        raise ValueError(
+            "TCRcloud error: no productive rearrangements with a valid CDR3 "
+            f"and matching V/J calls were found in {args.rearrangements}"
+        )
+
     # Build a DataFrame from the filtered records.
     df = pd.DataFrame(valid_rows)
 
@@ -122,7 +159,12 @@ def format_data(args):
     if df["v_call"].astype(str).str.contains(r"\*", regex=True).any():
         df["v_call"] = df["v_call"].str.replace(r"\*.*$", "", regex=True)
 
-    # Infer chain information (TCR alpha/beta etc.) from V/J calls.
+    # Infer chain information (TCR alpha/beta/gamma/delta etc.) from V/J calls.
+    # Genes like "TRAV1-2/DV8" are ambiguously alpha or delta; when paired
+    # with a "TRDJ..." j_call (checked above via `_clean_v_calls`), treat
+    # them as delta by reading the "D" from the "/DV" suffix (3rd-from-last
+    # character, e.g. "TRAV1-2/DV8" -> "D"). Otherwise the chain is simply
+    # the locus letter at index 2 of the (allele-stripped) v_call.
     is_dv_dj = df["v_call"].str.contains("DV", na=False) & df["j_call"].str.contains(
         "DJ", na=False
     )

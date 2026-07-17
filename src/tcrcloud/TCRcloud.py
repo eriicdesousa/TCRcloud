@@ -102,6 +102,16 @@ def main():
     parser_cloud.add_argument(
         "-s", "--size", type=int, help=argparse.SUPPRESS, default=1000, required=False
     )
+    parser_cloud.add_argument(
+        "-f",
+        "--format",
+        type=str,
+        choices=["svg", "png"],
+        help="Output image format for the word cloud (svg or png)",
+        metavar="svg or png",
+        default="png",
+        required=False,
+    )
 
     parser_cloud.set_defaults(func=tcrcloud.cloud.wordcloud)
 
@@ -544,13 +554,17 @@ def main():
     try:
         args.func(args)
     except FileNotFoundError as exc:
-        filename = getattr(args, "repertoire", None) or getattr(
-            args, "rearrangements", None
-        )
-        if filename:
-            sys.stderr.write(f"TCRcloud error: {filename} doesn't seem to exist\n")
-        else:
-            sys.stderr.write(str(exc) + "\n")
+        message = str(exc)
+        if not message.startswith("TCRcloud error:"):
+            filename = getattr(args, "repertoire", None) or getattr(
+                args, "rearrangements", None
+            )
+            message = (
+                f"TCRcloud error: {filename} doesn't seem to exist"
+                if filename
+                else message
+            )
+        sys.stderr.write(message + "\n")
     except ValueError as exc:
         sys.stderr.write(str(exc) + "\n")
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):

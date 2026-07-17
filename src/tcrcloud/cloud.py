@@ -83,11 +83,13 @@ def handle_duplicates(df):
         return df
 
     # Prepend a growing number of spaces to each duplicate to ensure uniqueness.
+    # The first occurrence of a repeated sequence keeps its original spelling
+    # (0 spaces); each subsequent occurrence gets one more leading space.
     counts = df.loc[duplicated].groupby("junction_aa").cumcount()
 
     # `counts` is a pandas Series, so we use a Python-level mapping to avoid
     # pandas/numpy string ufunc multiplication issues.
-    prefixes = counts.apply(lambda c: " " * (int(c) + 1))
+    prefixes = counts.apply(lambda c: " " * int(c))
     df.loc[duplicated, "junction_aa"] = prefixes + df.loc[duplicated, "junction_aa"]
     return df
 
@@ -196,6 +198,17 @@ def wordcloud(args):
 
     legend = bool(legend)
 
+    # Determine the output image format (defaults to "png"). Validated here
+    # too since `wordcloud()` may be called directly (e.g. in tests) rather
+    # than only via the argparse CLI, whose `choices=["svg", "png"]` wouldn't
+    # otherwise catch a bad value.
+    output_format = (getattr(args, "format", None) or "png").strip().lower()
+    if output_format not in ("svg", "png"):
+        raise ValueError(
+            f"TCRcloud error: unsupported output format '{output_format}'. "
+            "Please choose 'svg' or 'png'"
+        )
+
     # Format and validate the input AIRR CDR3 data.
     samples_df = tcrcloud.format.format_data(args)
     formatted_samples = tcrcloud.format.format_cloud(samples_df)
@@ -244,6 +257,12 @@ def wordcloud(args):
         ax_wordcloud.set_yticks([])
 
         if legend and args.colours is None:
+            # The legend maps V-gene calls to colors, which only makes sense
+            # when colors are derived from V-gene calls (the built-in
+            # species palettes). When a custom `--colours` JSON file is used,
+            # colors are assigned directly to arbitrary CDR3 words instead of
+            # V-genes, so there is no V-gene/color mapping to show and the
+            # legend is intentionally skipped even if `--legend` is True.
             colour_map = {v: _vcall_color(v, species) for v in set(family.values())}
             ax_legend = fig.add_axes([0.05, 0.25, 0.9, 0.22])
             ax_legend.axis("off")
@@ -251,7 +270,7 @@ def wordcloud(args):
                 plt.sca(ax_legend)
                 _add_legend(colour_map)
 
-        outputname = f"{input_stem}_{repertoire_id}_{chain}.svg"
+        outputname = f"{input_stem}_{repertoire_id}_{chain}.{output_format}"
         fig.savefig(outputname, dpi=300, bbox_inches="tight", pad_inches=0.2)
         plt.close(fig)
         print("Word cloud saved as " + outputname)
