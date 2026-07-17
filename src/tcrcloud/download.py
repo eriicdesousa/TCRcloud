@@ -221,11 +221,9 @@ def airrdownload(args):
     try:
         data = airr.read_airr(args.repertoire)
     except TypeError:
-        sys.stderr.write(
-            "TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR repertoire file\n"
-        )
-        exit()
+        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
+properly formatted AIRR repertoire file\n")
+        sys.exit(1)
 
     # The metadata file may contain multiple repertoires; we will iterate them.
     repertoires = data["Repertoire"]
@@ -249,12 +247,8 @@ properly formatted AIRR repertoire file\n"
     print("       Info: " + info["title"])
     print("    version: " + str(info["version"]))
     print("description: " + info["description"])
-    print(
-        "Found "
-        + str(len(data["Repertoire"]))
-        + " repertoires in \
-repertoire metadata file."
-    )
+    print("Found " + str(len(data["Repertoire"])) + " repertoires in \
+repertoire metadata file.")
 
     # Build a reusable query template for the rearrangements endpoint.
     # We will replace `repertoire_id` inside the loop for each repertoire.
@@ -307,8 +301,12 @@ repertoire metadata file."
                 return
 
             try:
-                data = resp.json()
-                rearrangements = data.get("Rearrangement", [])
+                # Note: this reassigns the outer `data` (the repertoire
+                # metadata dict) to the current page's JSON payload; that's
+                # fine since `data` isn't needed again after this point, but
+                # use `page_data` to keep the two concepts visually distinct.
+                page_data = resp.json()
+                rearrangements = page_data.get("Rearrangement", [])
             except ValueError as e:
                 sys.stderr.write(
                     f"TCRcloud error: invalid JSON response from {host_url} ({e})\n"
@@ -326,18 +324,27 @@ repertoire metadata file."
             )
 
             # Open a file for writing the rearrangements. We do this here
-            # because we need to know the full set of fields being
-            # returned from the data repository, otherwise by default only
-            # the required fields will be written to the file.
-            if first:
+            # (rather than before the loop) because we need to know the full
+            # set of fields being returned from the data repository, otherwise
+            # by default only the required fields will be written to the
+            # file. We also require the page to be non-empty: a repertoire
+            # can legitimately have zero productive rearrangements, and
+            # `rearrangements[0]` would raise IndexError on an empty page.
+            # `first` stays True until we see the first non-empty page across
+            # *any* repertoire, so later repertoires keep appending to the
+            # same file once it has been created.
+            if first and rearrangements:
                 out_file = airr.create_rearrangement(
                     rearrangements_file, fields=rearrangements[0].keys()
                 )
                 first = False
 
-            # save the rearrangements to a file
-            for row in rearrangements:
-                out_file.write(row)
+            # Save the rearrangements to a file. If no file has been created
+            # yet (this repertoire's pages have all been empty so far), there
+            # is nothing to write.
+            if not first:
+                for row in rearrangements:
+                    out_file.write(row)
 
             # looping until zero rearrangements are returned from the query.
             if len(rearrangements) < 1000:
@@ -353,4 +360,18 @@ repertoire metadata file."
             + " rearrangements for repertoire: "
             + r["repertoire_id"]
         )
+
+    # If every repertoire returned zero productive rearrangements, no file
+    # was ever created; say so explicitly instead of printing a misleading
+    # "Saved as ..." message for a file that doesn't exist.
+    if first:
+        sys.stderr.write(
+            "TCRcloud warning: no rearrangements were found for any repertoire; "
+            "no file was written.\n"
+        )
+        return
+
+    # Flush and close the writer explicitly so the last written rows are
+    # guaranteed to be on disk rather than relying on process exit/GC.
+    out_file.close()
     print("Saved as " + rearrangements_file)
