@@ -10,6 +10,7 @@ cleaned `junction_aa`, `v_call`, `j_call`, and an inferred `chain` value.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Sequence
 
 import pandas as pd
@@ -74,28 +75,21 @@ def format_data(args):
     # Determine which columns are present in the input rearrangement file.
     # Some AIRR exports include a `duplicate_count` column; we need to keep it if
     # present so that downstream aggregates can sum properly.
+    # `repertoire_id` is optional too: some single-repertoire exports omit it
+    # entirely, in which case `row[k]` would raise a `KeyError` for every row.
+    # When that happens we simply don't request the column from `row` here and
+    # fill it in afterwards with a default derived from the input filename.
     with open(args.rearrangements) as f:
         first_line = f.readline()
         header_columns = first_line.rstrip("\n").split("\t")
+        has_repertoire_id = "repertoire_id" in header_columns
+
+        keys = ["junction_aa", "v_call", "j_call", "junction"]
+        if has_repertoire_id:
+            keys.append("repertoire_id")
         if "duplicate_count" in header_columns:
-            keys = [
-                "junction_aa",
-                "v_call",
-                "j_call",
-                "junction",
-                "repertoire_id",
-                "duplicate_count",
-                "productive",
-            ]
-        else:
-            keys = [
-                "junction_aa",
-                "v_call",
-                "j_call",
-                "junction",
-                "repertoire_id",
-                "productive",
-            ]
+            keys.append("duplicate_count")
+        keys.append("productive")
 
     # Validate the file against the AIRR rearrangement schema; the second
     # positional argument (`debug=True`) makes `airr` raise on the first
@@ -150,6 +144,11 @@ def format_data(args):
 
     # Build a DataFrame from the filtered records.
     df = pd.DataFrame(valid_rows)
+
+    # When the input file has no `repertoire_id` column at all, treat the
+    # whole file as a single repertoire, named after the input file itself.
+    if not has_repertoire_id:
+        df["repertoire_id"] = Path(args.rearrangements).stem
 
     # If multiple V gene assignments are present (comma-separated), keep only the
     # first one.
