@@ -1,15 +1,43 @@
-import sys
-import os
-import argparse
-import pandas as pd
+"""V gene surface plot generation for TCRcloud.
+
+This module computes, per chain/repertoire, a table of V-gene usage broken
+down by CDR3 length and renders it as a 3D surface plot (V gene x CDR3
+length x percentage of reads).
+"""
+
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
 import plotly.graph_objects as go
 from natsort import natsort_keygen
 
-import tcrcloud.format
 import tcrcloud.colours
-import tcrcloud.vlength
+import tcrcloud.format
+
+# V genes ambiguously shared between the alpha and delta loci; when a
+# repertoire's delta chain is being plotted, these are renamed to their
+# delta-locus equivalent so they group with the rest of the TRDV genes.
+_ALPHA_DELTA_VGENES = [
+    "TRAV14/DV4",
+    "TRAV29/DV5",
+    "TRAV23/DV6",
+    "TRAV36/DV7",
+    "TRAV38-2/DV8",
+]
+_DELTA_VGENES = ["TRDV4", "TRDV5", "TRDV6", "TRDV7", "TRDV8"]
+
+# Per-chain plot styling: 3D aspect ratio and x-axis tick font size, tuned
+# so that each chain's V-gene axis stays readable regardless of how many
+# V genes it has.
+_CHAIN_PLOT_SETTINGS = {
+    "A": {"plot_aspect": (3.5, 1, 1), "x_size": 6},
+    "B": {"plot_aspect": (3, 1, 1), "x_size": 4},
+    "G": {"plot_aspect": (2, 1, 1), "x_size": 10},
+    "D": {"plot_aspect": (1.5, 1, 1), "x_size": 8},
+    "H": {"plot_aspect": (3.5, 1, 1), "x_size": 4},
+    "K": {"plot_aspect": (3.5, 1, 1), "x_size": 4},
+    "L": {"plot_aspect": (3.5, 1, 1), "x_size": 4},
+}
+
 
 def _palette_for_chain(chain_letter: str, species: str = "homo_sapiens"):
     mapping = {
@@ -28,126 +56,46 @@ def _palette_for_chain(chain_letter: str, species: str = "homo_sapiens"):
 
 
 def get_table(keys, samples, args):
-    if args.compare.lower() != "true":
-        if args.compare.lower() != "false":
-            sys.stderr.write(
-                "TCRcloud error: please indicate \
-True or False\n"
-            )
-            exit()
+    """Build the per-chain/repertoire V-gene usage tables used for plotting."""
+
+    species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
 
     datasets = []
-    for_comparison = {}
-    for_comparison["A"] = []
-    for_comparison["B"] = []
-    for_comparison["G"] = []
-    for_comparison["D"] = []
-    for_comparison["H"] = []
-    for_comparison["K"] = []
-    for_comparison["L"] = []
-    for j in keys:
-        species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
-        if j[0] == "A":
-            x_axis = _palette_for_chain("A", species)
-            plot_aspect = (3.5, 1, 1)
-            x_size = 6
-            ymax = args.yhighalpha
-            ymin = args.ylowalpha
-            zmax = args.zhighalpha
-            zmin = args.zlowalpha
-        if j[0] == "B":
-            x_axis = _palette_for_chain("B", species)
-            plot_aspect = (3, 1, 1)
-            x_size = 4
-            ymax = args.yhighbeta
-            ymin = args.ylowbeta
-            zmax = args.zhighbeta
-            zmin = args.zlowbeta
-        if j[0] == "G":
-            x_axis = _palette_for_chain("G", species)
-            plot_aspect = (2, 1, 1)
-            x_size = 10
-            ymax = args.yhighgamma
-            ymin = args.ylowgamma
-            zmax = args.zhighgamma
-            zmin = args.zlowgamma
-        if j[0] == "D":
+    for chain_letter, repertoire_id in keys:
+        settings = _CHAIN_PLOT_SETTINGS.get(chain_letter)
+        if settings is None:
+            continue
+
+        if chain_letter == "D":
             x_axis = dict(_palette_for_chain("D", species))
-            x_axis.pop("TRAV14/DV4", None)
-            x_axis.pop("TRAV29/DV5", None)
-            x_axis.pop("TRAV23/DV6", None)
-            x_axis.pop("TRAV36/DV7", None)
-            x_axis.pop("TRAV38-2/DV8", None)
-            plot_aspect = (1.5, 1, 1)
-            x_size = 8
-            ymax = args.yhighdelta
-            ymin = args.ylowdelta
-            zmax = args.zhighdelta
-            zmin = args.zlowdelta
-        if j[0] == "H":
-            x_axis = _palette_for_chain("H", species)
-            plot_aspect = (3.5, 1, 1)
-            x_size = 4
-            ymax = args.yhighheavy
-            ymin = args.ylowheavy
-            zmax = args.zhighheavy
-            zmin = args.zlowheavy
-        if j[0] == "K":
-            x_axis = _palette_for_chain("K", species)
-            plot_aspect = (3.5, 1, 1)
-            x_size = 4
-            ymax = args.yhighkappa
-            ymin = args.ylowkappa
-            zmax = args.zhighkappa
-            zmin = args.zlowkappa
-        if j[0] == "L":
-            x_axis = _palette_for_chain("L", species)
-            plot_aspect = (3.5, 1, 1)
-            x_size = 4
-            ymax = args.yhighlambda
-            ymin = args.ylowlambda
-            zmax = args.zhighlambda
-            zmin = args.zlowlambda
+            for gene in _ALPHA_DELTA_VGENES:
+                x_axis.pop(gene, None)
+        else:
+            x_axis = _palette_for_chain(chain_letter, species)
 
-        x_axis_ticks = []
-        for i in range(0, len(x_axis)):
-            x_axis_ticks.append(i)
+        x_axis_ticks = list(range(len(x_axis)))
 
-        df = samples.get_group(j)
-
+        df = samples.get_group((chain_letter, repertoire_id))
         jic = df.copy()
 
         if "D" in jic["chain"].values:
-            jic.replace(
-                [
-                    "TRAV14/DV4",
-                    "TRAV29/DV5",
-                    "TRAV23/DV6",
-                    "TRAV36/DV7",
-                    "TRAV38-2/DV8",
-                ],
-                ["TRDV4", "TRDV5", "TRDV6", "TRDV7", "TRDV8"],
-                inplace=True,
-            )
+            jic.replace(_ALPHA_DELTA_VGENES, _DELTA_VGENES, inplace=True)
 
         new_df = jic.pivot_table(
             index=["v_call", "CDR3_length"], aggfunc="size"
         ).reset_index()
         new_df.rename(columns={0: "counts"}, inplace=True)
 
-        # create an empty df to serve as base
+        # Create an empty df (0 counts for every V gene / CDR3 length
+        # combination in range) to serve as the base grid for the surface
+        # plot, so every V gene has an entry at every CDR3 length even if no
+        # reads were observed there.
         empty_df = pd.DataFrame(columns=["v_call", "CDR3_length", "counts"])
         x_axis_names = []
-        for v_genes, colour in x_axis.items():
+        limitymin = new_df.loc[new_df["CDR3_length"].idxmin()].iloc[1] - 1
+        limitymax = new_df.loc[new_df["CDR3_length"].idxmax()].iloc[1] + 1
+        for v_genes in x_axis:
             x_axis_names.append(v_genes)
-            if ymin is None:
-                limitymin = new_df.loc[new_df["CDR3_length"].idxmin()].iloc[1] - 1
-            else:
-                limitymin = ymin + 1
-            if ymax is None:
-                limitymax = new_df.loc[new_df["CDR3_length"].idxmax()].iloc[1] + 1
-            else:
-                limitymax = ymax - 1
             for c in range(limitymin, limitymax):
                 df_new_row = pd.DataFrame(
                     {"v_call": [v_genes], "CDR3_length": [c], "counts": [0]}
@@ -157,9 +105,7 @@ True or False\n"
         df_merged = pd.concat([new_df, empty_df], ignore_index=True, sort=True)
 
         final_df = df_merged.groupby(["v_call", "CDR3_length"]).sum().reset_index()
-        final_df["frequency"] = 100 * (
-            final_df["counts"] / final_df["counts"].sum()
-        )  # .round(3)
+        final_df["frequency"] = 100 * (final_df["counts"] / final_df["counts"].sum())
         final_df = final_df.sort_values(
             by=["CDR3_length", "v_call"], key=natsort_keygen()
         )
@@ -172,9 +118,14 @@ True or False\n"
         )
         df_sorted = df_reformat.sort_values(by=["v_call"], key=natsort_keygen())
 
-        if args.export.lower() == "true":
+        if args.export:
             df_filename = (
-                args.rearrangements[:-4] + "_vgenes_table" + j[1] + "_" + j[0] + ".csv"
+                args.rearrangements[:-4]
+                + "_vgenes_table"
+                + repertoire_id
+                + "_"
+                + chain_letter
+                + ".csv"
             )
             df_sorted.to_csv(df_filename, index=False)
 
@@ -187,304 +138,94 @@ True or False\n"
         z = np.array_split(z, len(df_sorted.columns) - 1)
 
         datasets.append(
-            [
-                x,
-                y,
-                z,
-                plot_aspect,
-                x_size,
-                ymin,
-                ymax,
-                zmin,
-                zmax,
-                x_axis_ticks,
-                x_axis_names,
-                j[0],
-                j[1],
-                False,
-            ]
-        )
-        for_comparison[j[0]].append(
-            [
-                df_sorted,
-                plot_aspect,
-                x_size,
-                ymin,
-                ymax,
-                zmin,
-                zmax,
-                x_axis_ticks,
-                x_axis_names,
-                j[0] + "_comparison",
-                j[1],
-            ]
+            {
+                "x": x,
+                "y": y,
+                "z": z,
+                "plot_aspect": settings["plot_aspect"],
+                "x_size": settings["x_size"],
+                "x_axis_ticks": x_axis_ticks,
+                "x_axis_names": x_axis_names,
+                "chain": chain_letter,
+                "repertoire_id": repertoire_id,
+            }
         )
 
-    if args.compare.lower() == "false":
-        return datasets
-    elif args.compare.lower() == "true":
-        comparisons = []
-        for m in for_comparison:
-            if len(for_comparison[m]) < 2:
-                sys.stderr.write(
-                    "Less than 2 repertoires from the "
-                    + m
-                    + " chain were detected in the rearragements file\n"
-                )
-            if len(for_comparison[m]) > 2:
-                sys.stderr.write(
-                    "More than 2 repertoires from the "
-                    + m
-                    + " chain were detected in the rearragements file\n"
-                )
-            if len(for_comparison[m]) == 2:
-                comb = for_comparison[m]
-                num1 = comb[0][0].copy()
-                num1 = num1.drop("v_call", axis=1)
-                num2 = comb[1][0].copy()
-                num2 = num2.drop("v_call", axis=1)
-                comparison1 = num1 - num2
-                comparison1 = comparison1.infer_objects(copy=False).fillna(0)
-                comparison2 = num2 - num1
-                comparison2 = comparison2.infer_objects(copy=False).fillna(0)
-                comparison1.insert(0, "v_call", comb[0][0]["v_call"])
-                comparison2.insert(0, "v_call", comb[0][0]["v_call"])
-
-                if comb[0][3] is not None:
-                    ymin = min(comb[0][3], comb[1][3])
-                else:
-                    ymin = None
-                if comb[0][4] is not None:
-                    ymax = max(comb[0][4], comb[1][4])
-                else:
-                    ymax = None
-                if comb[0][5] is not None:
-                    zmin = max(comb[0][5], comb[1][5])
-                else:
-                    zmin = None
-                if comb[0][6] is not None:
-                    zmax = max(comb[0][6], comb[1][6])
-                else:
-                    zmax = None
-
-                x = comparison1["v_call"].factorize()[0]
-                y = np.array(comparison1.columns.values.tolist()[1:])
-                df_transpose = comparison1.transpose()
-                z = np.array(df_transpose.values.tolist()[1])
-                for i in range(2, len(comparison1.columns)):
-                    z = np.append(z, np.array(df_transpose.values.tolist()[i]))
-                z = np.array_split(z, len(comparison1.columns) - 1)
-
-                comparisons.append(
-                    [
-                        x,
-                        y,
-                        z,
-                        comb[0][1],
-                        comb[0][2],
-                        ymin,
-                        ymax,
-                        zmin,
-                        zmax,
-                        comb[0][7],
-                        comb[0][8],
-                        comb[0][9],
-                        comb[0][10],
-                        True,
-                    ]
-                )
-
-                x = comparison2["v_call"].factorize()[0]
-                y = np.array(comparison2.columns.values.tolist()[1:])
-                df_transpose = comparison2.transpose()
-                z = np.array(df_transpose.values.tolist()[1])
-                for i in range(2, len(comparison2.columns)):
-                    z = np.append(z, np.array(df_transpose.values.tolist()[i]))
-                z = np.array_split(z, len(comparison2.columns) - 1)
-
-                comparisons.append(
-                    [
-                        x,
-                        y,
-                        z,
-                        comb[1][1],
-                        comb[1][2],
-                        ymin,
-                        ymax,
-                        zmin,
-                        zmax,
-                        comb[1][7],
-                        comb[1][8],
-                        comb[1][9],
-                        comb[1][10],
-                        True,
-                    ]
-                )
-    return comparisons
+    return datasets
 
 
 def barplot(args):
-    samples_df = tcrcloud.format.format_data(args)
+    # Normalize boolean-style CLI flags (allow strings like "true"/"false").
+    # argparse already handles this via str2bool when barplot() is invoked
+    # through the CLI, but barplot() may also be called directly (e.g. in
+    # tests) with plain strings, so we re-check defensively here.
+    if isinstance(args.export, str):
+        args.export = args.export.lower() in ("yes", "true", "t", "y", "1")
 
+    # Determine the output image format (defaults to "png"). Validated here
+    # too since `barplot()` may be called directly (e.g. in tests) rather
+    # than only via the argparse CLI, whose `choices=["svg", "png"]` wouldn't
+    # otherwise catch a bad value.
+    output_format = (getattr(args, "format", None) or "png").strip().lower()
+    if output_format not in ("svg", "png"):
+        raise ValueError(
+            f"TCRcloud error: unsupported output format '{output_format}'. "
+            "Please choose 'svg' or 'png'"
+        )
+
+    samples_df = tcrcloud.format.format_data(args)
     formatted_samples = tcrcloud.format.format_vgene(samples_df)
 
     samples = formatted_samples.groupby(["chain", "repertoire_id"])
-    keys = [key for key, _ in samples]
+    keys = list(samples.groups.keys())
     datasets = get_table(keys, samples, args)
 
-    for i in datasets:
-        fig = plt.figure(figsize=(10, 14))
-        dataset = i[1:]
-        dataset = [*dataset, dataset[0]]
+    if not datasets:
+        raise ValueError("TCRcloud error: no repertoires found for plotting")
 
-        if i[13] is False:
-            fig = go.Figure(
-                go.Surface(
-                    x=i[0], y=i[1], z=i[2], colorscale="Turbo", cmin=i[7], cmax=i[8]
-                )
-            )
-            camera = dict(eye=dict(x=2.5, y=-3.5, z=2.5))
+    for d in datasets:
+        fig = go.Figure(go.Surface(x=d["x"], y=d["y"], z=d["z"], colorscale="Turbo"))
+        camera = dict(eye=dict(x=2.5, y=-3.5, z=2.5))
 
-            sc = dict(
-                aspectratio=dict(x=i[3][0], y=i[3][1], z=i[3][2]),
-                xaxis_title=i[10][0][:4],
-                yaxis_title="CDR3 Length",
-                zaxis_title="Percentage of reads",
-                xaxis=dict(
-                    tickmode="array",
-                    ticktext=i[10],
-                    tickvals=i[9],
-                    tickfont=dict(size=i[4]),
-                    title=dict(font=dict(size=10)),
-                ),
-                yaxis=dict(
-                    tickfont=dict(size=8),
-                    title=dict(font=dict(size=10)),
-                    range=[i[5], i[6]],
-                ),
-                zaxis=dict(
-                    tickfont=dict(size=8),
-                    title=dict(font=dict(size=10)),
-                    range=[i[7], i[8]],
-                ),
-            )
+        sc = dict(
+            aspectratio=dict(
+                x=d["plot_aspect"][0], y=d["plot_aspect"][1], z=d["plot_aspect"][2]
+            ),
+            xaxis_title=d["x_axis_names"][0][:4],
+            yaxis_title="CDR3 Length",
+            zaxis_title="Percentage of reads",
+            xaxis=dict(
+                tickmode="array",
+                ticktext=d["x_axis_names"],
+                tickvals=d["x_axis_ticks"],
+                tickfont=dict(size=d["x_size"]),
+                title=dict(font=dict(size=10)),
+            ),
+            yaxis=dict(
+                tickfont=dict(size=8),
+                title=dict(font=dict(size=10)),
+            ),
+            zaxis=dict(
+                tickfont=dict(size=8),
+                title=dict(font=dict(size=10)),
+            ),
+        )
 
-            fig.update_layout(
-                width=700,
-                margin=dict(r=10, l=10, b=10, t=10),
-                scene_camera=camera,
-                scene=sc,
-                template="plotly_white",
-            )
-            outputname = (
-                args.rearrangements[:-4] + "_vgenes_" + i[12] + "_" + i[11] + ".png"
-            )
-            fig.write_image(outputname, scale=6)
-            print("V genes plot saved as " + outputname)
-
-        if i[13] is True:
-            i = datasets[0]
-            fig = go.Figure(
-                go.Surface(
-                    x=i[0], y=i[1], z=i[2], colorscale="Portland", cmin=i[7], cmax=i[8]
-                )
-            )
-            camera = dict(eye=dict(x=2.5, y=-5, z=0.5))
-
-            sc = dict(
-                aspectratio=dict(x=i[3][0], y=i[3][1], z=i[3][2]),
-                xaxis_title=i[10][0][:4],
-                yaxis_title="CDR3 Length",
-                zaxis_title="Percentage of reads",
-                xaxis=dict(
-                    tickmode="array",
-                    ticktext=i[10],
-                    tickvals=i[9],
-                    tickfont=dict(size=i[4]),
-                    tickangle=-45,
-                    title=dict(font=dict(size=10)),
-                ),
-                yaxis=dict(
-                    tickfont=dict(size=6),
-                    title=dict(font=dict(size=10)),
-                    range=[i[5], i[6]],
-                ),
-                zaxis=dict(
-                    tickfont=dict(size=8),
-                    title=dict(font=dict(size=10)),
-                    range=[i[7], i[8]],
-                ),
-            )
-
-            fig.update_layout(
-                width=700,
-                margin=dict(r=10, l=10, b=10, t=10),
-                scene_camera=camera,
-                scene=sc,
-                template="plotly_white",
-            )
-            outputname = (
-                args.rearrangements[:-4] + "_vgenes_" + i[12] + "_" + i[11] + ".png"
-            )
-            fig.write_image(outputname, scale=6)
-            print("V genes plot saved as " + outputname)
-
-            i = datasets[1]
-            fig = go.Figure(
-                go.Surface(
-                    x=i[0],
-                    y=i[1],
-                    z=i[2],
-                    colorscale="Portland_r",
-                    cmin=i[7],
-                    cmax=i[8],
-                )
-            )
-            camera = dict(eye=dict(x=2.5, y=-5, z=0.5))
-
-            sc = dict(
-                aspectratio=dict(x=i[3][0], y=i[3][1], z=i[3][2]),
-                xaxis_title=i[10][0][:4],
-                yaxis_title="CDR3 Length",
-                zaxis_title="Percentage of reads",
-                xaxis=dict(
-                    tickmode="array",
-                    ticktext=i[10],
-                    tickvals=i[9],
-                    tickfont=dict(size=i[4]),
-                    tickangle=-45,
-                    title=dict(font=dict(size=10)),
-                ),
-                yaxis=dict(
-                    tickfont=dict(size=6),
-                    title=dict(font=dict(size=10)),
-                    range=[i[5], i[6]],
-                ),
-                zaxis=dict(
-                    tickfont=dict(size=8),
-                    title=dict(font=dict(size=10)),
-                    range=[i[7], i[8]],
-                ),
-            )
-
-            fig.update_layout(
-                width=700,
-                margin=dict(r=10, l=10, b=10, t=10),
-                scene_camera=camera,
-                scene=sc,
-                template="plotly_white",
-            )
-            outputname = (
-                args.rearrangements[:-4] + "_vgenes_" + i[12] + "_" + i[11] + ".png"
-            )
-            fig.write_image(outputname, scale=6)
-            print("V genes plot saved as " + outputname)
-            break
-
-    # if args.export.lower() in ["true"]:
-    #     output_folder = os.getcwd()
-    #     try:
-    #         tcrcloud.vlength.process_csv_files(output_folder)
-    #         print("vlength analysis completed and saved in the 'analysis' subfolder.")
-    #     except Exception as e:
-    #         print(f"An error occurred in vlength processing: {e}")
+        fig.update_layout(
+            width=700,
+            margin=dict(r=10, l=10, b=10, t=10),
+            scene_camera=camera,
+            scene=sc,
+            template="plotly_white",
+        )
+        outputname = (
+            args.rearrangements[:-4]
+            + "_vgenes_"
+            + d["repertoire_id"]
+            + "_"
+            + d["chain"]
+            + "."
+            + output_format
+        )
+        fig.write_image(outputname, scale=6)
+        print("V genes plot saved as " + outputname)

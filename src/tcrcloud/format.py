@@ -17,7 +17,6 @@ import pandas as pd
 
 import airr
 
-
 INVALID_CDR3_CHARS = {"X", "*", "B", "Z", "J", "_"}
 
 
@@ -170,9 +169,9 @@ def format_data(args):
     # a substring (the "D" of "TRDV" followed by "V"), so a plain "DV" check
     # would misfire on genuine TRDV genes too, reading a garbage character
     # (e.g. "2" from "TRDV2-1") from `v_call[-3]` instead of "D".
-    is_dv_dj = df["v_call"].str.contains(
-        "/DV", na=False, regex=False
-    ) & df["j_call"].str.contains("DJ", na=False)
+    is_dv_dj = df["v_call"].str.contains("/DV", na=False, regex=False) & df[
+        "j_call"
+    ].str.contains("DJ", na=False)
 
     df["chain"] = pd.NA
     df.loc[is_dv_dj, "chain"] = df.loc[is_dv_dj, "v_call"].str[-3]
@@ -188,7 +187,9 @@ def _aggregate_counts(df: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame
     # each row as a single unit.
     if "duplicate_count" in df.columns:
         dup = df.loc[:, list(group_by) + ["duplicate_count"]].copy()
-        dup["duplicate_count"] = pd.to_numeric(dup["duplicate_count"], errors="coerce").fillna(1)
+        dup["duplicate_count"] = pd.to_numeric(
+            dup["duplicate_count"], errors="coerce"
+        ).fillna(1)
         agg = (
             dup.rename(columns={"duplicate_count": "counts"})
             .groupby(list(group_by), dropna=False)
