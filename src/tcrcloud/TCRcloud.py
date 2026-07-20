@@ -231,31 +231,11 @@ def main():
         metavar="rearrangements.tsv",
     )
     parser_aminoacids.add_argument(
-        "-l",
-        "--length",
-        type=int,
-        help="indicate the value for the axis \
-                                   representing the length of the CDR3, \
-                                   default = adapts to the data",
-        metavar="integer",
-        required=False,
-    )
-    parser_aminoacids.add_argument(
         "-t",
         "--threeD",
         type=str,
         help="indicate if you want a tridimensional  \
                                    bar plot, default = False",
-        metavar="True or False",
-        default="False",
-        required=False,
-    )
-    parser_aminoacids.add_argument(
-        "-c",
-        "--compare",
-        type=str,
-        help="indicate if you want to compare  \
-                              3D barplot plots, default = False",
         metavar="True or False",
         default="False",
         required=False,
@@ -269,6 +249,16 @@ def main():
                               default = False",
         metavar="True or False",
         default="False",
+        required=False,
+    )
+    parser_aminoacids.add_argument(
+        "-f",
+        "--format",
+        type=str,
+        choices=["svg", "png"],
+        help="Output image format for the amino acids plot (svg or png)",
+        metavar="svg or png",
+        default="png",
         required=False,
     )
     parser_aminoacids.add_argument(
