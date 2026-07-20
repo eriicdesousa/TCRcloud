@@ -137,7 +137,7 @@ def _load_colour_mapping(colours_path: str) -> dict:
         ) from exc
     except json.decoder.JSONDecodeError as exc:
         raise ValueError(
-            f"TCRcloud error: {colours_path} doesn't seem properly formatted. Check https://github.com/oldguyeric/TCRcloud for more information"
+            f"TCRcloud error: {colours_path} doesn't seem properly formatted. Check https://github.com/eriicdesousa/TCRcloud for more information"
         ) from exc
 
 
@@ -244,7 +244,7 @@ def wordcloud(args):
             grouped_color_func = SimpleGroupedColorFunc(color_to_words, "grey")
         except TypeError as exc:
             raise ValueError(
-                f"TCRcloud error: {args.colours} doesn't seem properly formatted. Check https://github.com/oldguyeric/TCRcloud for more information"
+                f"TCRcloud error: {args.colours} doesn't seem properly formatted. Check https://github.com/eriicdesousa/TCRcloud for more information"
             ) from exc
         wordcloud_obj.recolor(color_func=grouped_color_func)
 

@@ -11,7 +11,7 @@ try:
     __version__ = version("TCRcloud")
 except PackageNotFoundError:
     # Package isn't installed (e.g. running directly from a source checkout).
-    __version__ = "0.0.0.dev0"
+    __version__ = "0.0.0.dev"
 
 
 def str2bool(v):
@@ -200,7 +200,7 @@ def main():
         "-p",
         "--species",
         type=str,
-        help="Species to use for built-in V-gene colours (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
+        help="Species to use for built-in V-gene (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
         metavar="species",
         default="homo_sapiens",
         required=False,
@@ -294,7 +294,7 @@ def main():
         "-p",
         "--species",
         type=str,
-        help="Species to use for built-in V-gene colours (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
+        help="Species to use for built-in V-gene (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
         metavar="species",
         default="homo_sapiens",
         required=False,
