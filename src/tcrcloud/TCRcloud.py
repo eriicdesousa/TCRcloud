@@ -157,6 +157,16 @@ def main():
         default=False,
         required=False,
     )
+    parser_radar.add_argument(
+        "-f",
+        "--format",
+        type=str,
+        choices=["svg", "png"],
+        help="Output image format for the radar plot (svg or png)",
+        metavar="svg or png",
+        default="png",
+        required=False,
+    )
     # Note: min/max scaling for radar metrics is fixed / computed automatically.
     # Removed CLI options for explicit min/max values to simplify usage.
 

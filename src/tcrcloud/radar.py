@@ -2,12 +2,16 @@
 
 This module computes per-repertoire diversity metrics and renders them as a
 radar/spider plot. Some metrics span many orders of magnitude, so a mix of
-linear, log, and tail-log scaling is used for display.
+scaling strategies is used to map each metric onto the shared [0, 1] axis:
+linear (most metrics), log (Distinct CDR3, Chao1), and a narrow-range
+("tail") linear scale for the Gini-Simpson index, whose axis range is
+restricted to [0.7, 1.0] so that values close to 1 are easier to tell
+apart. Note that "tail-log" is a linear scale over that narrow range, not
+an actual logarithmic transform - see _METRIC_SCALES below.
 
 """
 
 import json
-import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,47 +20,38 @@ import skbio
 import tcrcloud.format
 
 # For large-range metrics (Distinct CDR3, Chao1), the axis uses log scaling.
-# For the Gini-Simpson metric, we use a "tail-log" scale to better separate
-# values close to 1.
+# For the Gini-Simpson metric, the axis range is restricted to its upper
+# "tail" ([0.7, 1.0]) rather than the full [0, 1] range, so that values
+# close to 1 (where most real repertoires fall) are easier to distinguish
+# visually.
 _METRIC_RANGES = np.array(
     [
         [0.0, 50.0],  # D50 Index (linear)
-        [0.0, 1.0],  # Gini Coefficient (linear)
+        [0.0, 1.0],  # 1 - Gini Coefficient (linear)
         [0.0, 15],  # Shannon Index (linear)
         [0.7, 1.0],  # Gini-Simpson Index (tail-log)
         [1.0, 250000.0],  # Distinct CDR3 (log)
         [1.0, 250000.0],  # Chao1 Index (log)
-        [0.000001, 1.0],  # Convergence (log)
+        [0.0, 1.0],  # Pielou Evenness (linear)
     ],
     dtype=float,
 )
 
 # Scale type per metric (used when mapping raw values into [0,1]).
+# NOTE: "tail-log" is scaled identically to "linear" (see the `is_log` mask
+# in calculate_metrics and the `scale == "log"` check in _scale_value_to_01
+# below); the visual "zoom" for Gini-Simpson comes entirely from its narrow
+# _METRIC_RANGES bounds ([0.7, 1.0]), not from a log transform. The distinct
+# label is kept mainly for documentation purposes.
 _METRIC_SCALES = [
     "linear",  # D50
     "linear",  # Gini
     "linear",  # Shannon
-    "tail-log",  # Gini-Simpson (emphasize values close to 1)
+    "tail-log",  # Gini-Simpson (narrow linear range, emphasizes values close to 1)
     "log",  # Distinct CDR3
     "log",  # Chao1
-    "log",  # Convergence
+    "linear",  # Pielou Evenness
 ]
-
-
-def calculate_convergence(df):
-    """Compute the convergence metric.
-
-    Convergence is defined as the proportion of total counts that come from
-    CDR3 sequences that have more than one distinct junction (i.e., convergent
-    recombination events).
-    """
-
-    counts = np.asarray(df["counts"], dtype=float)
-    total = counts.sum()
-    if total <= 0:
-        return 0.0
-
-    return float(counts[counts > 1].sum()) / float(total)
 
 
 def calculate_dfifty(df, length):
@@ -65,6 +60,10 @@ def calculate_dfifty(df, length):
     D50 is the percentage of unique clones required to accumulate 50% of the
     total counts. This is computed on the top 10,000 clones to keep runtime
     bounded for large repertoires.
+
+    `df["counts"]` must already be sorted in descending order (as returned by
+    `tcrcloud.format.format_metrics`), since the top-10,000 truncation below
+    and the cumulative-sum search both assume the largest clones come first.
     """
 
     counts = np.asarray(df["counts"], dtype=float)
@@ -80,6 +79,29 @@ def calculate_dfifty(df, length):
     return (idx + 1) * 100.0 / (10000 if length >= 10000 else length)
 
 
+def _load_legend_mapping(legend_file):
+    """Load the repertoire_id -> legend label mapping from a JSON file.
+
+    Raises FileNotFoundError/ValueError (instead of exiting the process
+    directly) so that callers - and TCRcloud.py's centralized error
+    handling in particular - can surface a clean "TCRcloud error: ..."
+    message, consistent with tcrcloud.cloud._load_colour_mapping.
+    """
+
+    try:
+        with open(legend_file) as json_file:
+            return json.load(json_file)
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"TCRcloud error: {legend_file} doesn't seem to exist"
+        ) from exc
+    except json.decoder.JSONDecodeError as exc:
+        raise ValueError(
+            f"TCRcloud error: {legend_file} doesn't seem properly formatted. "
+            "Check https://github.com/eriicdesousa/TCRcloud for more information"
+        ) from exc
+
+
 def calculate_metrics(keys, samples, legend_file, export, filename):
     """Compute all radar metrics for each repertoire.
 
@@ -88,24 +110,15 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
     defined in _METRIC_RANGES/_METRIC_SCALES.
 
     Returns:
-        (datasets, min_vals, max_vals, scales, raw_arr, scaled_arr)
+        (datasets, min_vals, max_vals, scales) where `datasets` is a list of
+        `[label, *scaled_metric_values]` (one entry per repertoire/chain
+        key), and `min_vals`/`max_vals`/`scales` mirror the rows of
+        _METRIC_RANGES/_METRIC_SCALES (used by `radar()` to draw axis ticks).
     """
 
     legend_dict = {}
     if legend_file is not None:
-        try:
-            with open(legend_file) as json_file:
-                legend_dict = json.load(json_file)
-        except FileNotFoundError:
-            sys.stderr.write(f"TCRcloud error: {legend_file} doesn't seem to exist\n")
-            exit(1)
-        except json.decoder.JSONDecodeError:
-            sys.stderr.write(
-                "TCRcloud error: "
-                + legend_file
-                + " doesn't seem properly formatted. Check https://github.com/oldguyeric/TCRcloud for more information\n"
-            )
-            exit(1)
+        legend_dict = _load_legend_mapping(legend_file)
 
     chain_names = {
         "A": "α chain",
@@ -128,8 +141,6 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
     for key in keys:
         df = samples.get_group(key)
 
-        convergence = calculate_convergence(tcrcloud.format.format_convergence(df))
-
         df = tcrcloud.format.format_metrics(df)
         length = len(df)
         counts = df["counts"].to_numpy(dtype=float)
@@ -137,29 +148,36 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
         raw_metrics.append(
             [
                 calculate_dfifty(df, length),
-                skbio.diversity.alpha_diversity("gini_index", counts)[0],
+                # Gini index measures inequality (higher = less diverse), so
+                # it's inverted here (1 - Gini) to keep every plotted axis
+                # consistent: higher value always means more diversity.
+                1 - skbio.diversity.alpha_diversity("gini_index", counts)[0],
                 skbio.diversity.alpha_diversity("shannon", counts)[0],
                 skbio.diversity.alpha_diversity("simpson", counts)[0],
                 length,
                 skbio.diversity.alpha_diversity("chao1", counts)[0],
-                convergence,
+                skbio.diversity.alpha_diversity("pielou_e", counts)[0],
             ]
         )
         labels.append(_format_label(key))
 
     if not raw_metrics:
+        # No repertoires to plot; the min/max placeholders below are never
+        # used since `radar()` bails out early when `datasets` is empty.
         return [], np.zeros(7), np.zeros(7), _METRIC_SCALES
 
     raw_arr = np.asarray(raw_metrics, dtype=float)
 
-    # Scale using fixed ranges (pre-refactor behavior).
+    # Scale each raw metric into [0, 1] using the fixed per-metric ranges
+    # defined in _METRIC_RANGES above.
     min_vals = _METRIC_RANGES[:, 0]
     max_vals = _METRIC_RANGES[:, 1]
 
     # Vectorize scaling for speed.
     scaled_arr = np.empty_like(raw_arr, dtype=float)
 
-    # Apply log transform for log-scaled metrics; keep all others linear.
+    # Apply a log transform for "log"-scaled metrics; everything else
+    # ("linear" and "tail-log") is scaled linearly within its own range.
     is_log = np.array([s == "log" for s in _METRIC_SCALES], dtype=bool)
     if np.any(is_log):
         # Clip to avoid log of zero/negative values.
@@ -190,7 +208,7 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
                     file=fileout,
                 )
                 print(
-                    "Gini Coefficient:",
+                    "1 - Gini Coefficient:",
                     float(np.format_float_positional(row[1], precision=3)),
                     file=fileout,
                 )
@@ -215,7 +233,7 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
                     file=fileout,
                 )
                 print(
-                    "Convergence:",
+                    "Pielou Evenness:",
                     float(np.format_float_positional(row[6], precision=3)),
                     file=fileout,
                 )
@@ -225,23 +243,64 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
     return datasets, min_vals, max_vals, _METRIC_SCALES
 
 
+def _scale_value_to_01(value, min_val, max_val, scale):
+    """Map a raw metric value onto the shared [0, 1] radar axis.
+
+    "tail-log" metrics fall through to the linear branch below (see the
+    NOTE on _METRIC_SCALES above).
+    """
+    if scale == "log":
+        min_t = np.log10(min_val)
+        max_t = np.log10(max_val)
+        value = np.clip(value, min_val, max_val)
+        return (np.log10(value) - min_t) / (max_t - min_t)
+    v = np.clip(value, min_val, max_val)
+    return (v - min_val) / (max_val - min_val)
+
+
+def _format_tick(value, is_int):
+    """Format a single axis tick value as a display label."""
+    if is_int:
+        return int(round(value))
+    if value >= 1000:
+        # Avoid compact formats like 10k/1M; show full integer with commas.
+        return f"{int(round(value)):,}"
+    # Avoid scientific notation for very small values.
+    if 0 < abs(value) < 1e-3:
+        return f"{value:.6f}".rstrip("0").rstrip(".")
+    return round(value, 5)
+
+
 def radar(args):
-    # argparse handles boolean conversion when using str2bool.
     # Normalize boolean-style CLI flags (allow strings like "true"/"false").
+    # argparse already handles this via str2bool when radar() is invoked
+    # through the CLI, but radar() may also be called directly (e.g. in
+    # tests) with plain strings, so we re-check defensively here.
     if isinstance(args.legend, str):
         args.legend = args.legend.lower() in ("yes", "true", "t", "y", "1")
     if isinstance(args.export, str):
         args.export = args.export.lower() in ("yes", "true", "t", "y", "1")
 
+    # Determine the output image format (defaults to "png"). Validated here
+    # too since `radar()` may be called directly (e.g. in tests) rather than
+    # only via the argparse CLI, whose `choices=["svg", "png"]` wouldn't
+    # otherwise catch a bad value.
+    output_format = (getattr(args, "format", None) or "png").strip().lower()
+    if output_format not in ("svg", "png"):
+        raise ValueError(
+            f"TCRcloud error: unsupported output format '{output_format}'. "
+            "Please choose 'svg' or 'png'"
+        )
+
     # The radar plot categories (one per metric) + repeat first category for closure.
     categories = [
         "D50\nIndex",
-        "Gini\nCoefficient",
+        "1 - Gini\nCoefficient",
         "Shannon\nIndex",
         "Gini-Simpson\nIndex",
         "Distinct\nCDR3",
         "Chao1\nIndex",
-        "Convergence",
+        "Pielou\nEvenness",
     ]
     categories = [*categories, categories[0]]
 
@@ -259,8 +318,7 @@ def radar(args):
     )
 
     if not datasets:
-        sys.stderr.write("TCRcloud error: no repertoires found for plotting\n")
-        return
+        raise ValueError("TCRcloud error: no repertoires found for plotting")
 
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(datasets[0]))
 
@@ -276,6 +334,7 @@ def radar(args):
         "#009e73",
         "#e69f00",
         "#56b4e9",
+        "#8a6bbf",
     ]
 
     for i in datasets:
@@ -290,7 +349,9 @@ def radar(args):
         plt.plot(
             label_loc,
             dataset,
-            # label=i[0],
+            # No label here: plt.fill (below) draws the same data and is
+            # given the legend label instead, so each repertoire only gets
+            # a single legend entry rather than one per plot()+fill() pair.
             linewidth=4.0,
             alpha=0.4,
             color=thecolour,
@@ -300,29 +361,12 @@ def radar(args):
             label_loc, dataset, label=i[0], linewidth=4.0, alpha=0.6, color=thecolour
         )
 
+    # Whether each metric's tick labels should be rendered as whole numbers;
+    # positions match the metric order in categories/_METRIC_RANGES above
+    # (only Distinct CDR3 and Chao1 are counts, so only they round to int).
     integer_metrics = [False, False, False, False, True, True, False]
 
     # Draw tick labels for each axis based on the fixed default ranges.
-    def _scale_value_to_01(value, min_val, max_val, scale):
-        if scale == "log":
-            min_t = np.log10(min_val)
-            max_t = np.log10(max_val)
-            value = np.clip(value, min_val, max_val)
-            return (np.log10(value) - min_t) / (max_t - min_t)
-        v = np.clip(value, min_val, max_val)
-        return (v - min_val) / (max_val - min_val)
-
-    def _format_tick(value, is_int):
-        if is_int:
-            return int(round(value))
-        if value >= 1000:
-            # Avoid compact formats like 10k/1M; show full integer with commas.
-            return f"{int(round(value)):,}"
-        # Avoid scientific notation for very small values (e.g. convergence on log scale)
-        if 0 < abs(value) < 1e-3:
-            return f"{value:.6f}".rstrip("0").rstrip(".")
-        return round(value, 5)
-
     for idx, (min_val, max_val, scale, is_int) in enumerate(
         zip(min_vals, max_vals, scales, integer_metrics)
     ):
@@ -339,7 +383,12 @@ def radar(args):
         if len(tick_values) > 1 and abs(tick_values[0] - min_val) < 1e-12:
             tick_values = tick_values[1:]
 
-        # For Distinct CDR3 and Chao1, skip rendering the last tick value
+        # For Distinct CDR3 and Chao1 (idx 4, 5), the log-scale tick range is
+        # rounded outward to the nearest power of 10 (`hi = ceil(log10(max_val))`),
+        # so the last generated tick can overshoot max_val (e.g. 1,000,000
+        # instead of the actual 250,000 max). That overshot tick would be
+        # clipped to the same axis position as max_label below, drawing a
+        # misleading duplicate/overlapping value there, so it's dropped.
         if idx in (4, 5) and len(tick_values) > 1:
             tick_values = tick_values[:-1]
 
@@ -374,8 +423,9 @@ def radar(args):
     plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9], [])
     plt.tick_params(pad=32, labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
-    outputname = args.rearrangements[:-4] + "_radar" + ".svg"
+    outputname = args.rearrangements[:-4] + "_radar" + "." + output_format
     if args.legend:
         plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize=16)
     plt.savefig(outputname, dpi=300, bbox_inches="tight")
+    plt.close()
     print("Radar saved as " + outputname)

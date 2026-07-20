@@ -164,9 +164,15 @@ def format_data(args):
     # them as delta by reading the "D" from the "/DV" suffix (3rd-from-last
     # character, e.g. "TRAV1-2/DV8" -> "D"). Otherwise the chain is simply
     # the locus letter at index 2 of the (allele-stripped) v_call.
-    is_dv_dj = df["v_call"].str.contains("DV", na=False) & df["j_call"].str.contains(
-        "DJ", na=False
-    )
+    #
+    # NOTE: this must check for the literal "/DV" suffix (with slash), not
+    # just "DV" - ordinary delta V genes like "TRDV2-1" also contain "DV" as
+    # a substring (the "D" of "TRDV" followed by "V"), so a plain "DV" check
+    # would misfire on genuine TRDV genes too, reading a garbage character
+    # (e.g. "2" from "TRDV2-1") from `v_call[-3]` instead of "D".
+    is_dv_dj = df["v_call"].str.contains(
+        "/DV", na=False, regex=False
+    ) & df["j_call"].str.contains("DJ", na=False)
 
     df["chain"] = pd.NA
     df.loc[is_dv_dj, "chain"] = df.loc[is_dv_dj, "v_call"].str[-3]
@@ -197,27 +203,6 @@ def _aggregate_counts(df: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame
         )
 
     return agg.sort_values(by="counts", ascending=False)
-
-
-def format_convergence(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute convergence (# unique junctions per CDR3/repertoire/chain)."""
-
-    # Count how many unique junctions exist for each (CDR3, repertoire, chain).
-    per_junction = (
-        df.groupby(
-            ["junction_aa", "junction", "repertoire_id", "chain"]
-        )  # noqa: WPS221
-        .size()
-        .reset_index(name="count")
-    )
-
-    # Then count how many distinct junctions each CDR3 has across repertoires.
-    return (
-        per_junction.groupby(["junction_aa", "repertoire_id", "chain"])  # noqa: WPS221
-        .size()
-        .reset_index(name="counts")
-        .sort_values(by="counts", ascending=False)
-    )
 
 
 def format_metrics(df: pd.DataFrame) -> pd.DataFrame:
