@@ -261,11 +261,6 @@ def main():
         default="png",
         required=False,
     )
-    parser_aminoacids.add_argument(
-        "--by_length",
-        action="store_true",
-        help="Generate output images for each CDR3 length group (only process groups with ≥2.5% of total reads)",
-    )
     parser_aminoacids.set_defaults(func=tcrcloud.aminoacids.aminoacids)
 
     # create subparser for downloading the rearrangement data

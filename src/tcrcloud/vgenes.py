@@ -5,6 +5,8 @@ down by CDR3 length and renders it as a 3D surface plot (V gene x CDR3
 length x percentage of reads).
 """
 
+import copy
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -229,3 +231,50 @@ def barplot(args):
         )
         fig.write_image(outputname, scale=6)
         print("V genes plot saved as " + outputname)
+
+        # Also make an interactive HTML version with bigger fonts, independent
+        # of the chosen static image format.
+        fig_html = copy.deepcopy(fig)
+        sc_html = dict(
+            aspectratio=dict(
+                x=d["plot_aspect"][0], y=d["plot_aspect"][1], z=d["plot_aspect"][2]
+            ),
+            xaxis_title=d["x_axis_names"][0][:4],
+            yaxis_title="CDR3 Length",
+            zaxis_title="Percentage of reads",
+            xaxis=dict(
+                tickmode="array",
+                ticktext=d["x_axis_names"],
+                tickvals=d["x_axis_ticks"],
+                tickfont=dict(size=13),
+                title=dict(font=dict(size=18)),
+            ),
+            yaxis=dict(
+                tickfont=dict(size=14),
+                title=dict(font=dict(size=18)),
+            ),
+            zaxis=dict(
+                tickfont=dict(size=14),
+                title=dict(font=dict(size=18)),
+            ),
+        )
+        fig_html.update_layout(
+            width=1280,
+            height=800,
+            scene_camera=camera,
+            scene=sc_html,
+            template="plotly_white",
+        )
+        html_outputname = (
+            args.rearrangements[:-4]
+            + "_vgenes_"
+            + d["repertoire_id"]
+            + "_"
+            + d["chain"]
+            + ".html"
+        )
+        fig_html.write_html(
+            html_outputname,
+            config={"responsive": True, "displayModeBar": True, "displaylogo": False},
+        )
+        print("Interactive HTML plot saved as " + html_outputname)
