@@ -1,7 +1,5 @@
 """Unit tests for tcrcloud.assign_colours."""
 
-from unittest.mock import Mock
-
 import pytest
 
 import tcrcloud.assign_colours as assign_colours

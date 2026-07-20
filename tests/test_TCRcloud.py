@@ -2,8 +2,6 @@
 
 import sys
 
-import pytest
-
 import tcrcloud.cloud as cloud
 import tcrcloud.TCRcloud as TCRcloud
 
