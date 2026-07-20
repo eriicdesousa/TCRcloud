@@ -31,6 +31,7 @@ import tcrcloud.download
 import tcrcloud.testdata
 import tcrcloud.vgenes
 import tcrcloud.aminoacids
+import tcrcloud.compare
 
 plt.rcParams["font.family"] = "serif"
 
@@ -45,7 +46,7 @@ def main():
     )
     subparsers = parser.add_subparsers(
         title="command options",
-        help="The program has 6 options: cloud, radar, vgenes, aminoacids, download or testdata",
+        help="The program has 7 options: cloud, radar, vgenes, aminoacids, compare, download or testdata",
         dest="command",
         required=True,
     )
@@ -262,6 +263,62 @@ def main():
         required=False,
     )
     parser_aminoacids.set_defaults(func=tcrcloud.aminoacids.aminoacids)
+
+    # create subparser for comparing 2 repertoires
+    parser_compare = subparsers.add_parser(
+        "compare",
+        help="Compare repertoires that share the same chain \
+        (V genes and amino acids usage)",
+    )
+
+    parser_compare.add_argument(
+        "rearrangements",
+        type=str,
+        help="indicate the name of the AIRR \
+                              rearrangements file",
+        metavar="rearrangements.tsv",
+    )
+    parser_compare.add_argument(
+        "rearrangements2",
+        type=str,
+        nargs="?",
+        default=None,
+        help="optionally indicate the name of a second AIRR rearrangements \
+                              file, to compare repertoires across two files \
+                              (still restricted to matching chains); if \
+                              omitted, every pair of repertoires that share \
+                              a chain within the single file is compared",
+        metavar="rearrangements2.tsv",
+    )
+    parser_compare.add_argument(
+        "-p",
+        "--species",
+        type=str,
+        help="Species to use for built-in V-gene colours (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
+        metavar="species",
+        default="homo_sapiens",
+        required=False,
+    )
+    parser_compare.add_argument(
+        "-e",
+        "--export",
+        type=str2bool,
+        help="Export the comparison tables to csv files (True/False)",
+        metavar="True or False",
+        default=False,
+        required=False,
+    )
+    parser_compare.add_argument(
+        "-f",
+        "--format",
+        type=str,
+        choices=["svg", "png"],
+        help="Output image format for the comparison plots (svg or png)",
+        metavar="svg or png",
+        default="png",
+        required=False,
+    )
+    parser_compare.set_defaults(func=tcrcloud.compare.compare)
 
     # create subparser for downloading the rearrangement data
     parser_download = subparsers.add_parser(
