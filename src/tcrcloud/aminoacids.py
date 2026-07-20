@@ -113,12 +113,16 @@ def aminoacids(args):
         splitted = df["junction_aa"].str.split("", expand=True)
         new_df = pd.concat([df, splitted], axis=1)
 
-        positions = []
-        names = []
-        for i in new_df.columns[5:]:
-            positions.append(new_df.groupby(i)[["counts"]].sum())
-            names.append(i)
-        final = pd.concat(positions, axis=1)
+        names = list(new_df.columns[5:])
+        long_df = new_df.melt(
+            id_vars=["counts"], value_vars=names, var_name="position", value_name="aa"
+        )
+        final = (
+            long_df.groupby(["aa", "position"])["counts"]
+            .sum()
+            .unstack("position")
+            .reindex(columns=names)
+        )
 
         # Ensure every amino acid is present, even if zero
         for i in colours.keys():

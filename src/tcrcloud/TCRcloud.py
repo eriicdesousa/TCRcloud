@@ -7,6 +7,14 @@ from importlib.metadata import PackageNotFoundError, version
 
 import matplotlib.pyplot as plt
 
+import tcrcloud.cloud
+import tcrcloud.radar
+import tcrcloud.download
+import tcrcloud.testdata
+import tcrcloud.vgenes
+import tcrcloud.aminoacids
+import tcrcloud.compare
+
 try:
     __version__ = version("TCRcloud")
 except PackageNotFoundError:
@@ -24,14 +32,6 @@ def str2bool(v):
             return False
     raise argparse.ArgumentTypeError("Expected a boolean value (true/false)")
 
-
-import tcrcloud.cloud
-import tcrcloud.radar
-import tcrcloud.download
-import tcrcloud.testdata
-import tcrcloud.vgenes
-import tcrcloud.aminoacids
-import tcrcloud.compare
 
 plt.rcParams["font.family"] = "serif"
 

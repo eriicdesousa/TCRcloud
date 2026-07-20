@@ -11,8 +11,6 @@ import json
 import re
 from pathlib import Path
 
-import numpy as np
-
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches

@@ -1,3 +1,6 @@
+# Species-specific palettes in additional modules
+from . import colours_mus_musculus, colours_macaca_mulatta, colours_macaca_fascicularis
+
 TRAV = {
     "TRAV1-1": "#00008F",
     "TRAV1-2": "#B60000",
@@ -688,9 +691,6 @@ aminoacids = {
     "K": "#8400CD",
     "H": "#FF3CFE",
 }
-
-# Species-specific palettes in additional modules
-from . import colours_mus_musculus, colours_macaca_mulatta, colours_macaca_fascicularis
 
 HOMO_SAPIENS = {
     "TRAV": TRAV,
