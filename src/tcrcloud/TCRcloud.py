@@ -21,6 +21,15 @@ except PackageNotFoundError:
     __version__ = "0.0.0.dev"
 
 
+# Species with a built-in V-gene colour palette (see tcrcloud.colours*).
+_SPECIES = (
+    "homo_sapiens",
+    "mus_musculus",
+    "macaca_mulatta",
+    "macaca_fascicularis",
+)
+
+
 def str2bool(v: bool | str) -> bool:
     if isinstance(v, bool):
         return v
@@ -85,12 +94,7 @@ def main() -> None:
         "-p",
         "--species",
         type=str,
-        choices=[
-            "homo_sapiens",
-            "mus_musculus",
-            "macaca_mulatta",
-            "macaca_fascicularis",
-        ],
+        choices=_SPECIES,
         help="Species to use for built-in V-gene colours (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
         metavar="species",
         default="homo_sapiens",
@@ -118,8 +122,6 @@ def main() -> None:
         default="png",
         required=False,
     )
-
-    parser_cloud.set_defaults(func=tcrcloud.cloud.wordcloud)
 
     # create subparser for making the radar
     parser_radar = subparsers.add_parser(
@@ -176,8 +178,6 @@ def main() -> None:
     # Note: min/max scaling for radar metrics is fixed / computed automatically.
     # Removed CLI options for explicit min/max values to simplify usage.
 
-    parser_radar.set_defaults(func=tcrcloud.radar.radar)
-
     # create subparser for making the V gene plot
     parser_vgenes = subparsers.add_parser(
         "vgenes",
@@ -205,12 +205,7 @@ def main() -> None:
         "-p",
         "--species",
         type=str,
-        choices=[
-            "homo_sapiens",
-            "mus_musculus",
-            "macaca_mulatta",
-            "macaca_fascicularis",
-        ],
+        choices=_SPECIES,
         help="Species to use for built-in V-gene (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
         metavar="species",
         default="homo_sapiens",
@@ -226,7 +221,6 @@ def main() -> None:
         default="png",
         required=False,
     )
-    parser_vgenes.set_defaults(func=tcrcloud.vgenes.barplot)
 
     # create subparser for making the amino acids plot
     parser_aminoacids = subparsers.add_parser(
@@ -273,7 +267,6 @@ def main() -> None:
         default="png",
         required=False,
     )
-    parser_aminoacids.set_defaults(func=tcrcloud.aminoacids.aminoacids)
 
     # create subparser for comparing 2 repertoires
     parser_compare = subparsers.add_parser(
@@ -305,12 +298,7 @@ def main() -> None:
         "-p",
         "--species",
         type=str,
-        choices=[
-            "homo_sapiens",
-            "mus_musculus",
-            "macaca_mulatta",
-            "macaca_fascicularis",
-        ],
+        choices=_SPECIES,
         help="Species to use for built-in V-gene (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
         metavar="species",
         default="homo_sapiens",
@@ -335,7 +323,6 @@ def main() -> None:
         default="png",
         required=False,
     )
-    parser_compare.set_defaults(func=tcrcloud.compare.compare)
 
     # create subparser for downloading the rearrangement data
     parser_download = subparsers.add_parser(
@@ -353,21 +340,63 @@ def main() -> None:
         metavar="repertoires.airr.json",
     )
 
-    parser_download.set_defaults(func=tcrcloud.download.airrdownload)
-
     # create subparser for downloading the test repertoire
-    parser_testdata = subparsers.add_parser(
+    subparsers.add_parser(
         "testdata",
         help="Download example TCR \
                                             AIRR-seq repertoire data  \
                                             to test TCRcloud",
     )
 
-    parser_testdata.set_defaults(func=tcrcloud.testdata.download)
-
     args = parser.parse_args()
     try:
-        args.func(args)
+        # Explicit per-command dispatch: the CLI layer translates the parsed
+        # argparse namespace into typed function calls, so library modules
+        # never see argparse objects and keep real, type-checkable
+        # signatures.
+        if args.command == "cloud":
+            tcrcloud.cloud.wordcloud(
+                args.rearrangements,
+                colours=args.colours,
+                species=args.species,
+                legend=args.legend,
+                size=args.size,
+                output_format=args.format,
+            )
+        elif args.command == "radar":
+            tcrcloud.radar.radar(
+                args.rearrangements,
+                custom_legend=args.custom_legend,
+                legend=args.legend,
+                export=args.export,
+                output_format=args.format,
+            )
+        elif args.command == "vgenes":
+            tcrcloud.vgenes.barplot(
+                args.rearrangements,
+                export=args.export,
+                species=args.species,
+                output_format=args.format,
+            )
+        elif args.command == "aminoacids":
+            tcrcloud.aminoacids.aminoacids(
+                args.rearrangements,
+                three_d=args.threeD,
+                export=args.export,
+                output_format=args.format,
+            )
+        elif args.command == "compare":
+            tcrcloud.compare.compare(
+                args.rearrangements,
+                rearrangements2=args.rearrangements2,
+                species=args.species,
+                export=args.export,
+                output_format=args.format,
+            )
+        elif args.command == "download":
+            tcrcloud.download.airrdownload(args.repertoire)
+        elif args.command == "testdata":
+            tcrcloud.testdata.download()
     except TCRcloudError as exc:
         # Expected, user-facing failures raised by library modules. Print a
         # clean message and exit non-zero (so the failure is visible to

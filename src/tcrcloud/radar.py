@@ -12,7 +12,6 @@ an actual logarithmic transform - see _METRIC_SCALES below.
 """
 
 import json
-from argparse import Namespace
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -285,21 +284,20 @@ def _format_tick(value: float, is_int: bool) -> Any:
     return round(value, 5)
 
 
-def radar(args: Namespace) -> None:
-    # Normalize boolean-style CLI flags (allow strings like "true"/"false").
-    # argparse already handles this via str2bool when radar() is invoked
-    # through the CLI, but radar() may also be called directly (e.g. in
-    # tests) with plain strings, so we re-check defensively here.
-    if isinstance(args.legend, str):
-        args.legend = args.legend.lower() in ("yes", "true", "t", "y", "1")
-    if isinstance(args.export, str):
-        args.export = args.export.lower() in ("yes", "true", "t", "y", "1")
+def radar(
+    rearrangements: str,
+    custom_legend: str | None = None,
+    legend: bool = True,
+    export: bool = False,
+    output_format: str = "png",
+) -> None:
+    """Entry point for the `TCRcloud radar` command."""
 
     # Determine the output image format (defaults to "png"). Validated here
-    # too since `radar()` may be called directly (e.g. in tests) rather than
-    # only via the argparse CLI, whose `choices=["svg", "png"]` wouldn't
+    # too since `radar()` may be called directly as a library function rather
+    # than only via the argparse CLI, whose `choices=["svg", "png"]` wouldn't
     # otherwise catch a bad value.
-    output_format = (getattr(args, "format", None) or "png").strip().lower()
+    output_format = output_format.strip().lower()
     if output_format not in ("svg", "png"):
         raise TCRcloudError(
             f"unsupported output format '{output_format}'. "
@@ -319,16 +317,16 @@ def radar(args: Namespace) -> None:
     categories = [*categories, categories[0]]
 
     # Load and filter the input repertoire TSV file, then group by chain and repertoire.
-    samples_df = tcrcloud.format.format_data(args)
+    samples_df = tcrcloud.format.format_data(rearrangements)
     samples = samples_df.groupby(["chain", "repertoire_id"])
     keys = list(samples.groups.keys())
 
     datasets, min_vals, max_vals, scales = calculate_metrics(
         keys,
         samples,
-        args.custom_legend,
-        args.export,
-        args.rearrangements,
+        custom_legend,
+        export,
+        rearrangements,
     )
 
     if not datasets:
@@ -438,9 +436,9 @@ def radar(args: Namespace) -> None:
     plt.tick_params(pad=32, labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
     outputname = (
-        str(Path(args.rearrangements).with_suffix("")) + "_radar" + "." + output_format
+        str(Path(rearrangements).with_suffix("")) + "_radar" + "." + output_format
     )
-    if args.legend:
+    if legend:
         plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize=16)
     plt.savefig(outputname, dpi=300, bbox_inches="tight")
     plt.close()

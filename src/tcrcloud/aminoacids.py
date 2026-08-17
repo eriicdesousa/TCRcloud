@@ -1,5 +1,4 @@
 import copy
-from argparse import Namespace
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -62,7 +61,14 @@ def generate_mesh(
     return mesh
 
 
-def aminoacids(args: Namespace) -> None:
+def aminoacids(
+    rearrangements: str,
+    three_d: bool = False,
+    export: bool = False,
+    output_format: str = "png",
+) -> None:
+    """Entry point for the `TCRcloud aminoacids` command."""
+
     all_aa = pd.DataFrame(
         np.zeros((20, 1)),
         columns=["just_empty"],
@@ -91,28 +97,16 @@ def aminoacids(args: Namespace) -> None:
     )
 
     # Get full dataset from the formatting module
-    samples_df = tcrcloud.format.format_data(args)
+    samples_df = tcrcloud.format.format_data(rearrangements)
     formatted_samples = tcrcloud.format.format_aminoacids(samples_df)
     samples = formatted_samples.groupby(["chain", "repertoire_id"])
     keys = [key for key, _ in samples]
 
-    # Normalize boolean-style CLI flags (allow strings like "true"/"false").
-    # argparse already handles this via str2bool, but aminoacids() may also
-    # be called directly (e.g. in tests) with plain strings, so we
-    # re-check defensively here.
-    export = args.export
-    if isinstance(export, str):
-        export = export.lower() in ("yes", "true", "t", "y", "1")
-
-    three_d = args.threeD
-    if isinstance(three_d, str):
-        three_d = three_d.lower() in ("yes", "true", "t", "y", "1")
-
     # Determine the output image format (defaults to "png"). Validated
-    # here too since `aminoacids()` may be called directly (e.g. in
-    # tests) rather than only via the argparse CLI, whose
+    # here too since `aminoacids()` may be called directly as a library
+    # function rather than only via the argparse CLI, whose
     # `choices=["svg", "png"]` wouldn't otherwise catch a bad value.
-    output_format = (getattr(args, "format", None) or "png").strip().lower()
+    output_format = output_format.strip().lower()
     if output_format not in ("svg", "png"):
         raise TCRcloudError(
             f"unsupported output format '{output_format}'. "
@@ -163,7 +157,7 @@ def aminoacids(args: Namespace) -> None:
                 kind="bar", stacked=True, color=colours, figsize=(10, 14)
             )
             outputname = (
-                str(Path(args.rearrangements).with_suffix(""))
+                str(Path(rearrangements).with_suffix(""))
                 + "_aminoacids_"
                 + j[1]
                 + "_"
@@ -289,7 +283,7 @@ def aminoacids(args: Namespace) -> None:
             )
 
             outputname = (
-                str(Path(args.rearrangements).with_suffix(""))
+                str(Path(rearrangements).with_suffix(""))
                 + "_aminoacids3D_"
                 + j[1]
                 + "_"
@@ -349,7 +343,7 @@ def aminoacids(args: Namespace) -> None:
             # Export interactive HTML version (independent of the
             # chosen static image format).
             html_outputname = (
-                str(Path(args.rearrangements).with_suffix(""))
+                str(Path(rearrangements).with_suffix(""))
                 + "_aminoacids3D_"
                 + j[1]
                 + "_"
@@ -371,7 +365,7 @@ def aminoacids(args: Namespace) -> None:
         # Export the processed data to a CSV file
         if export:
             df_filename = (
-                str(Path(args.rearrangements).with_suffix(""))
+                str(Path(rearrangements).with_suffix(""))
                 + "_aminoacids_table"
                 + j[1]
                 + "_"

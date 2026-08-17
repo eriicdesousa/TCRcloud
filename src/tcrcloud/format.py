@@ -11,7 +11,6 @@ cleaned `junction_aa`, `v_call`, `j_call`, and an inferred `chain` value.
 from __future__ import annotations
 
 import re
-from argparse import Namespace
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -76,7 +75,7 @@ def _is_valid_cdr3(cdr3: str) -> bool:
     return not INVALID_CDR3_CHARS.intersection(cdr3)
 
 
-def format_data(args: Namespace) -> pd.DataFrame:
+def format_data(rearrangements: str) -> pd.DataFrame:
     """Load, validate and filter an AIRR rearrangements TSV file.
 
     Rows are kept only if they are marked `productive`, have a CDR3
@@ -95,7 +94,7 @@ def format_data(args: Namespace) -> pd.DataFrame:
     # When that happens we simply don't request the column from `row` here and
     # fill it in afterwards with a default derived from the input filename.
     try:
-        with open(args.rearrangements) as f:
+        with open(rearrangements) as f:
             first_line = f.readline()
             header_columns = first_line.rstrip("\n").split("\t")
             has_repertoire_id = "repertoire_id" in header_columns
@@ -111,7 +110,7 @@ def format_data(args: Namespace) -> pd.DataFrame:
         # file's existence itself is handled by the CLI's FileNotFoundError
         # handler, so anything raised here means a malformed/unreadable file.
         raise TCRcloudError(
-            f"{args.rearrangements} is not a valid AIRR rearrangement file ({exc})"
+            f"{rearrangements} is not a valid AIRR rearrangement file ({exc})"
         ) from exc
 
     # Validate the file against the AIRR rearrangement schema; the second
@@ -121,11 +120,11 @@ def format_data(args: Namespace) -> pd.DataFrame:
     # - at the input boundary - to a TCRcloudError instead of letting them
     # bubble up as internal exceptions.
     try:
-        airr.validate_rearrangement(args.rearrangements, True)
-        reader = airr.read_rearrangement(args.rearrangements)
+        airr.validate_rearrangement(rearrangements, True)
+        reader = airr.read_rearrangement(rearrangements)
     except airr.ValidationError as exc:
         raise TCRcloudError(
-            f"{args.rearrangements} is not a valid AIRR rearrangement file ({exc})"
+            f"{rearrangements} is not a valid AIRR rearrangement file ({exc})"
         ) from exc
 
     # Collect filtered rows in a list so we can build a DataFrame at the end.
@@ -170,7 +169,7 @@ def format_data(args: Namespace) -> pd.DataFrame:
         # (productive, valid CDR3, matching V/J calls).
         raise TCRcloudError(
             "no productive rearrangements with a valid CDR3 "
-            f"and matching V/J calls were found in {args.rearrangements}"
+            f"and matching V/J calls were found in {rearrangements}"
         )
 
     # Build a DataFrame from the filtered records.
@@ -179,7 +178,7 @@ def format_data(args: Namespace) -> pd.DataFrame:
     # When the input file has no `repertoire_id` column at all, treat the
     # whole file as a single repertoire, named after the input file itself.
     if not has_repertoire_id:
-        df["repertoire_id"] = Path(args.rearrangements).stem
+        df["repertoire_id"] = Path(rearrangements).stem
 
     # If multiple V gene assignments are present (comma-separated), keep only the
     # first one.

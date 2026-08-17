@@ -111,13 +111,13 @@ def _download_repertoire(
     print(f"Received {len(repertoires)} repertoires. Saved as {output_path}")
 
 
-def download(args: Any) -> None:
+def download() -> None:
     """Download example test-data repertoires and generate a legend file.
 
     This is the entry point for the `TCRcloud testdata` CLI command (see
-    the ``testdata`` subparser in `tcrcloud.TCRcloud`). ``args`` is accepted
-    for consistency with the other subcommand entry points but is currently
-    unused, since this command always fetches the same fixed example dataset.
+    the ``testdata`` subparser in `tcrcloud.TCRcloud`). It takes no
+    arguments, since this command always fetches the same fixed example
+    dataset.
     """
 
     # Reuse a single retry-enabled session for both requests so connections

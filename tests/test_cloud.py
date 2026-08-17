@@ -1,6 +1,5 @@
 """Unit tests for tcrcloud.cloud."""
 
-import argparse
 import json
 
 import pandas as pd
@@ -178,7 +177,7 @@ def test_build_color_to_words_derives_colors_from_vcall_when_no_path(monkeypatch
 # exercise only the output-format handling, not the AIRR loading pipeline.
 
 
-def _make_args(tmp_path, **overrides):
+def _make_kwargs(tmp_path, **overrides):
     rearrangements = tmp_path / "repertoire.tsv"
     rearrangements.write_text(
         "junction_aa\tv_call\tj_call\tjunction\trepertoire_id\tproductive\n"
@@ -189,10 +188,10 @@ def _make_args(tmp_path, **overrides):
         species="homo_sapiens",
         legend=True,
         size=1000,
-        format="png",
+        output_format="png",
     )
     defaults.update(overrides)
-    return argparse.Namespace(**defaults)
+    return defaults
 
 
 def _fake_formatted_samples():
@@ -216,7 +215,7 @@ def test_wordcloud_writes_png_by_default(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    cloud.wordcloud(_make_args(tmp_path))
+    cloud.wordcloud(**_make_kwargs(tmp_path))
 
     outputs = list(tmp_path.glob("*.png"))
     assert [p.name for p in outputs] == ["repertoire_rep1_B.png"]
@@ -227,7 +226,7 @@ def test_wordcloud_writes_svg_when_requested(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    cloud.wordcloud(_make_args(tmp_path, format="svg"))
+    cloud.wordcloud(**_make_kwargs(tmp_path, output_format="svg"))
 
     outputs = list(tmp_path.glob("*.svg"))
     assert [p.name for p in outputs] == ["repertoire_rep1_B.svg"]
@@ -238,7 +237,7 @@ def test_wordcloud_format_is_case_insensitive(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    cloud.wordcloud(_make_args(tmp_path, format="SVG"))
+    cloud.wordcloud(**_make_kwargs(tmp_path, output_format="SVG"))
 
     assert [p.name for p in tmp_path.glob("*.svg")] == ["repertoire_rep1_B.svg"]
 
@@ -247,17 +246,18 @@ def test_wordcloud_rejects_unsupported_format(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
 
     with pytest.raises(TCRcloudError, match="unsupported output format"):
-        cloud.wordcloud(_make_args(tmp_path, format="pdf"))
+        cloud.wordcloud(**_make_kwargs(tmp_path, output_format="pdf"))
 
 
-def test_wordcloud_defaults_to_png_when_format_missing(tmp_path, monkeypatch):
-    # `wordcloud()` may be called with an args object that predates the
-    # --format option (e.g. older scripts); it should default to png.
+def test_wordcloud_defaults_to_png_when_format_not_given(tmp_path, monkeypatch):
+    # `output_format` is an optional parameter that defaults to "png".
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
-    args = _make_args(tmp_path)
-    del args.format
+    rearrangements = tmp_path / "repertoire.tsv"
+    rearrangements.write_text(
+        "junction_aa\tv_call\tj_call\tjunction\trepertoire_id\tproductive\n"
+    )
 
-    cloud.wordcloud(args)
+    cloud.wordcloud(str(rearrangements))
 
     assert [p.name for p in tmp_path.glob("*.png")] == ["repertoire_rep1_B.png"]

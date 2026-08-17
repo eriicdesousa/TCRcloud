@@ -1,7 +1,5 @@
 """Unit tests for tcrcloud.format."""
 
-from types import SimpleNamespace
-
 import airr
 import pandas as pd
 import pytest
@@ -133,7 +131,7 @@ def test_format_data_keeps_only_productive_valid_matching_rows(tmp_path, monkeyp
     ]
     _patch_airr(monkeypatch, rows)
 
-    df = format.format_data(SimpleNamespace(rearrangements=str(path)))
+    df = format.format_data(str(path))
 
     assert len(df) == 1
     assert df.iloc[0]["junction_aa"] == "CASSLGTDTQYF"
@@ -164,7 +162,7 @@ def test_format_data_assigns_delta_chain_for_plain_trdv_trdj_pair(
     ]
     _patch_airr(monkeypatch, rows)
 
-    df = format.format_data(SimpleNamespace(rearrangements=str(path)))
+    df = format.format_data(str(path))
 
     assert len(df) == 1
     assert df.iloc[0]["chain"] == "D"
@@ -189,7 +187,7 @@ def test_format_data_assigns_delta_chain_for_ambiguous_dv_suffix(tmp_path, monke
     ]
     _patch_airr(monkeypatch, rows)
 
-    df = format.format_data(SimpleNamespace(rearrangements=str(path)))
+    df = format.format_data(str(path))
 
     assert len(df) == 1
     assert df.iloc[0]["chain"] == "D"
@@ -214,7 +212,7 @@ def test_format_data_assigns_delta_chain_for_two_digit_dv_gene(tmp_path, monkeyp
     ]
     _patch_airr(monkeypatch, rows)
 
-    df = format.format_data(SimpleNamespace(rearrangements=str(path)))
+    df = format.format_data(str(path))
 
     assert len(df) == 1
     assert df.iloc[0]["chain"] == "D"
@@ -230,7 +228,7 @@ def test_format_data_raises_clear_error_when_no_rows_pass_filters(
     _patch_airr(monkeypatch, [])  # no rows at all
 
     with pytest.raises(TCRcloudError, match="no productive rearrangements"):
-        format.format_data(SimpleNamespace(rearrangements=str(path)))
+        format.format_data(str(path))
 
 
 def test_format_data_detects_duplicate_count_column_by_exact_header_match(
@@ -259,7 +257,7 @@ def test_format_data_detects_duplicate_count_column_by_exact_header_match(
     }
     _patch_airr(monkeypatch, [row])
 
-    df = format.format_data(SimpleNamespace(rearrangements=str(path)))
+    df = format.format_data(str(path))
 
     assert "duplicate_count" in df.columns
     assert df.iloc[0]["duplicate_count"] == "5"
@@ -294,7 +292,7 @@ def test_format_data_does_not_falsely_detect_duplicate_count_substring(
     }
     _patch_airr(monkeypatch, [row])
 
-    df = format.format_data(SimpleNamespace(rearrangements=str(path)))
+    df = format.format_data(str(path))
 
     assert "duplicate_count" not in df.columns
 
@@ -317,7 +315,7 @@ def test_format_data_defaults_repertoire_id_when_column_missing(tmp_path, monkey
     }
     _patch_airr(monkeypatch, [row])
 
-    df = format.format_data(SimpleNamespace(rearrangements=str(path)))
+    df = format.format_data(str(path))
 
     assert "repertoire_id" in df.columns
     assert df.iloc[0]["repertoire_id"] == path.stem
@@ -337,7 +335,7 @@ def test_format_data_wraps_validation_error_in_tcrcloud_error(tmp_path, monkeypa
     )
 
     with pytest.raises(TCRcloudError, match="not a valid AIRR rearrangement file"):
-        format.format_data(SimpleNamespace(rearrangements=str(path)))
+        format.format_data(str(path))
 
 
 def test_format_data_wraps_reader_error_in_tcrcloud_error(tmp_path, monkeypatch):
@@ -356,7 +354,7 @@ def test_format_data_wraps_reader_error_in_tcrcloud_error(tmp_path, monkeypatch)
     )
 
     with pytest.raises(TCRcloudError, match="not a valid AIRR rearrangement file"):
-        format.format_data(SimpleNamespace(rearrangements=str(path)))
+        format.format_data(str(path))
 
 
 def test_format_data_wraps_malformed_header_in_tcrcloud_error(tmp_path, monkeypatch):
@@ -369,7 +367,7 @@ def test_format_data_wraps_malformed_header_in_tcrcloud_error(tmp_path, monkeypa
     monkeypatch.setattr(format.airr, "validate_rearrangement", lambda *a, **k: None)
 
     with pytest.raises(TCRcloudError, match="not a valid AIRR rearrangement file"):
-        format.format_data(SimpleNamespace(rearrangements=str(path)))
+        format.format_data(str(path))
 
 
 # ---------------------------------------------------------------------------

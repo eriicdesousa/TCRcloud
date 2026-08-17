@@ -21,7 +21,7 @@ from tcrcloud.errors import TCRcloudError
 
 
 def test_main_preserves_custom_error_message(monkeypatch, capsys):
-    def fake_wordcloud(args):
+    def fake_wordcloud(*args, **kwargs):
         # Library modules raise TCRcloudError with a complete message (no
         # prefix); main() must surface it verbatim instead of rebuilding a
         # message from the rearrangements argument.
@@ -42,7 +42,7 @@ def test_main_preserves_custom_error_message(monkeypatch, capsys):
 def test_main_falls_back_to_argument_filename_for_generic_filenotfound(
     monkeypatch, capsys
 ):
-    def fake_wordcloud(args):
+    def fake_wordcloud(*args, **kwargs):
         # A plain FileNotFoundError with no custom "TCRcloud error:" message,
         # e.g. raised by a bare `open()` call somewhere downstream.
         raise FileNotFoundError()
@@ -62,7 +62,7 @@ def test_main_exits_nonzero_on_tcrcloud_error(monkeypatch, capsys):
     """TCRcloudError raised by a subcommand must surface as a clean message
     plus a non-zero exit code (not a swallowed print)."""
 
-    def fake_wordcloud(args):
+    def fake_wordcloud(*args, **kwargs):
         raise TCRcloudError("something went wrong")
 
     monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
@@ -89,7 +89,7 @@ def test_main_exits_nonzero_on_tcrcloud_error(monkeypatch, capsys):
 
 
 def test_main_propagates_keyerror_from_subcommand(monkeypatch, capsys):
-    def fake_wordcloud(args):
+    def fake_wordcloud(*args, **kwargs):
         raise KeyError("internal bug")
 
     monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
@@ -103,7 +103,7 @@ def test_main_propagates_keyerror_from_subcommand(monkeypatch, capsys):
 
 
 def test_main_propagates_valueerror_from_subcommand(monkeypatch, capsys):
-    def fake_wordcloud(args):
+    def fake_wordcloud(*args, **kwargs):
         raise ValueError("internal bug")
 
     monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
@@ -178,3 +178,35 @@ def test_main_rejects_invalid_boolean_for_aminoacids_threed(monkeypatch, capsys)
         ["TCRcloud", "aminoacids", "rearrangements.tsv", "-t", "yes please"],
         "Expected a boolean value",
     )
+
+
+def test_main_false_legend_value_turns_off_legend(monkeypatch, capsys):
+    captured = {}
+
+    def fake_wordcloud(*args, **kwargs):
+        captured.update(kwargs)
+
+    monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
+    monkeypatch.setattr(
+        sys, "argv", ["TCRcloud", "cloud", "rearrangements.tsv", "-l", "False"]
+    )
+
+    TCRcloud.main()
+
+    assert captured["legend"] is False
+
+
+def test_main_true_export_value_turns_on_export(monkeypatch):
+    captured = {}
+
+    def fake_radar(*args, **kwargs):
+        captured.update(kwargs)
+
+    monkeypatch.setattr(TCRcloud.tcrcloud.radar, "radar", fake_radar)
+    monkeypatch.setattr(
+        sys, "argv", ["TCRcloud", "radar", "rearrangements.tsv", "-e", "True"]
+    )
+
+    TCRcloud.main()
+
+    assert captured["export"] is True

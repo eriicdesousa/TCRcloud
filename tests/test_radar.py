@@ -1,6 +1,5 @@
 """Unit tests for tcrcloud.radar."""
 
-import argparse
 import json
 
 import matplotlib.pyplot as plt
@@ -274,7 +273,7 @@ def test_format_tick_default_rounds_to_five_decimals():
 # ---------------------------------------------------------------------------
 
 
-def _make_args(tmp_path, **overrides):
+def _make_kwargs(tmp_path, **overrides):
     rearrangements = tmp_path / "repertoire.tsv"
     rearrangements.write_text(
         "junction_aa\tjunction\trepertoire_id\tchain\tproductive\n"
@@ -284,10 +283,10 @@ def _make_args(tmp_path, **overrides):
         custom_legend=None,
         legend=True,
         export=False,
-        format="png",
+        output_format="png",
     )
     defaults.update(overrides)
-    return argparse.Namespace(**defaults)
+    return defaults
 
 
 def _patch_format_data(monkeypatch):
@@ -298,7 +297,7 @@ def test_radar_writes_png_by_default(tmp_path, monkeypatch):
     _patch_format_data(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    radar.radar(_make_args(tmp_path))
+    radar.radar(**_make_kwargs(tmp_path))
 
     outputs = list(tmp_path.glob("*_radar.png"))
     assert [p.name for p in outputs] == ["repertoire_radar.png"]
@@ -309,7 +308,7 @@ def test_radar_writes_svg_when_requested(tmp_path, monkeypatch):
     _patch_format_data(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    radar.radar(_make_args(tmp_path, format="svg"))
+    radar.radar(**_make_kwargs(tmp_path, output_format="svg"))
 
     outputs = list(tmp_path.glob("*_radar.svg"))
     assert [p.name for p in outputs] == ["repertoire_radar.svg"]
@@ -320,7 +319,7 @@ def test_radar_format_is_case_insensitive(tmp_path, monkeypatch):
     _patch_format_data(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    radar.radar(_make_args(tmp_path, format="SVG"))
+    radar.radar(**_make_kwargs(tmp_path, output_format="SVG"))
 
     assert [p.name for p in tmp_path.glob("*_radar.svg")] == ["repertoire_radar.svg"]
 
@@ -329,28 +328,28 @@ def test_radar_rejects_unsupported_format(tmp_path, monkeypatch):
     _patch_format_data(monkeypatch)
 
     with pytest.raises(TCRcloudError, match="unsupported output format"):
-        radar.radar(_make_args(tmp_path, format="pdf"))
+        radar.radar(**_make_kwargs(tmp_path, output_format="pdf"))
 
 
-def test_radar_defaults_to_png_when_format_missing(tmp_path, monkeypatch):
-    # `radar()` may be called with an args object that predates the
-    # --format option (e.g. older scripts); it should default to png.
+def test_radar_defaults_to_png_when_format_not_given(tmp_path, monkeypatch):
+    # `output_format` is an optional parameter that defaults to "png".
     _patch_format_data(monkeypatch)
     monkeypatch.chdir(tmp_path)
-    args = _make_args(tmp_path)
-    del args.format
+    rearrangements = tmp_path / "repertoire.tsv"
+    rearrangements.write_text(
+        "junction_aa\tjunction\trepertoire_id\tchain\tproductive\n"
+    )
 
-    radar.radar(args)
+    radar.radar(str(rearrangements))
 
     assert (tmp_path / "repertoire_radar.png").exists()
 
 
-def test_radar_accepts_string_booleans_for_legend_and_export(tmp_path, monkeypatch):
-    # Older callers may pass string booleans instead of real bools.
+def test_radar_legend_and_export_flags(tmp_path, monkeypatch):
     _patch_format_data(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    radar.radar(_make_args(tmp_path, legend="false", export="true"))
+    radar.radar(**_make_kwargs(tmp_path, legend=False, export=True))
 
     assert (tmp_path / "repertoire_radar.png").exists()
     assert (tmp_path / "repertoire_repertoire_metrics.txt").exists()
@@ -362,7 +361,7 @@ def test_radar_raises_when_no_repertoires_found(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(tformat, "format_data", lambda args: empty_df)
     with pytest.raises(TCRcloudError, match="no repertoires found"):
-        radar.radar(_make_args(tmp_path))
+        radar.radar(**_make_kwargs(tmp_path))
 
 
 def test_radar_closes_figure_after_saving(tmp_path, monkeypatch):
@@ -372,7 +371,7 @@ def test_radar_closes_figure_after_saving(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     plt.close("all")
 
-    radar.radar(_make_args(tmp_path))
+    radar.radar(**_make_kwargs(tmp_path))
 
     assert plt.get_fignums() == []
 
@@ -383,8 +382,8 @@ def test_radar_calls_legend_only_when_enabled(tmp_path, monkeypatch):
     legend_calls = []
     monkeypatch.setattr(plt, "legend", lambda *a, **k: legend_calls.append((a, k)))
 
-    radar.radar(_make_args(tmp_path, legend=True))
+    radar.radar(**_make_kwargs(tmp_path, legend=True))
     assert len(legend_calls) == 1
 
-    radar.radar(_make_args(tmp_path, legend=False))
+    radar.radar(**_make_kwargs(tmp_path, legend=False))
     assert len(legend_calls) == 1  # unchanged: plt.legend() not called again

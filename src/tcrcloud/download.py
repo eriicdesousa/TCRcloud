@@ -15,7 +15,6 @@ If repository discovery fails, a built-in fallback list of known AIRR nodes is u
 import os
 import sys
 import time
-from argparse import Namespace
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -215,20 +214,27 @@ def testserver(data: dict[str, Any]) -> str | None:
     return host_url
 
 
-def airrdownload(args: Namespace) -> None:
+def airrdownload(repertoire: str) -> None:
+    """Entry point for the `TCRcloud download` command.
+
+    ``repertoire`` is the path to a local AIRR repertoire metadata file
+    (JSON); the matching rearrangements are downloaded from the AIRR Data
+    Commons repository that hosts them.
+    """
+
     # Validate the input file path and load the AIRR repertoire metadata.
     # Schema errors from the airr library are expected user-facing failures
     # (a malformed metadata file), so convert them here - at the input
     # boundary - to TCRcloudError instead of letting internal exceptions
     # (KeyError/TypeError/...) escape as vague CLI messages.
     try:
-        airr.validate_repertoire(args.repertoire)
+        airr.validate_repertoire(repertoire)
     except airr.ValidationError as exc:
         raise TCRcloudError(
-            f"{args.repertoire} is not a valid AIRR repertoire metadata file ({exc})"
+            f"{repertoire} is not a valid AIRR repertoire metadata file ({exc})"
         ) from exc
 
-    repertoire_file = args.repertoire
+    repertoire_file = repertoire
     # Keep the ".airr" stem and only drop the final ".json", so the output is
     # e.g. "sample.airr.rearrangements.tsv" (matching the historical naming).
     rearrangements_file = (
@@ -236,7 +242,7 @@ def airrdownload(args: Namespace) -> None:
     )
 
     try:
-        data = airr.read_airr(args.repertoire)
+        data = airr.read_airr(repertoire)
     except (TypeError, ValueError) as exc:
         raise TCRcloudError(
             "It seems you did not indicate a properly formatted AIRR repertoire file"

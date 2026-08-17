@@ -1,7 +1,5 @@
 """Unit tests for tcrcloud.compare."""
 
-import argparse
-
 import pandas as pd
 import pytest
 
@@ -15,39 +13,37 @@ from tcrcloud.errors import TCRcloudError
 # ---------------------------------------------------------------------------
 
 
-def _make_args(rearrangements="repertoire.tsv", rearrangements2=None, **overrides):
+def _make_kwargs(rearrangements="repertoire.tsv", rearrangements2=None, **overrides):
     defaults = dict(
         rearrangements=rearrangements,
         rearrangements2=rearrangements2,
         species="homo_sapiens",
         export=False,
-        format="png",
+        output_format="png",
     )
     defaults.update(overrides)
-    return argparse.Namespace(**defaults)
+    return defaults
 
 
 def test_load_combined_single_file_keeps_repertoire_ids_unchanged(monkeypatch):
     df = pd.DataFrame({"repertoire_id": ["rep1", "rep2"], "chain": ["B", "B"]})
     monkeypatch.setattr(tformat, "format_data", lambda args: df)
 
-    combined, prefix = compare._load_combined(_make_args("repertoire.tsv"))
+    combined, prefix = compare._load_combined("repertoire.tsv")
 
     assert combined["repertoire_id"].tolist() == ["rep1", "rep2"]
     assert prefix == "repertoire"
 
 
 def test_load_combined_two_files_prefixes_repertoire_ids(monkeypatch):
-    def fake_format_data(args):
-        if args.rearrangements == "fileA.tsv":
+    def fake_format_data(rearrangements):
+        if rearrangements == "fileA.tsv":
             return pd.DataFrame({"repertoire_id": ["rep1"], "chain": ["B"]})
         return pd.DataFrame({"repertoire_id": ["rep1"], "chain": ["B"]})
 
     monkeypatch.setattr(tformat, "format_data", fake_format_data)
 
-    combined, prefix = compare._load_combined(
-        _make_args("fileA.tsv", rearrangements2="fileB.tsv")
-    )
+    combined, prefix = compare._load_combined("fileA.tsv", rearrangements2="fileB.tsv")
 
     assert sorted(combined["repertoire_id"].tolist()) == ["fileA__rep1", "fileB__rep1"]
     assert prefix == "fileA_vs_fileB"
@@ -151,7 +147,7 @@ def test_compare_writes_output_files_for_two_repertoires(tmp_path, monkeypatch):
     monkeypatch.setattr(tformat, "format_data", lambda args: _fake_raw_rows())
     monkeypatch.chdir(tmp_path)
 
-    compare.compare(_make_args(str(tmp_path / "repertoire.tsv"), export=True))
+    compare.compare(**_make_kwargs(str(tmp_path / "repertoire.tsv"), export=True))
 
     outputs = {p.name for p in tmp_path.glob("*")}
     assert any(name.endswith("_vgenes_diff_rep1_vs_rep2_B.png") for name in outputs)
@@ -181,11 +177,11 @@ def test_compare_raises_when_no_chain_has_multiple_repertoires(tmp_path, monkeyp
     monkeypatch.setattr(tformat, "format_data", lambda args: single_rep)
 
     with pytest.raises(TCRcloudError, match="no chain had 2 or more repertoires"):
-        compare.compare(_make_args(str(tmp_path / "repertoire.tsv")))
+        compare.compare(**_make_kwargs(str(tmp_path / "repertoire.tsv")))
 
 
 def test_compare_rejects_unsupported_format(tmp_path, monkeypatch):
     monkeypatch.setattr(tformat, "format_data", lambda args: _fake_raw_rows())
 
     with pytest.raises(TCRcloudError, match="unsupported output format"):
-        compare.compare(_make_args(str(tmp_path / "repertoire.tsv"), format="pdf"))
+        compare.compare(**_make_kwargs(str(tmp_path / "repertoire.tsv"), output_format="pdf"))

@@ -6,7 +6,6 @@ length x percentage of reads).
 """
 
 import copy
-from argparse import Namespace
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -67,11 +66,11 @@ def _palette_for_chain(
 def get_table(
     keys: Sequence[tuple[str, str]],
     samples: pd.core.groupby.DataFrameGroupBy,
-    args: Namespace,
+    rearrangements: str,
+    species: str = "homo_sapiens",
+    export: bool = False,
 ) -> list[dict[str, Any]]:
     """Build the per-chain/repertoire V-gene usage tables used for plotting."""
-
-    species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
 
     datasets = []
     for chain_letter, repertoire_id in keys:
@@ -131,9 +130,9 @@ def get_table(
         )
         df_sorted = df_reformat.sort_values(by=["v_call"], key=natsort_keygen())
 
-        if args.export:
+        if export:
             df_filename = (
-                str(Path(args.rearrangements).with_suffix(""))
+                str(Path(rearrangements).with_suffix(""))
                 + "_vgenes_table"
                 + repertoire_id
                 + "_"
@@ -167,31 +166,31 @@ def get_table(
     return datasets
 
 
-def barplot(args: Namespace) -> None:
-    # Normalize boolean-style CLI flags (allow strings like "true"/"false").
-    # argparse already handles this via str2bool when barplot() is invoked
-    # through the CLI, but barplot() may also be called directly (e.g. in
-    # tests) with plain strings, so we re-check defensively here.
-    if isinstance(args.export, str):
-        args.export = args.export.lower() in ("yes", "true", "t", "y", "1")
+def barplot(
+    rearrangements: str,
+    export: bool = False,
+    species: str = "homo_sapiens",
+    output_format: str = "png",
+) -> None:
+    """Entry point for the `TCRcloud vgenes` command."""
 
     # Determine the output image format (defaults to "png"). Validated here
-    # too since `barplot()` may be called directly (e.g. in tests) rather
-    # than only via the argparse CLI, whose `choices=["svg", "png"]` wouldn't
-    # otherwise catch a bad value.
-    output_format = (getattr(args, "format", None) or "png").strip().lower()
+    # too since `barplot()` may be called directly as a library function
+    # rather than only via the argparse CLI, whose `choices=["svg", "png"]`
+    # wouldn't otherwise catch a bad value.
+    output_format = output_format.strip().lower()
     if output_format not in ("svg", "png"):
         raise TCRcloudError(
             f"unsupported output format '{output_format}'. "
             "Please choose 'svg' or 'png'"
         )
 
-    samples_df = tcrcloud.format.format_data(args)
+    samples_df = tcrcloud.format.format_data(rearrangements)
     formatted_samples = tcrcloud.format.format_vgene(samples_df)
 
     samples = formatted_samples.groupby(["chain", "repertoire_id"])
     keys = list(samples.groups.keys())
-    datasets = get_table(keys, samples, args)
+    datasets = get_table(keys, samples, rearrangements, species=species, export=export)
 
     if not datasets:
         raise TCRcloudError("no repertoires found for plotting")
@@ -232,7 +231,7 @@ def barplot(args: Namespace) -> None:
             template="plotly_white",
         )
         outputname = (
-            str(Path(args.rearrangements).with_suffix(""))
+            str(Path(rearrangements).with_suffix(""))
             + "_vgenes_"
             + d["repertoire_id"]
             + "_"
@@ -277,7 +276,7 @@ def barplot(args: Namespace) -> None:
             template="plotly_white",
         )
         html_outputname = (
-            str(Path(args.rearrangements).with_suffix(""))
+            str(Path(rearrangements).with_suffix(""))
             + "_vgenes_"
             + d["repertoire_id"]
             + "_"

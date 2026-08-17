@@ -1,6 +1,5 @@
 """Unit tests for tcrcloud.download."""
 
-from types import SimpleNamespace
 from unittest.mock import Mock
 
 import airr
@@ -275,8 +274,7 @@ def test_airrdownload_writes_rearrangements_and_closes_file(monkeypatch, capsys)
     create_rearrangement = Mock(return_value=fake_writer)
     monkeypatch.setattr(download.airr, "create_rearrangement", create_rearrangement)
 
-    args = SimpleNamespace(repertoire="sample.airr.json")
-    download.airrdownload(args)
+    download.airrdownload("sample.airr.json")
 
     create_rearrangement.assert_called_once_with(
         "sample.airr.rearrangements.tsv", fields=rows[0].keys()
@@ -301,8 +299,7 @@ def test_airrdownload_handles_empty_rearrangements_without_crashing(
     create_rearrangement = Mock()
     monkeypatch.setattr(download.airr, "create_rearrangement", create_rearrangement)
 
-    args = SimpleNamespace(repertoire="sample.airr.json")
-    download.airrdownload(args)  # should not raise
+    download.airrdownload("sample.airr.json")  # should not raise
 
     create_rearrangement.assert_not_called()
     err = capsys.readouterr().err
@@ -327,8 +324,7 @@ def test_airrdownload_paginates_until_short_page(monkeypatch):
         download.airr, "create_rearrangement", Mock(return_value=fake_writer)
     )
 
-    args = SimpleNamespace(repertoire="sample.airr.json")
-    download.airrdownload(args)
+    download.airrdownload("sample.airr.json")
 
     assert fake_session.post.call_count == 2
     # The second request should page using `from` = number fetched so far.
@@ -342,9 +338,8 @@ def test_airrdownload_invalid_repertoire_file_exits(monkeypatch, capsys):
     monkeypatch.setattr(download.airr, "validate_repertoire", Mock())
     monkeypatch.setattr(download.airr, "read_airr", Mock(side_effect=TypeError()))
 
-    args = SimpleNamespace(repertoire="sample.airr.json")
     with pytest.raises(TCRcloudError, match="properly formatted AIRR repertoire file"):
-        download.airrdownload(args)
+        download.airrdownload("sample.airr.json")
 
 
 def test_airrdownload_validation_error_is_converted_to_tcrcloud_error(monkeypatch):
@@ -358,11 +353,10 @@ def test_airrdownload_validation_error_is_converted_to_tcrcloud_error(monkeypatc
         Mock(side_effect=airr.ValidationError("bad schema")),
     )
 
-    args = SimpleNamespace(repertoire="sample.airr.json")
     with pytest.raises(
         TCRcloudError, match="not a valid AIRR repertoire metadata file"
     ):
-        download.airrdownload(args)
+        download.airrdownload("sample.airr.json")
 
 
 def test_airrdownload_missing_repertoire_key_raises_tcrcloud_error(monkeypatch):
@@ -374,9 +368,8 @@ def test_airrdownload_missing_repertoire_key_raises_tcrcloud_error(monkeypatch):
         read_airr_return={"Info": {"title": "t", "version": 1, "description": "d"}},
     )
 
-    args = SimpleNamespace(repertoire="sample.airr.json")
     with pytest.raises(TCRcloudError, match="properly formatted AIRR repertoire file"):
-        download.airrdownload(args)
+        download.airrdownload("sample.airr.json")
 
 
 def test_airrdownload_raises_on_request_exception(monkeypatch):
@@ -389,9 +382,8 @@ def test_airrdownload_raises_on_request_exception(monkeypatch):
     create_rearrangement = Mock()
     monkeypatch.setattr(download.airr, "create_rearrangement", create_rearrangement)
 
-    args = SimpleNamespace(repertoire="sample.airr.json")
     with pytest.raises(TCRcloudError, match="failed to download rearrangements"):
-        download.airrdownload(args)
+        download.airrdownload("sample.airr.json")
 
     create_rearrangement.assert_not_called()
 
@@ -406,8 +398,7 @@ def test_airrdownload_raises_on_invalid_json(monkeypatch):
     create_rearrangement = Mock()
     monkeypatch.setattr(download.airr, "create_rearrangement", create_rearrangement)
 
-    args = SimpleNamespace(repertoire="sample.airr.json")
     with pytest.raises(TCRcloudError, match="invalid JSON response"):
-        download.airrdownload(args)
+        download.airrdownload("sample.airr.json")
 
     create_rearrangement.assert_not_called()

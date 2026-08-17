@@ -17,11 +17,9 @@ per chain before pairing, so repertoires can also be compared across files
 (always restricted to repertoires sharing the same chain/locus).
 """
 
-import argparse
 import copy
 import itertools
 import sys
-from argparse import Namespace
 from pathlib import Path
 from typing import Any
 
@@ -39,7 +37,9 @@ from tcrcloud.errors import TCRcloudError
 _HTML_CONFIG = {"responsive": True, "displayModeBar": True, "displaylogo": False}
 
 
-def _load_combined(args: Namespace) -> tuple[pd.DataFrame, str]:
+def _load_combined(
+    rearrangements: str, rearrangements2: str | None = None
+) -> tuple[pd.DataFrame, str]:
     """Load one or two rearrangements files into a single tagged DataFrame.
 
     Returns `(combined_df, output_prefix)`. When a second file is given,
@@ -48,16 +48,13 @@ def _load_combined(args: Namespace) -> tuple[pd.DataFrame, str]:
     even if they happen to share a raw repertoire_id.
     """
 
-    df1 = tcrcloud.format.format_data(args).copy()
-    stem1 = Path(args.rearrangements).stem
+    df1 = tcrcloud.format.format_data(rearrangements).copy()
+    stem1 = Path(rearrangements).stem
 
-    rearrangements2 = getattr(args, "rearrangements2", None)
     if not rearrangements2:
-        return df1, str(Path(args.rearrangements).with_suffix(""))
+        return df1, str(Path(rearrangements).with_suffix(""))
 
-    args2 = argparse.Namespace(**vars(args))
-    args2.rearrangements = rearrangements2
-    df2 = tcrcloud.format.format_data(args2).copy()
+    df2 = tcrcloud.format.format_data(rearrangements2).copy()
     stem2 = Path(rearrangements2).stem
 
     df1["repertoire_id"] = stem1 + "__" + df1["repertoire_id"].astype(str)
@@ -128,12 +125,11 @@ def _vgene_comparison(
     chain_letter: str,
     repA: str,
     repB: str,
-    args: Namespace,
+    species: str,
     prefix: str,
     output_format: str,
     export: bool,
 ) -> None:
-    species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
     tables = _vgene_frequency_tables(formatted_vgene, chain_letter, repA, repB, species)
     if tables is None:
         sys.stderr.write(
@@ -472,19 +468,27 @@ def _aminoacid_2d_diff_plots(
 # ---------------------------------------------------------------------------
 
 
-def compare(args: Namespace) -> None:
-    export = args.export
-    if isinstance(export, str):
-        export = export.lower() in ("yes", "true", "t", "y", "1")
+def compare(
+    rearrangements: str,
+    rearrangements2: str | None = None,
+    species: str = "homo_sapiens",
+    export: bool = False,
+    output_format: str = "png",
+) -> None:
+    """Entry point for the `TCRcloud compare` command."""
 
-    output_format = (getattr(args, "format", None) or "png").strip().lower()
+    # Determine the output image format (defaults to "png"). Validated here
+    # too since `compare()` may be called directly as a library function
+    # rather than only via the argparse CLI, whose `choices=["svg", "png"]`
+    # wouldn't otherwise catch a bad value.
+    output_format = output_format.strip().lower()
     if output_format not in ("svg", "png"):
         raise TCRcloudError(
             f"unsupported output format '{output_format}'. "
             "Please choose 'svg' or 'png'"
         )
 
-    combined_df, prefix = _load_combined(args)
+    combined_df, prefix = _load_combined(rearrangements, rearrangements2)
 
     formatted_vgene = tcrcloud.format.format_vgene(combined_df)
     formatted_aminoacids = tcrcloud.format.format_aminoacids(combined_df)
@@ -504,7 +508,7 @@ def compare(args: Namespace) -> None:
                 str(chain_letter),
                 repA,
                 repB,
-                args,
+                species,
                 prefix,
                 output_format,
                 export,

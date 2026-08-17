@@ -1,7 +1,5 @@
 """Unit tests for tcrcloud.aminoacids."""
 
-import argparse
-
 import pandas as pd
 import pytest
 
@@ -80,7 +78,7 @@ def _patch_format_pipeline(monkeypatch):
     )
 
 
-def _make_args(tmp_path, **overrides):
+def _make_kwargs(tmp_path, **overrides):
     rearrangements = tmp_path / "repertoire.tsv"
     rearrangements.write_text(
         "junction_aa\tv_call\tj_call\tjunction\trepertoire_id\tproductive\n"
@@ -88,18 +86,18 @@ def _make_args(tmp_path, **overrides):
     defaults = dict(
         rearrangements=str(rearrangements),
         export=False,
-        threeD=False,
-        format="png",
+        three_d=False,
+        output_format="png",
     )
     defaults.update(overrides)
-    return argparse.Namespace(**defaults)
+    return defaults
 
 
 def test_aminoacids_writes_2d_png_by_default(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path))
 
     outputs = list(tmp_path.glob("*.png"))
     assert [p.name for p in outputs] == ["repertoire_aminoacids_rep1_B.png"]
@@ -111,7 +109,7 @@ def test_aminoacids_writes_2d_svg_when_requested(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path, format="svg"))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path, output_format="svg"))
 
     outputs = list(tmp_path.glob("*.svg"))
     assert [p.name for p in outputs] == ["repertoire_aminoacids_rep1_B.svg"]
@@ -122,7 +120,7 @@ def test_aminoacids_format_is_case_insensitive(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path, format="PNG"))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path, output_format="PNG"))
 
     assert [p.name for p in tmp_path.glob("*.png")] == [
         "repertoire_aminoacids_rep1_B.png"
@@ -133,18 +131,19 @@ def test_aminoacids_rejects_unsupported_format(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
 
     with pytest.raises(TCRcloudError, match="unsupported output format"):
-        aminoacids.aminoacids(_make_args(tmp_path, format="pdf"))
+        aminoacids.aminoacids(**_make_kwargs(tmp_path, output_format="pdf"))
 
 
-def test_aminoacids_defaults_to_png_when_format_missing(tmp_path, monkeypatch):
-    # `aminoacids()` may be called with an args object that predates the
-    # --format option (e.g. older scripts); it should default to png.
+def test_aminoacids_defaults_to_png_when_format_not_given(tmp_path, monkeypatch):
+    # `output_format` is an optional parameter that defaults to "png".
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
-    args = _make_args(tmp_path)
-    del args.format
+    rearrangements = tmp_path / "repertoire.tsv"
+    rearrangements.write_text(
+        "junction_aa\tv_call\tj_call\tjunction\trepertoire_id\tproductive\n"
+    )
 
-    aminoacids.aminoacids(args)
+    aminoacids.aminoacids(str(rearrangements))
 
     assert [p.name for p in tmp_path.glob("*.png")] == [
         "repertoire_aminoacids_rep1_B.png"
@@ -155,7 +154,7 @@ def test_aminoacids_writes_3d_png_and_html_when_threed_requested(tmp_path, monke
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path, threeD=True))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path, three_d=True))
 
     png_outputs = list(tmp_path.glob("*.png"))
     html_outputs = list(tmp_path.glob("*.html"))
@@ -170,7 +169,7 @@ def test_aminoacids_3d_svg_still_writes_html_extension(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path, threeD=True, format="svg"))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path, three_d=True, output_format="svg"))
 
     svg_outputs = list(tmp_path.glob("*.svg"))
     html_outputs = list(tmp_path.glob("*.html"))
@@ -178,13 +177,11 @@ def test_aminoacids_3d_svg_still_writes_html_extension(tmp_path, monkeypatch):
     assert [p.name for p in html_outputs] == ["repertoire_aminoacids3D_rep1_B.html"]
 
 
-def test_aminoacids_accepts_string_threed_and_export_flags(tmp_path, monkeypatch):
-    # aminoacids() may be called directly (e.g. from older scripts/tests)
-    # with plain "true"/"false" strings rather than real bools.
+def test_aminoacids_threed_and_export_flags(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path, threeD="true", export="true"))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path, three_d=True, export=True))
 
     assert list(tmp_path.glob("*_aminoacids3D_*.png"))
     assert list(tmp_path.glob("*_aminoacids_table*.csv"))
@@ -194,7 +191,7 @@ def test_aminoacids_exports_csv_table_when_requested(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path, export=True))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path, export=True))
 
     outputs = list(tmp_path.glob("*_aminoacids_table*.csv"))
     assert [p.name for p in outputs] == ["repertoire_aminoacids_tablerep1_B.csv"]
@@ -204,7 +201,7 @@ def test_aminoacids_does_not_export_csv_by_default(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path))
 
     assert not list(tmp_path.glob("*.csv"))
 
@@ -224,7 +221,7 @@ def test_aminoacids_writes_one_plot_per_chain_repertoire(tmp_path, monkeypatch):
     monkeypatch.setattr(tformat, "format_aminoacids", fake_format_aminoacids)
     monkeypatch.chdir(tmp_path)
 
-    aminoacids.aminoacids(_make_args(tmp_path))
+    aminoacids.aminoacids(**_make_kwargs(tmp_path))
 
     outputs = {p.name for p in tmp_path.glob("*.png")}
     assert outputs == {

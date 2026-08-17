@@ -1,7 +1,5 @@
 """Unit tests for tcrcloud.vgenes."""
 
-import argparse
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -88,11 +86,7 @@ def _make_vgene_samples(chain="B", repertoire_id="rep1", rows=None):
 def test_get_table_builds_one_dataset_per_key(monkeypatch):
     _patch_palette(monkeypatch, {"TRBV": {"TRBV1": "#111", "TRBV2": "#222"}})
     samples, keys = _make_vgene_samples()
-    args = argparse.Namespace(
-        rearrangements="repertoire.tsv", export=False, species="homo_sapiens"
-    )
-
-    datasets = vgenes.get_table(keys, samples, args)
+    datasets = vgenes.get_table(keys, samples, "repertoire.tsv")
 
     assert len(datasets) == 1
     dataset = datasets[0]
@@ -110,11 +104,7 @@ def test_get_table_builds_one_dataset_per_key(monkeypatch):
 
 
 def test_get_table_skips_unsupported_chain_letters():
-    args = argparse.Namespace(
-        rearrangements="repertoire.tsv", export=False, species="homo_sapiens"
-    )
-
-    datasets = vgenes.get_table([("Z", "rep1")], None, args)
+    datasets = vgenes.get_table([("Z", "rep1")], None, "repertoire.tsv")
 
     assert datasets == []
 
@@ -129,11 +119,7 @@ def test_get_table_returns_multiple_datasets_for_multiple_keys(monkeypatch):
     df = pd.concat([df1, df2], ignore_index=True)
     samples = df.groupby(["chain", "repertoire_id"])
     keys = list(samples.groups.keys())
-    args = argparse.Namespace(
-        rearrangements="repertoire.tsv", export=False, species="homo_sapiens"
-    )
-
-    datasets = vgenes.get_table(keys, samples, args)
+    datasets = vgenes.get_table(keys, samples, "repertoire.tsv")
 
     assert {d["repertoire_id"] for d in datasets} == {"rep1", "rep2"}
     assert all(d["chain"] == "B" for d in datasets)
@@ -143,11 +129,8 @@ def test_get_table_exports_csv_when_requested(tmp_path, monkeypatch):
     _patch_palette(monkeypatch, {"TRBV": {"TRBV1": "#111", "TRBV2": "#222"}})
     samples, keys = _make_vgene_samples()
     rearrangements = tmp_path / "repertoire.tsv"
-    args = argparse.Namespace(
-        rearrangements=str(rearrangements), export=True, species="homo_sapiens"
-    )
 
-    vgenes.get_table(keys, samples, args)
+    vgenes.get_table(keys, samples, str(rearrangements), export=True)
 
     expected = tmp_path / "repertoire_vgenes_tablerep1_B.csv"
     assert expected.exists()
@@ -158,11 +141,8 @@ def test_get_table_does_not_export_csv_by_default(tmp_path, monkeypatch):
     _patch_palette(monkeypatch, {"TRBV": {"TRBV1": "#111", "TRBV2": "#222"}})
     samples, keys = _make_vgene_samples()
     rearrangements = tmp_path / "repertoire.tsv"
-    args = argparse.Namespace(
-        rearrangements=str(rearrangements), export=False, species="homo_sapiens"
-    )
 
-    vgenes.get_table(keys, samples, args)
+    vgenes.get_table(keys, samples, str(rearrangements))
 
     assert not list(tmp_path.glob("*.csv"))
 
@@ -174,11 +154,7 @@ def test_get_table_renames_ambiguous_alpha_delta_vgene_for_delta_chain(monkeypat
         {"junction_aa": "CASSBF", "v_call": "TRDV1", "CDR3_length": 11},
     ]
     samples, keys = _make_vgene_samples(chain="D", rows=rows)
-    args = argparse.Namespace(
-        rearrangements="repertoire.tsv", export=False, species="homo_sapiens"
-    )
-
-    datasets = vgenes.get_table(keys, samples, args)
+    datasets = vgenes.get_table(keys, samples, "repertoire.tsv")
 
     assert len(datasets) == 1
     dataset = datasets[0]
@@ -203,11 +179,7 @@ def test_get_table_pops_ambiguous_vgenes_from_delta_palette(monkeypatch):
     )
     rows = [{"junction_aa": "CASSAF", "v_call": "TRDV1", "CDR3_length": 10}]
     samples, keys = _make_vgene_samples(chain="D", rows=rows)
-    args = argparse.Namespace(
-        rearrangements="repertoire.tsv", export=False, species="homo_sapiens"
-    )
-
-    datasets = vgenes.get_table(keys, samples, args)
+    datasets = vgenes.get_table(keys, samples, "repertoire.tsv")
 
     assert datasets[0]["x_axis_names"] == ["TRDV1"]
 
@@ -251,7 +223,7 @@ def _patch_palette_for_barplot(monkeypatch):
     )
 
 
-def _make_args(tmp_path, **overrides):
+def _make_kwargs(tmp_path, **overrides):
     rearrangements = tmp_path / "repertoire.tsv"
     rearrangements.write_text(
         "junction_aa\tv_call\tj_call\tjunction\trepertoire_id\tproductive\n"
@@ -260,10 +232,10 @@ def _make_args(tmp_path, **overrides):
         rearrangements=str(rearrangements),
         export=False,
         species="homo_sapiens",
-        format="png",
+        output_format="png",
     )
     defaults.update(overrides)
-    return argparse.Namespace(**defaults)
+    return defaults
 
 
 def test_barplot_writes_png_by_default(tmp_path, monkeypatch):
@@ -271,7 +243,7 @@ def test_barplot_writes_png_by_default(tmp_path, monkeypatch):
     _patch_palette_for_barplot(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    vgenes.barplot(_make_args(tmp_path))
+    vgenes.barplot(**_make_kwargs(tmp_path))
 
     outputs = list(tmp_path.glob("*.png"))
     assert [p.name for p in outputs] == ["repertoire_vgenes_rep1_B.png"]
@@ -286,7 +258,7 @@ def test_barplot_writes_svg_when_requested(tmp_path, monkeypatch):
     _patch_palette_for_barplot(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    vgenes.barplot(_make_args(tmp_path, format="svg"))
+    vgenes.barplot(**_make_kwargs(tmp_path, output_format="svg"))
 
     outputs = list(tmp_path.glob("*.svg"))
     assert [p.name for p in outputs] == ["repertoire_vgenes_rep1_B.svg"]
@@ -302,7 +274,7 @@ def test_barplot_html_export_is_independent_of_static_image_format(
     _patch_palette_for_barplot(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    vgenes.barplot(_make_args(tmp_path, format="svg"))
+    vgenes.barplot(**_make_kwargs(tmp_path, output_format="svg"))
 
     assert [p.name for p in tmp_path.glob("*.html")] == [
         "repertoire_vgenes_rep1_B.html"
@@ -314,7 +286,7 @@ def test_barplot_format_is_case_insensitive(tmp_path, monkeypatch):
     _patch_palette_for_barplot(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    vgenes.barplot(_make_args(tmp_path, format="PNG"))
+    vgenes.barplot(**_make_kwargs(tmp_path, output_format="PNG"))
 
     assert [p.name for p in tmp_path.glob("*.png")] == ["repertoire_vgenes_rep1_B.png"]
 
@@ -324,31 +296,30 @@ def test_barplot_rejects_unsupported_format(tmp_path, monkeypatch):
     _patch_palette_for_barplot(monkeypatch)
 
     with pytest.raises(TCRcloudError, match="unsupported output format"):
-        vgenes.barplot(_make_args(tmp_path, format="pdf"))
+        vgenes.barplot(**_make_kwargs(tmp_path, output_format="pdf"))
 
 
-def test_barplot_defaults_to_png_when_format_missing(tmp_path, monkeypatch):
-    # `barplot()` may be called with an args object that predates the
-    # --format option (e.g. older scripts); it should default to png.
+def test_barplot_defaults_to_png_when_format_not_given(tmp_path, monkeypatch):
+    # `output_format` is an optional parameter that defaults to "png".
     _patch_format_pipeline(monkeypatch)
     _patch_palette_for_barplot(monkeypatch)
     monkeypatch.chdir(tmp_path)
-    args = _make_args(tmp_path)
-    del args.format
+    rearrangements = tmp_path / "repertoire.tsv"
+    rearrangements.write_text(
+        "junction_aa\tv_call\tj_call\tjunction\trepertoire_id\tproductive\n"
+    )
 
-    vgenes.barplot(args)
+    vgenes.barplot(str(rearrangements))
 
     assert [p.name for p in tmp_path.glob("*.png")] == ["repertoire_vgenes_rep1_B.png"]
 
 
-def test_barplot_accepts_string_export_flag(tmp_path, monkeypatch):
-    # `barplot()` may be called directly (e.g. from older scripts/tests)
-    # with a plain "true"/"false" string rather than a real bool.
+def test_barplot_exports_csv_when_requested(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     _patch_palette_for_barplot(monkeypatch)
     monkeypatch.chdir(tmp_path)
 
-    vgenes.barplot(_make_args(tmp_path, export="true"))
+    vgenes.barplot(**_make_kwargs(tmp_path, export=True))
 
     assert list(tmp_path.glob("*_vgenes_table*.csv"))
 
@@ -371,4 +342,4 @@ def test_barplot_raises_when_no_repertoires_found(tmp_path, monkeypatch):
     )
 
     with pytest.raises(TCRcloudError, match="no repertoires found"):
-        vgenes.barplot(_make_args(tmp_path))
+        vgenes.barplot(**_make_kwargs(tmp_path))

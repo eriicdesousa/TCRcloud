@@ -155,7 +155,7 @@ def test_download_calls_helper_for_both_chains_and_writes_legend(tmp_path, monke
 
     monkeypatch.setattr(testdata, "_download_repertoire", fake_download_repertoire)
 
-    testdata.download(args=None)
+    testdata.download()
 
     assert len(calls) == 2
 

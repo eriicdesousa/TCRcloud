@@ -1,6 +1,6 @@
 """Generate word clouds for TCR/AIRR CDR3 datasets.
 
-This module provides a CLI-backed `wordcloud(args)` entrypoint and several
+This module provides a CLI-backed `wordcloud()` entrypoint and several
 helpers used to create a wordcloud grouped by chain + repertoire.
 
 The implementation is kept intentionally small and exposes helpers to make
@@ -8,7 +8,6 @@ unit testing feasible without requiring matplotlib rendering.
 """
 
 import json
-from argparse import Namespace
 from pathlib import Path
 from typing import Any
 
@@ -163,30 +162,27 @@ def _add_legend(colour_map: dict[str, str]) -> None:
     )
 
 
-def wordcloud(args: Namespace) -> None:
+def wordcloud(
+    rearrangements: str,
+    colours: str | None = None,
+    species: str = "homo_sapiens",
+    legend: bool = True,
+    size: int = 1000,
+    output_format: str = "png",
+) -> None:
     """Main entrypoint for the `TCRcloud cloud` command.
 
     This function is intentionally small; it delegates most of the work to
     helpers so that tests can cover behaviour without rendering plots.
     """
 
-    # Convert legacy string boolean values into a real boolean.
-    legend = args.legend
-    if isinstance(legend, str):
-        if legend.lower() in ("true", "t", "1", "yes", "y"):
-            legend = True
-        elif legend.lower() in ("false", "f", "0", "no", "n"):
-            legend = False
-        else:
-            raise TCRcloudError("please indicate legend True or False")
-
     legend = bool(legend)
 
     # Determine the output image format (defaults to "png"). Validated here
-    # too since `wordcloud()` may be called directly (e.g. in tests) rather
-    # than only via the argparse CLI, whose `choices=["svg", "png"]` wouldn't
-    # otherwise catch a bad value.
-    output_format = (getattr(args, "format", None) or "png").strip().lower()
+    # too since `wordcloud()` may be called directly as a library function
+    # rather than only via the argparse CLI, whose `choices=["svg", "png"]`
+    # wouldn't otherwise catch a bad value.
+    output_format = output_format.strip().lower()
     if output_format not in ("svg", "png"):
         raise TCRcloudError(
             f"unsupported output format '{output_format}'. "
@@ -194,7 +190,7 @@ def wordcloud(args: Namespace) -> None:
         )
 
     # Format and validate the input AIRR CDR3 data.
-    samples_df = tcrcloud.format.format_data(args)
+    samples_df = tcrcloud.format.format_data(rearrangements)
     formatted_samples = tcrcloud.format.format_cloud(samples_df)
     _ensure_required_columns(formatted_samples)
 
@@ -202,7 +198,7 @@ def wordcloud(args: Namespace) -> None:
         handle_duplicates(formatted_samples)
 
     # Use the base name of the input file to generate output filenames.
-    input_stem = Path(args.rearrangements).stem
+    input_stem = Path(rearrangements).stem
 
     for (chain, repertoire_id), df in formatted_samples.groupby(
         ["chain", "repertoire_id"]
@@ -212,7 +208,7 @@ def wordcloud(args: Namespace) -> None:
         # Build the wordcloud object using the token frequency map.
         wordcloud_obj = WordCloud(
             width=1000,
-            height=args.size,
+            height=size,
             background_color="white",
             relative_scaling=0.7,
             prefer_horizontal=1.0,
@@ -222,13 +218,12 @@ def wordcloud(args: Namespace) -> None:
         ).generate_from_frequencies(text)
 
         # Determine the colors used for each token.
-        species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
-        color_to_words = _build_color_to_words(family, args.colours, species)
+        color_to_words = _build_color_to_words(family, colours, species)
         try:
             grouped_color_func = SimpleGroupedColorFunc(color_to_words, "grey")
         except TypeError as exc:
             raise TCRcloudError(
-                f"{args.colours} doesn't seem properly formatted. Check https://github.com/eriicdesousa/TCRcloud for more information"
+                f"{colours} doesn't seem properly formatted. Check https://github.com/eriicdesousa/TCRcloud for more information"
             ) from exc
         wordcloud_obj.recolor(color_func=grouped_color_func)
 
@@ -240,7 +235,7 @@ def wordcloud(args: Namespace) -> None:
         ax_wordcloud.set_xticks([])
         ax_wordcloud.set_yticks([])
 
-        if legend and args.colours is None:
+        if legend and colours is None:
             # The legend maps V-gene calls to colors, which only makes sense
             # when colors are derived from V-gene calls (the built-in
             # species palettes). When a custom `--colours` JSON file is used,
