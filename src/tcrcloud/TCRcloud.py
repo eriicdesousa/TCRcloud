@@ -4,8 +4,6 @@ import logging
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
-import matplotlib.pyplot as plt
-
 import tcrcloud.aminoacids
 import tcrcloud.cloud
 import tcrcloud.compare
@@ -40,9 +38,6 @@ def str2bool(v: bool | str) -> bool:
         if v.lower() in ("no", "false", "f", "n", "0"):
             return False
     raise argparse.ArgumentTypeError("Expected a boolean value (true/false)")
-
-
-plt.rcParams["font.family"] = "serif"
 
 
 def main() -> None:

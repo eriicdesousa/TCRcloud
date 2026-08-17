@@ -231,28 +231,31 @@ def wordcloud(
         wordcloud_obj.recolor(color_func=grouped_color_func)
 
         # Plot the wordcloud in a fixed square area (5x5) and put legend below.
-        fig = plt.figure(figsize=(7, 7), dpi=300)
-        # wordcloud axis as large as possible while keeping legend just underneath
-        ax_wordcloud = fig.add_axes([0.05, 0.28, 0.9, 0.68])
-        ax_wordcloud.imshow(wordcloud_obj, interpolation="bilinear")
-        ax_wordcloud.set_xticks([])
-        ax_wordcloud.set_yticks([])
+        # The serif font family (and axes.axisbelow for the legend) is applied
+        # per figure via rc_context so that importing tcrcloud never mutates
+        # the host process's global matplotlib rcParams.
+        with plt.rc_context({"font.family": "serif", "axes.axisbelow": True}):
+            fig = plt.figure(figsize=(7, 7), dpi=300)
+            # wordcloud axis as large as possible while keeping legend just underneath
+            ax_wordcloud = fig.add_axes([0.05, 0.28, 0.9, 0.68])
+            ax_wordcloud.imshow(wordcloud_obj, interpolation="bilinear")
+            ax_wordcloud.set_xticks([])
+            ax_wordcloud.set_yticks([])
 
-        if legend and colours is None:
-            # The legend maps V-gene calls to colors, which only makes sense
-            # when colors are derived from V-gene calls (the built-in
-            # species palettes). When a custom `--colours` JSON file is used,
-            # colors are assigned directly to arbitrary CDR3 words instead of
-            # V-genes, so there is no V-gene/color mapping to show and the
-            # legend is intentionally skipped even if `--legend` is True.
-            colour_map = {v: _vcall_color(v, species) for v in set(family.values())}
-            ax_legend = fig.add_axes([0.05, 0.25, 0.9, 0.22])
-            ax_legend.axis("off")
-            with plt.rc_context({"axes.axisbelow": True}):
+            if legend and colours is None:
+                # The legend maps V-gene calls to colors, which only makes sense
+                # when colors are derived from V-gene calls (the built-in
+                # species palettes). When a custom `--colours` JSON file is used,
+                # colors are assigned directly to arbitrary CDR3 words instead of
+                # V-genes, so there is no V-gene/color mapping to show and the
+                # legend is intentionally skipped even if `--legend` is True.
+                colour_map = {v: _vcall_color(v, species) for v in set(family.values())}
+                ax_legend = fig.add_axes([0.05, 0.25, 0.9, 0.22])
+                ax_legend.axis("off")
                 plt.sca(ax_legend)
                 _add_legend(colour_map)
 
-        outputname = f"{input_stem}_{repertoire_id}_{chain}.{output_format}"
-        fig.savefig(outputname, dpi=300, bbox_inches="tight", pad_inches=0.2)
-        plt.close(fig)
+            outputname = f"{input_stem}_{repertoire_id}_{chain}.{output_format}"
+            fig.savefig(outputname, dpi=300, bbox_inches="tight", pad_inches=0.2)
+            plt.close(fig)
         logger.info("Word cloud saved as " + outputname)

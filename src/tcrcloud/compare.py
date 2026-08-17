@@ -409,59 +409,63 @@ def _aminoacid_2d_diff_plots(
     # position, positive percentage-point differences stack upward and
     # negative ones stack downward, colored per amino acid.
     comp_T = diff.transpose()  # rows = positions, columns = amino acids
-    fig, ax = plt.subplots(figsize=(10, 6))
-    positions = comp_T.index.tolist()
-    cum_pos = np.zeros(len(comp_T))
-    cum_neg = np.zeros(len(comp_T))
 
-    for aa in aminoacids.desired_order:
-        if aa in comp_T.columns:
-            values = comp_T[aa].values
-            pos_values = np.where(values > 0, values, 0)
-            neg_values = np.where(values < 0, values, 0)
-            ax.bar(
-                positions,
-                pos_values,
-                bottom=cum_pos,
-                color=aminoacids.colours[aa],
-                label=aa,
-            )
-            cum_pos += pos_values
-            ax.bar(positions, neg_values, bottom=cum_neg, color=aminoacids.colours[aa])
-            cum_neg += neg_values
+    # Serif fonts per figure via rc_context (see tcrcloud.cloud).
+    with plt.rc_context({"font.family": "serif"}):
+        fig, ax = plt.subplots(figsize=(10, 6))
+        positions = comp_T.index.tolist()
+        cum_pos = np.zeros(len(comp_T))
+        cum_neg = np.zeros(len(comp_T))
 
-    ax.axhline(0, color="black", linewidth=0.8)
-    ax.set_xlabel("CDR3 Position")
-    ax.set_ylabel("Difference in % (" + repA + " minus " + repB + ")")
-    ax.set_title(f"Amino acid composition: {repA} vs {repB} ({chain_letter})")
-    ax.legend(bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=8)
-    ax.set_xticks(positions)
-    ax.set_xticklabels(positions)
-    outname = (
-        f"{prefix}_aminoacids2D_diff_{repA}_vs_{repB}_{chain_letter}.{output_format}"
-    )
-    plt.tight_layout()
-    plt.savefig(outname, dpi=300, bbox_inches="tight")
-    plt.close()
+        for aa in aminoacids.desired_order:
+            if aa in comp_T.columns:
+                values = comp_T[aa].values
+                pos_values = np.where(values > 0, values, 0)
+                neg_values = np.where(values < 0, values, 0)
+                ax.bar(
+                    positions,
+                    pos_values,
+                    bottom=cum_pos,
+                    color=aminoacids.colours[aa],
+                    label=aa,
+                )
+                cum_pos += pos_values
+                ax.bar(positions, neg_values, bottom=cum_neg, color=aminoacids.colours[aa])
+                cum_neg += neg_values
+
+        ax.axhline(0, color="black", linewidth=0.8)
+        ax.set_xlabel("CDR3 Position")
+        ax.set_ylabel("Difference in % (" + repA + " minus " + repB + ")")
+        ax.set_title(f"Amino acid composition: {repA} vs {repB} ({chain_letter})")
+        ax.legend(bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=8)
+        ax.set_xticks(positions)
+        ax.set_xticklabels(positions)
+        outname = (
+            f"{prefix}_aminoacids2D_diff_{repA}_vs_{repB}_{chain_letter}.{output_format}"
+        )
+        plt.tight_layout()
+        plt.savefig(outname, dpi=300, bbox_inches="tight")
+        plt.close()
     logger.info("Amino acids 2D comparison plot saved as " + outname)
 
     # (B) Squashed per-amino-acid bar chart: sum the difference across all
     # CDR3 positions to give one net difference value per amino acid.
     sum_by_aa = diff.sum(axis=1).reindex(aminoacids.desired_order).fillna(0)
-    fig2, ax2 = plt.subplots(figsize=(8, 4))
-    colors_aa = [aminoacids.colours[a] for a in sum_by_aa.index]
-    ax2.bar(sum_by_aa.index, sum_by_aa.values, color=colors_aa)
-    ax2.axhline(0, color="black", linewidth=0.8)
-    ax2.set_xlabel("Amino acids")
-    ax2.set_ylabel("Difference in % (" + repA + " minus " + repB + ")")
-    ax2.set_title(f"Sum across positions: {repA} vs {repB} ({chain_letter})")
-    outname2 = (
-        f"{prefix}_aminoacids2D_diff_squashedAA_{repA}_vs_{repB}_{chain_letter}"
-        f".{output_format}"
-    )
-    plt.tight_layout()
-    plt.savefig(outname2, dpi=300, bbox_inches="tight")
-    plt.close()
+    with plt.rc_context({"font.family": "serif"}):
+        fig2, ax2 = plt.subplots(figsize=(8, 4))
+        colors_aa = [aminoacids.colours[a] for a in sum_by_aa.index]
+        ax2.bar(sum_by_aa.index, sum_by_aa.values, color=colors_aa)
+        ax2.axhline(0, color="black", linewidth=0.8)
+        ax2.set_xlabel("Amino acids")
+        ax2.set_ylabel("Difference in % (" + repA + " minus " + repB + ")")
+        ax2.set_title(f"Sum across positions: {repA} vs {repB} ({chain_letter})")
+        outname2 = (
+            f"{prefix}_aminoacids2D_diff_squashedAA_{repA}_vs_{repB}_{chain_letter}"
+            f".{output_format}"
+        )
+        plt.tight_layout()
+        plt.savefig(outname2, dpi=300, bbox_inches="tight")
+        plt.close()
     logger.info("Amino acids squashed comparison plot saved as " + outname2)
 
 

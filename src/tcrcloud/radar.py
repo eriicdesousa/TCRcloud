@@ -337,112 +337,115 @@ def radar(
 
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(datasets[0]))
 
-    plt.figure(figsize=(10, 14))
-    plt.subplot(polar=True)
+    # Serif fonts are a TCRcloud style choice; apply them per figure via
+    # rc_context so importing the package never mutates global rcParams.
+    with plt.rc_context({"font.family": "serif"}):
+        plt.figure(figsize=(10, 14))
+        plt.subplot(polar=True)
 
-    # Predefined palette for the radar lines; will cycle if there are more
-    # repertoires than colors.
-    radar_colours = [
-        "#f0e442",
-        "#0072b2",
-        "#cc79a7",
-        "#009e73",
-        "#e69f00",
-        "#56b4e9",
-        "#8a6bbf",
-    ]
+        # Predefined palette for the radar lines; will cycle if there are more
+        # repertoires than colors.
+        radar_colours = [
+            "#f0e442",
+            "#0072b2",
+            "#cc79a7",
+            "#009e73",
+            "#e69f00",
+            "#56b4e9",
+            "#8a6bbf",
+        ]
 
-    for i in datasets:
-        dataset = i[1:]
-        dataset = [*dataset, dataset[0]]
+        for i in datasets:
+            dataset = i[1:]
+            dataset = [*dataset, dataset[0]]
 
-        try:
-            thecolour = radar_colours.pop(0)
-        except IndexError:
-            thecolour = "#BBBBBB"
+            try:
+                thecolour = radar_colours.pop(0)
+            except IndexError:
+                thecolour = "#BBBBBB"
 
-        plt.plot(
-            label_loc,
-            dataset,
-            # No label here: plt.fill (below) draws the same data and is
-            # given the legend label instead, so each repertoire only gets
-            # a single legend entry rather than one per plot()+fill() pair.
-            linewidth=4.0,
-            alpha=0.4,
-            color=thecolour,
-        )
+            plt.plot(
+                label_loc,
+                dataset,
+                # No label here: plt.fill (below) draws the same data and is
+                # given the legend label instead, so each repertoire only gets
+                # a single legend entry rather than one per plot()+fill() pair.
+                linewidth=4.0,
+                alpha=0.4,
+                color=thecolour,
+            )
 
-        plt.fill(
-            label_loc, dataset, label=i[0], linewidth=4.0, alpha=0.6, color=thecolour
-        )
+            plt.fill(
+                label_loc, dataset, label=i[0], linewidth=4.0, alpha=0.6, color=thecolour
+            )
 
-    # Whether each metric's tick labels should be rendered as whole numbers;
-    # positions match the metric order in categories/_METRIC_RANGES above
-    # (only Distinct CDR3 and Chao1 are counts, so only they round to int).
-    integer_metrics = [False, False, False, False, True, True, False]
+        # Whether each metric's tick labels should be rendered as whole numbers;
+        # positions match the metric order in categories/_METRIC_RANGES above
+        # (only Distinct CDR3 and Chao1 are counts, so only they round to int).
+        integer_metrics = [False, False, False, False, True, True, False]
 
-    # Draw tick labels for each axis based on the fixed default ranges.
-    for idx, (min_val, max_val, scale, is_int) in enumerate(
-        zip(min_vals, max_vals, scales, integer_metrics, strict=True)
-    ):
-        if scale == "log":
-            lo = int(np.floor(np.log10(min_val)))
-            hi = int(np.ceil(np.log10(max_val)))
-            tick_values = [10**e for e in range(lo, hi + 1)]
-        else:
-            tick_values = [
-                min_val + (max_val - min_val) * f for f in (0.1, 0.3, 0.5, 0.7, 0.9)
-            ]
+        # Draw tick labels for each axis based on the fixed default ranges.
+        for idx, (min_val, max_val, scale, is_int) in enumerate(
+            zip(min_vals, max_vals, scales, integer_metrics, strict=True)
+        ):
+            if scale == "log":
+                lo = int(np.floor(np.log10(min_val)))
+                hi = int(np.ceil(np.log10(max_val)))
+                tick_values = [10**e for e in range(lo, hi + 1)]
+            else:
+                tick_values = [
+                    min_val + (max_val - min_val) * f for f in (0.1, 0.3, 0.5, 0.7, 0.9)
+                ]
 
-        # Optionally suppress the first (minimum) tick for cleaner axis labeling.
-        if len(tick_values) > 1 and abs(tick_values[0] - min_val) < 1e-12:
-            tick_values = tick_values[1:]
+            # Optionally suppress the first (minimum) tick for cleaner axis labeling.
+            if len(tick_values) > 1 and abs(tick_values[0] - min_val) < 1e-12:
+                tick_values = tick_values[1:]
 
-        # For Distinct CDR3 and Chao1 (idx 4, 5), the log-scale tick range is
-        # rounded outward to the nearest power of 10 (`hi = ceil(log10(max_val))`),
-        # so the last generated tick can overshoot max_val (e.g. 1,000,000
-        # instead of the actual 250,000 max). That overshot tick would be
-        # clipped to the same axis position as max_label below, drawing a
-        # misleading duplicate/overlapping value there, so it's dropped.
-        if idx in (4, 5) and len(tick_values) > 1:
-            tick_values = tick_values[:-1]
+            # For Distinct CDR3 and Chao1 (idx 4, 5), the log-scale tick range is
+            # rounded outward to the nearest power of 10 (`hi = ceil(log10(max_val))`),
+            # so the last generated tick can overshoot max_val (e.g. 1,000,000
+            # instead of the actual 250,000 max). That overshot tick would be
+            # clipped to the same axis position as max_label below, drawing a
+            # misleading duplicate/overlapping value there, so it's dropped.
+            if idx in (4, 5) and len(tick_values) > 1:
+                tick_values = tick_values[:-1]
 
-        for tick in tick_values:
-            pos = _scale_value_to_01(tick, min_val, max_val, scale)
-            label = _format_tick(tick, is_int)
+            for tick in tick_values:
+                pos = _scale_value_to_01(tick, min_val, max_val, scale)
+                label = _format_tick(tick, is_int)
+                plt.text(
+                    label_loc[idx],
+                    pos,
+                    label,
+                    horizontalalignment="center",
+                    verticalalignment="center",
+                    fontsize=12,
+                    fontweight="bold",
+                )
+
+            max_label = _format_tick(max_val, is_int)
+            # Strip trailing .0 for axis max values to keep labels clean
+            if isinstance(max_label, float) and max_label.is_integer():
+                max_label = int(max_label)
             plt.text(
                 label_loc[idx],
-                pos,
-                label,
+                1.0,
+                max_label,
                 horizontalalignment="center",
                 verticalalignment="center",
                 fontsize=12,
                 fontweight="bold",
             )
 
-        max_label = _format_tick(max_val, is_int)
-        # Strip trailing .0 for axis max values to keep labels clean
-        if isinstance(max_label, float) and max_label.is_integer():
-            max_label = int(max_label)
-        plt.text(
-            label_loc[idx],
-            1.0,
-            max_label,
-            horizontalalignment="center",
-            verticalalignment="center",
-            fontsize=12,
-            fontweight="bold",
+        plt.ylim(0, 1.01)
+        plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9], [])
+        plt.tick_params(pad=32, labelsize=16)
+        lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
+        outputname = (
+            str(Path(rearrangements).with_suffix("")) + "_radar" + "." + output_format
         )
-
-    plt.ylim(0, 1.01)
-    plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9], [])
-    plt.tick_params(pad=32, labelsize=16)
-    lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
-    outputname = (
-        str(Path(rearrangements).with_suffix("")) + "_radar" + "." + output_format
-    )
-    if legend:
-        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize=16)
-    plt.savefig(outputname, dpi=300, bbox_inches="tight")
-    plt.close()
+        if legend:
+            plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize=16)
+        plt.savefig(outputname, dpi=300, bbox_inches="tight")
+        plt.close()
     logger.info("Radar saved as " + outputname)

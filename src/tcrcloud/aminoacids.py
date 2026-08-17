@@ -156,9 +156,6 @@ def aminoacids(
             transposed_df = (
                 normalized.transpose()
             )  # Convert for plotting, for 2D bar plot
-            transposed_df.plot(
-                kind="bar", stacked=True, color=colours, figsize=(10, 14)
-            )
             outputname = (
                 str(Path(rearrangements).with_suffix(""))
                 + "_aminoacids_"
@@ -168,9 +165,14 @@ def aminoacids(
                 + "."
                 + output_format
             )
-            plt.legend(bbox_to_anchor=(1.01, 1), reverse=False, loc="upper left")
-            plt.savefig(outputname, dpi=300, bbox_inches="tight")
-            plt.close()
+            # Serif fonts per figure via rc_context (see tcrcloud.cloud).
+            with plt.rc_context({"font.family": "serif"}):
+                transposed_df.plot(
+                    kind="bar", stacked=True, color=colours, figsize=(10, 14)
+                )
+                plt.legend(bbox_to_anchor=(1.01, 1), reverse=False, loc="upper left")
+                plt.savefig(outputname, dpi=300, bbox_inches="tight")
+                plt.close()
             logger.info("Amino acids plot saved as " + outputname)
 
         # If user wants a 3D bar plot
