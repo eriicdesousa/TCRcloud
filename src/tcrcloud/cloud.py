@@ -200,8 +200,10 @@ def wordcloud(
     if not formatted_samples["junction_aa"].is_unique:
         handle_duplicates(formatted_samples)
 
-    # Use the base name of the input file to generate output filenames.
-    input_stem = Path(rearrangements).stem
+    # Use the input file path minus its final extension to generate output
+    # filenames, so word clouds are written next to the input file rather
+    # than in the current working directory (Path.stem would drop the dir).
+    input_stem = str(Path(rearrangements).with_suffix(""))
 
     for (chain, repertoire_id), df in formatted_samples.groupby(
         ["chain", "repertoire_id"]

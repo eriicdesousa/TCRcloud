@@ -261,3 +261,21 @@ def test_wordcloud_defaults_to_png_when_format_not_given(tmp_path, monkeypatch):
     cloud.wordcloud(str(rearrangements))
 
     assert [p.name for p in tmp_path.glob("*.png")] == ["repertoire_rep1_B.png"]
+
+
+def test_wordcloud_writes_output_next_to_input_file(tmp_path, monkeypatch):
+    # When the input file lives in a subdirectory, the word cloud must be
+    # written next to it, not in the current working directory.
+    _patch_format_pipeline(monkeypatch)
+    monkeypatch.chdir(tmp_path)
+    input_dir = tmp_path / "inputs"
+    input_dir.mkdir()
+    rearrangements = input_dir / "repertoire.tsv"
+    rearrangements.write_text(
+        "junction_aa\tv_call\tj_call\tjunction\trepertoire_id\tproductive\n"
+    )
+
+    cloud.wordcloud(str(rearrangements))
+
+    assert [p.name for p in input_dir.glob("*.png")] == ["repertoire_rep1_B.png"]
+    assert not list(tmp_path.glob("*.png"))
