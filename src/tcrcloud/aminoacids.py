@@ -1,4 +1,6 @@
 import copy
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 
@@ -152,7 +154,7 @@ def aminoacids(args):
                 kind="bar", stacked=True, color=colours, figsize=(10, 14)
             )
             outputname = (
-                args.rearrangements[:-4]
+                str(Path(args.rearrangements).with_suffix(""))
                 + "_aminoacids_"
                 + j[1]
                 + "_"
@@ -278,7 +280,7 @@ def aminoacids(args):
             )
 
             outputname = (
-                args.rearrangements[:-4]
+                str(Path(args.rearrangements).with_suffix(""))
                 + "_aminoacids3D_"
                 + j[1]
                 + "_"
@@ -338,7 +340,7 @@ def aminoacids(args):
             # Export interactive HTML version (independent of the
             # chosen static image format).
             html_outputname = (
-                args.rearrangements[:-4]
+                str(Path(args.rearrangements).with_suffix(""))
                 + "_aminoacids3D_"
                 + j[1]
                 + "_"
@@ -360,7 +362,7 @@ def aminoacids(args):
         # Export the processed data to a CSV file
         if export:
             df_filename = (
-                args.rearrangements[:-4]
+                str(Path(args.rearrangements).with_suffix(""))
                 + "_aminoacids_table"
                 + j[1]
                 + "_"

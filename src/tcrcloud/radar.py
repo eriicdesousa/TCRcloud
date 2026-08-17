@@ -12,6 +12,7 @@ an actual logarithmic transform - see _METRIC_SCALES below.
 """
 
 import json
+from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -198,7 +199,7 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
     datasets = [[label, *row.tolist()] for label, row in zip(labels, scaled_arr)]
 
     if export:
-        metrics_filename = filename[:-4] + "_repertoire_metrics.txt"
+        metrics_filename = str(Path(filename).with_suffix("")) + "_repertoire_metrics.txt"
         with open(metrics_filename, "w") as fileout:
             for label, row in zip(labels, raw_arr):
                 print("Repertoire:", label, file=fileout)
@@ -423,7 +424,9 @@ def radar(args):
     plt.yticks([0.1, 0.3, 0.5, 0.7, 0.9], [])
     plt.tick_params(pad=32, labelsize=16)
     lines, labels = plt.thetagrids(np.degrees(label_loc), labels=categories)
-    outputname = args.rearrangements[:-4] + "_radar" + "." + output_format
+    outputname = (
+        str(Path(args.rearrangements).with_suffix("")) + "_radar" + "." + output_format
+    )
     if args.legend:
         plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize=16)
     plt.savefig(outputname, dpi=300, bbox_inches="tight")

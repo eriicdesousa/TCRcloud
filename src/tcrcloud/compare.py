@@ -50,7 +50,7 @@ def _load_combined(args):
 
     rearrangements2 = getattr(args, "rearrangements2", None)
     if not rearrangements2:
-        return df1, args.rearrangements[:-4]
+        return df1, str(Path(args.rearrangements).with_suffix(""))
 
     args2 = argparse.Namespace(**vars(args))
     args2.rearrangements = rearrangements2

@@ -16,6 +16,7 @@ import os
 import sys
 import time
 from functools import lru_cache
+from pathlib import Path
 
 # Third-party imports
 from requests.adapters import HTTPAdapter
@@ -216,7 +217,11 @@ def airrdownload(args):
     # Validate the input file path and load the AIRR repertoire metadata.
     airr.validate_repertoire(args.repertoire)
     repertoire_file = args.repertoire
-    rearrangements_file = repertoire_file[:-4] + "rearrangements.tsv"
+    # Keep the ".airr" stem and only drop the final ".json", so the output is
+    # e.g. "sample.airr.rearrangements.tsv" (matching the historical naming).
+    rearrangements_file = (
+        str(Path(repertoire_file).with_suffix("")) + ".rearrangements.tsv"
+    )
 
     try:
         data = airr.read_airr(args.repertoire)

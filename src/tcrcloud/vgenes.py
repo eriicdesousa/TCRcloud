@@ -6,6 +6,7 @@ length x percentage of reads).
 """
 
 import copy
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -122,7 +123,7 @@ def get_table(keys, samples, args):
 
         if args.export:
             df_filename = (
-                args.rearrangements[:-4]
+                str(Path(args.rearrangements).with_suffix(""))
                 + "_vgenes_table"
                 + repertoire_id
                 + "_"
@@ -221,7 +222,7 @@ def barplot(args):
             template="plotly_white",
         )
         outputname = (
-            args.rearrangements[:-4]
+            str(Path(args.rearrangements).with_suffix(""))
             + "_vgenes_"
             + d["repertoire_id"]
             + "_"
@@ -266,7 +267,7 @@ def barplot(args):
             template="plotly_white",
         )
         html_outputname = (
-            args.rearrangements[:-4]
+            str(Path(args.rearrangements).with_suffix(""))
             + "_vgenes_"
             + d["repertoire_id"]
             + "_"
