@@ -19,11 +19,10 @@ from functools import lru_cache
 from pathlib import Path
 
 # Third-party imports
+import airr
+import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
-import requests
-import airr
 
 from tcrcloud.errors import TCRcloudError
 

@@ -10,10 +10,10 @@ unit testing feasible without requiring matplotlib rendering.
 import json
 from pathlib import Path
 
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 from natsort import natsorted
 from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 
 import tcrcloud.colours
 import tcrcloud.format
@@ -29,7 +29,7 @@ def _vcall_color(
 
 
 # This colours the wordclouds
-class SimpleGroupedColorFunc(object):
+class SimpleGroupedColorFunc:
     """Create a color function object which assigns EXACT colors
     to certain words based on the color to words mapping
 

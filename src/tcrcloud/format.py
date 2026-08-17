@@ -11,12 +11,11 @@ cleaned `junction_aa`, `v_call`, `j_call`, and an inferred `chain` value.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
-
-import pandas as pd
 
 import airr
+import pandas as pd
 
 INVALID_CDR3_CHARS = {"X", "*", "B", "Z", "J", "_"}
 
@@ -71,9 +70,7 @@ def _is_valid_cdr3(cdr3: str) -> bool:
         return False
     if cdr3[-1] not in {"F", "W"}:
         return False
-    if INVALID_CDR3_CHARS.intersection(cdr3):
-        return False
-    return True
+    return not INVALID_CDR3_CHARS.intersection(cdr3)
 
 
 def format_data(args):

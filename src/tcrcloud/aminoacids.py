@@ -1,14 +1,13 @@
 import copy
 from pathlib import Path
 
-import pandas as pd
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 
-import tcrcloud.format
 import tcrcloud.colours
+import tcrcloud.format
 
 colours = tcrcloud.colours.aminoacids
 
@@ -127,7 +126,7 @@ def aminoacids(args):
         )
 
         # Ensure every amino acid is present, even if zero
-        for i in colours.keys():
+        for i in colours:
             if i not in list(final.index):
                 final.loc[i] = np.nan
         final = final.sort_index()
@@ -223,7 +222,7 @@ def aminoacids(args):
             y_unique = y_df.unique()
             len_x_df_uniq = len(x_unique)
 
-            for idx, x_data in enumerate(x_unique):
+            for idx, _x_data in enumerate(x_unique):
                 for idx2, y_data in enumerate(y_unique):
                     color_value = colours[y_data]
                     x_max = x_min + step

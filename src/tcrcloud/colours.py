@@ -1,5 +1,9 @@
 # Species-specific palettes in additional modules
-from . import colours_mus_musculus, colours_macaca_mulatta, colours_macaca_fascicularis
+from . import (
+    colours_macaca_fascicularis,
+    colours_macaca_mulatta,
+    colours_mus_musculus,
+)
 
 TRAV = {
     "TRAV1-1": "#00008F",

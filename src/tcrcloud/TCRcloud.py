@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 import argparse
-import yaml
 import json
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
 import matplotlib.pyplot as plt
+import yaml
 
+import tcrcloud.aminoacids
 import tcrcloud.cloud
-import tcrcloud.radar
+import tcrcloud.compare
 import tcrcloud.download
+import tcrcloud.radar
 import tcrcloud.testdata
 import tcrcloud.vgenes
-import tcrcloud.aminoacids
-import tcrcloud.compare
 from tcrcloud.errors import TCRcloudError
 
 try:

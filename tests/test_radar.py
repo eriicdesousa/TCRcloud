@@ -192,7 +192,7 @@ def test_calculate_metrics_scaled_values_match_expected_scaling():
     ]
 
     for value, min_val, max_val, scale, actual_scaled in zip(
-        raw_values, min_vals, max_vals, scales, scaled_values
+        raw_values, min_vals, max_vals, scales, scaled_values, strict=True
     ):
         expected_scaled = np.clip(
             radar._scale_value_to_01(value, min_val, max_val, scale), 0.0, 1.0

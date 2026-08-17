@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "TCRcloud"
-version = "2.0.0dev"
+version = "2.0.0.dev0"
 description = "TCRcloud is an AIRR visualization and comparison tool"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -44,6 +44,12 @@ dependencies = [
 dev = [
     "pytest",
     "ruff",
+]
+# Maintainer-only tooling. `glasbey` is used solely by the standalone
+# `tcrcloud.assign_colours` palette-regeneration script (not wired into the
+# CLI); install with ``pip install -e ".[maintenance]"`` when regenerating
+# the built-in V-gene colour dicts.
+maintenance = [
     "glasbey",
 ]
 
@@ -53,3 +59,28 @@ TCRcloud = "tcrcloud.TCRcloud:main"
 [project.urls]
 "Bug Tracker" = "https://github.com/eriicdesousa/TCRcloud/issues"
 Homepage = "https://github.com/eriicdesousa/TCRcloud"
+
+# Linting. `ruff` is also run in CI (see .github/workflows/tests.yml).
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+# E/F: pyflakes + pycodestyle errors, I: import sorting, UP: pyupgrade,
+# B: bugbear.
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+    # Long error/help messages use implicit string concatenation.
+    "E501",
+    # The plotly-heavy modules build large scene/layout configs with dict(...)
+    # calls; rewriting them all as literals would be pure churn.
+    "C408",
+    # flake8-simplify's if/else-collapsing and `in dict.keys()` suggestions
+    # trade a little readability for no real gain in this codebase.
+    "SIM",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Maintainer-only palette script: it imports a colour module *dynamically*
+# (importlib) and reads its attributes with getattr, which is legitimate here
+# and not safely replaceable by direct attribute access.
+"src/tcrcloud/assign_colours.py" = ["B009"]

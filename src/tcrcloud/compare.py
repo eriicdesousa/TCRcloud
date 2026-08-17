@@ -23,15 +23,15 @@ import itertools
 import sys
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from natsort import natsort_keygen
 
+import tcrcloud.aminoacids as aminoacids
 import tcrcloud.format
 import tcrcloud.vgenes as vgenes
-import tcrcloud.aminoacids as aminoacids
 
 _HTML_CONFIG = {"responsive": True, "displayModeBar": True, "displaylogo": False}
 
@@ -230,7 +230,7 @@ def _aminoacid_position_table(df):
         .reindex(columns=names)
     )
 
-    for aa in aminoacids.colours.keys():
+    for aa in aminoacids.colours:
         if aa not in final.index:
             final.loc[aa] = np.nan
     final = final.sort_index()

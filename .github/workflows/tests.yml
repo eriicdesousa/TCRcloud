@@ -27,3 +27,35 @@ jobs:
 
       - name: Run tests
         run: python -m pytest tests/ -v
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: python -m pip install ruff
+
+      - name: Run ruff
+        run: python -m ruff check .
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package with type checker
+        run: python -m pip install -e . pyright
+
+      - name: Run pyright
+        run: python -m pyright src/

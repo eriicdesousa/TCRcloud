@@ -14,8 +14,8 @@ an actual logarithmic transform - see _METRIC_SCALES below.
 import json
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import skbio
 
 import tcrcloud.format
@@ -196,12 +196,14 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
 
     scaled_arr = np.clip(scaled_arr, 0.0, 1.0)
 
-    datasets = [[label, *row.tolist()] for label, row in zip(labels, scaled_arr)]
+    datasets = [[label, *row.tolist()] for label, row in zip(labels, scaled_arr, strict=True)]
 
     if export:
-        metrics_filename = str(Path(filename).with_suffix("")) + "_repertoire_metrics.txt"
+        metrics_filename = (
+            str(Path(filename).with_suffix("")) + "_repertoire_metrics.txt"
+        )
         with open(metrics_filename, "w") as fileout:
-            for label, row in zip(labels, raw_arr):
+            for label, row in zip(labels, raw_arr, strict=True):
                 print("Repertoire:", label, file=fileout)
                 print(
                     "D50 Index:",
@@ -369,7 +371,7 @@ def radar(args):
 
     # Draw tick labels for each axis based on the fixed default ranges.
     for idx, (min_val, max_val, scale, is_int) in enumerate(
-        zip(min_vals, max_vals, scales, integer_metrics)
+        zip(min_vals, max_vals, scales, integer_metrics, strict=True)
     ):
         if scale == "log":
             lo = int(np.floor(np.log10(min_val)))

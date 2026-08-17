@@ -41,9 +41,7 @@ def is_white_or_grey(rgb_tuple, white_thresh=240, grey_threshold=30):
         return True
     max_c = max(r, g, b)
     min_c = min(r, g, b)
-    if max_c - min_c <= grey_threshold:
-        return True
-    return False
+    return max_c - min_c <= grey_threshold
 
 
 def assign_glassbey_colours_to_dict(
@@ -114,7 +112,7 @@ def assign_glassbey_colours_to_dict(
         if len(safe_colours) < n:
             batch_size *= 2
 
-    for key, colour_rgb in zip(keys, safe_colours[:n]):
+    for key, colour_rgb in zip(keys, safe_colours[:n], strict=True):
         hex_colour = rgb_to_hex(colour_rgb)
         if overwrite or not target_dict.get(key):
             target_dict[key] = hex_colour
