@@ -8,9 +8,9 @@ unit testing feasible without requiring matplotlib rendering.
 """
 
 import json
-import re
 from pathlib import Path
 
+from natsort import natsorted
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -52,14 +52,6 @@ class SimpleGroupedColorFunc(object):
 
     def __call__(self, word, **kwargs):
         return self.word_to_color.get(word, self.default_color)
-
-
-def separate(text):
-    return int(text) if text.isdigit() else text
-
-
-def natural_sort(text):
-    return [separate(c) for c in re.split(r"(\d+)", text)]
 
 
 def handle_duplicates(df):
@@ -112,18 +104,8 @@ def _extract_family_and_text(df):
     remaining column, and works uniformly for groups of one or many rows.
     """
 
-    family = (
-        df[["junction_aa", "v_call"]]
-        .set_index("junction_aa")
-        .iloc[:, 0]
-        .to_dict()
-    )
-    text = (
-        df[["junction_aa", "counts"]]
-        .set_index("junction_aa")
-        .iloc[:, 0]
-        .to_dict()
-    )
+    family = df[["junction_aa", "v_call"]].set_index("junction_aa").iloc[:, 0].to_dict()
+    text = df[["junction_aa", "counts"]].set_index("junction_aa").iloc[:, 0].to_dict()
     return family, text
 
 
@@ -163,8 +145,8 @@ def _build_color_to_words(
 
 
 def _add_legend(colour_map: dict[str, str]) -> None:
-    sorted_legend = sorted(colour_map)
-    sorted_legend.sort(key=natural_sort)
+    # Natural-sort so gene numbers order numerically (TRBV2 before TRBV10).
+    sorted_legend = natsorted(colour_map)
 
     patch_list = [
         mpatches.Patch(color=colour_map[key], label=key) for key in sorted_legend

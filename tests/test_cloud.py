@@ -10,18 +10,24 @@ import tcrcloud.cloud as cloud
 import tcrcloud.format as tformat
 
 # ---------------------------------------------------------------------------
-# natural_sort / separate
+# legend natural ordering (via natsort)
 # ---------------------------------------------------------------------------
 
 
-def test_separate_converts_digit_strings_to_int():
-    assert cloud.separate("42") == 42
-    assert cloud.separate("TRBV") == "TRBV"
+def test_add_legend_orders_vgene_labels_naturally(monkeypatch):
+    # cloud._add_legend should natural-sort V-gene labels so that gene
+    # numbers order numerically (TRBV2 before TRBV10), not lexicographically.
+    captured = {}
 
+    def fake_legend(*args, **kwargs):
+        captured["handles"] = kwargs.get("handles") or args[0]
 
-def test_natural_sort_orders_numeric_substrings_numerically():
-    words = ["TRBV2", "TRBV10", "TRBV1"]
-    assert sorted(words, key=cloud.natural_sort) == ["TRBV1", "TRBV2", "TRBV10"]
+    monkeypatch.setattr(cloud.plt, "legend", fake_legend)
+
+    cloud._add_legend({"TRBV10": "#111111", "TRBV2": "#222222", "TRBV1": "#333333"})
+
+    labels = [h.get_label() for h in captured["handles"]]
+    assert labels == ["TRBV1", "TRBV2", "TRBV10"]
 
 
 # ---------------------------------------------------------------------------
