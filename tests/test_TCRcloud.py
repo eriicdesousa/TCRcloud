@@ -77,6 +77,45 @@ def test_main_exits_nonzero_on_tcrcloud_error(monkeypatch, capsys):
 
 
 # ---------------------------------------------------------------------------
+# main() must NOT mask programming errors
+# ---------------------------------------------------------------------------
+#
+# Regression tests: main() used to catch ValueError, KeyError and TypeError
+# broadly, which conflated genuine programming bugs with bad user input and
+# reported them as "you did not indicate a properly formatted file". Those
+# handlers are gone; user-input errors are validated and converted to
+# TCRcloudError at the module boundary instead, so internal errors must now
+# propagate uncaught (with a traceback) rather than being masked.
+
+
+def test_main_propagates_keyerror_from_subcommand(monkeypatch, capsys):
+    def fake_wordcloud(args):
+        raise KeyError("internal bug")
+
+    monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
+    monkeypatch.setattr(sys, "argv", ["TCRcloud", "cloud", "rearrangements.tsv"])
+
+    with pytest.raises(KeyError):
+        TCRcloud.main()
+
+    # The bug must NOT be masked as a malformed-input message.
+    assert "properly formatted" not in capsys.readouterr().err
+
+
+def test_main_propagates_valueerror_from_subcommand(monkeypatch, capsys):
+    def fake_wordcloud(args):
+        raise ValueError("internal bug")
+
+    monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
+    monkeypatch.setattr(sys, "argv", ["TCRcloud", "cloud", "rearrangements.tsv"])
+
+    with pytest.raises(ValueError):
+        TCRcloud.main()
+
+    assert "properly formatted" not in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------------------
 # main() argument validation
 # ---------------------------------------------------------------------------
 #

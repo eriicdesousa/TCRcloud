@@ -2,6 +2,7 @@
 
 from types import SimpleNamespace
 
+import airr
 import pandas as pd
 import pytest
 
@@ -320,6 +321,55 @@ def test_format_data_defaults_repertoire_id_when_column_missing(tmp_path, monkey
 
     assert "repertoire_id" in df.columns
     assert df.iloc[0]["repertoire_id"] == path.stem
+
+
+def test_format_data_wraps_validation_error_in_tcrcloud_error(tmp_path, monkeypatch):
+    """A file failing airr.validate_rearrangement must surface as a
+    TCRcloudError naming the file, not as an internal ValidationError that
+    the CLI would otherwise report as a generic 'not properly formatted'
+    message."""
+
+    path = _write_header(tmp_path, ["junction_aa"])
+    monkeypatch.setattr(
+        format.airr,
+        "validate_rearrangement",
+        lambda *a, **k: (_ for _ in ()).throw(airr.ValidationError("bad schema")),
+    )
+
+    with pytest.raises(TCRcloudError, match="not a valid AIRR rearrangement file"):
+        format.format_data(SimpleNamespace(rearrangements=str(path)))
+
+
+def test_format_data_wraps_reader_error_in_tcrcloud_error(tmp_path, monkeypatch):
+    """Errors raised by airr.read_rearrangement (not just the separate
+    validation step) must also be converted at the input boundary."""
+
+    path = _write_header(
+        tmp_path,
+        ["junction_aa", "v_call", "j_call", "junction", "productive"],
+    )
+    monkeypatch.setattr(format.airr, "validate_rearrangement", lambda *a, **k: None)
+    monkeypatch.setattr(
+        format.airr,
+        "read_rearrangement",
+        lambda *a, **k: (_ for _ in ()).throw(airr.ValidationError("bad schema")),
+    )
+
+    with pytest.raises(TCRcloudError, match="not a valid AIRR rearrangement file"):
+        format.format_data(SimpleNamespace(rearrangements=str(path)))
+
+
+def test_format_data_wraps_malformed_header_in_tcrcloud_error(tmp_path, monkeypatch):
+    """A file whose header line can't even be read cleanly (e.g. garbage
+    bytes) must become a TCRcloudError instead of a UnicodeDecodeError
+    bubbling up past the CLI's input-error handling."""
+
+    path = tmp_path / "binary.rearrangements.tsv"
+    path.write_bytes(b"\xff\xfe\x00bad\n")
+    monkeypatch.setattr(format.airr, "validate_rearrangement", lambda *a, **k: None)
+
+    with pytest.raises(TCRcloudError, match="not a valid AIRR rearrangement file"):
+        format.format_data(SimpleNamespace(rearrangements=str(path)))
 
 
 # ---------------------------------------------------------------------------

@@ -217,7 +217,17 @@ def testserver(data: dict[str, Any]) -> str | None:
 
 def airrdownload(args: Namespace) -> None:
     # Validate the input file path and load the AIRR repertoire metadata.
-    airr.validate_repertoire(args.repertoire)
+    # Schema errors from the airr library are expected user-facing failures
+    # (a malformed metadata file), so convert them here - at the input
+    # boundary - to TCRcloudError instead of letting internal exceptions
+    # (KeyError/TypeError/...) escape as vague CLI messages.
+    try:
+        airr.validate_repertoire(args.repertoire)
+    except airr.ValidationError as exc:
+        raise TCRcloudError(
+            f"{args.repertoire} is not a valid AIRR repertoire metadata file ({exc})"
+        ) from exc
+
     repertoire_file = args.repertoire
     # Keep the ".airr" stem and only drop the final ".json", so the output is
     # e.g. "sample.airr.rearrangements.tsv" (matching the historical naming).
@@ -227,13 +237,18 @@ def airrdownload(args: Namespace) -> None:
 
     try:
         data = airr.read_airr(args.repertoire)
-    except TypeError as exc:
+    except (TypeError, ValueError) as exc:
         raise TCRcloudError(
             "It seems you did not indicate a properly formatted AIRR repertoire file"
         ) from exc
 
     # The metadata file may contain multiple repertoires; we will iterate them.
-    repertoires = data["Repertoire"]
+    try:
+        repertoires = data["Repertoire"]
+    except (KeyError, TypeError) as exc:
+        raise TCRcloudError(
+            "It seems you did not indicate a properly formatted AIRR repertoire file"
+        ) from exc
 
     # Find the correct AIRR repository that holds this repertoire.
     host_url = testserver(data)
@@ -249,13 +264,26 @@ def airrdownload(args: Namespace) -> None:
     # Some versions nest the metadata under `Info.Info`.
     try:
         info = data["Info"]["Info"]
-    except KeyError:
-        info = data["Info"]
+    except (KeyError, TypeError):
+        try:
+            info = data["Info"]
+        except (KeyError, TypeError) as exc:
+            raise TCRcloudError(
+                "It seems you did not indicate a properly formatted AIRR repertoire file"
+            ) from exc
 
-    # Print out basic metadata for user visibility.
-    print("       Info: " + info["title"])
-    print("    version: " + str(info["version"]))
-    print("description: " + info["description"])
+    # Print out basic metadata for user visibility. A metadata file that
+    # passed airr schema validation but lacks these display fields is
+    # malformed for our purposes; report it as an input problem rather than
+    # surfacing a bare KeyError.
+    try:
+        print("       Info: " + info["title"])
+        print("    version: " + str(info["version"]))
+        print("description: " + info["description"])
+    except (KeyError, TypeError) as exc:
+        raise TCRcloudError(
+            "It seems you did not indicate a properly formatted AIRR repertoire file"
+        ) from exc
     print("Found " + str(len(data["Repertoire"])) + " repertoires in \
 repertoire metadata file.")
 
@@ -284,14 +312,20 @@ repertoire metadata file.")
     first = True
     out_file = None
     for idx, r in enumerate(repertoires, start=1):
+        try:
+            repertoire_id = r["repertoire_id"]
+        except (KeyError, TypeError) as exc:
+            raise TCRcloudError(
+                "It seems you did not indicate a properly formatted AIRR repertoire file"
+            ) from exc
         print(
-            f"Retrieving rearrangements for repertoire {idx}/{len(repertoires)}: {r['repertoire_id']}"
+            f"Retrieving rearrangements for repertoire {idx}/{len(repertoires)}: {repertoire_id}"
         )
         print(
             "This process may take some time depending on the number of "
             "rearrangements you are downloading"
         )
-        query["filters"]["content"][0]["content"]["value"] = r["repertoire_id"]
+        query["filters"]["content"][0]["content"]["value"] = repertoire_id
         query["size"] = 1000
         query["from"] = 0
 
@@ -364,7 +398,7 @@ repertoire metadata file.")
             "Retrieved "
             + str(cnt)
             + " rearrangements for repertoire: "
-            + r["repertoire_id"]
+            + repertoire_id
         )
 
     # If every repertoire returned zero productive rearrangements, no file

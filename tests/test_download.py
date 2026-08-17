@@ -3,6 +3,7 @@
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import airr
 import pytest
 import requests
 
@@ -340,6 +341,38 @@ def test_airrdownload_paginates_until_short_page(monkeypatch):
 def test_airrdownload_invalid_repertoire_file_exits(monkeypatch, capsys):
     monkeypatch.setattr(download.airr, "validate_repertoire", Mock())
     monkeypatch.setattr(download.airr, "read_airr", Mock(side_effect=TypeError()))
+
+    args = SimpleNamespace(repertoire="sample.airr.json")
+    with pytest.raises(TCRcloudError, match="properly formatted AIRR repertoire file"):
+        download.airrdownload(args)
+
+
+def test_airrdownload_validation_error_is_converted_to_tcrcloud_error(monkeypatch):
+    """A file failing airr.validate_repertoire must surface as a
+    TCRcloudError naming the file, not as an internal ValidationError that
+    the CLI would otherwise misreport."""
+
+    monkeypatch.setattr(
+        download.airr,
+        "validate_repertoire",
+        Mock(side_effect=airr.ValidationError("bad schema")),
+    )
+
+    args = SimpleNamespace(repertoire="sample.airr.json")
+    with pytest.raises(
+        TCRcloudError, match="not a valid AIRR repertoire metadata file"
+    ):
+        download.airrdownload(args)
+
+
+def test_airrdownload_missing_repertoire_key_raises_tcrcloud_error(monkeypatch):
+    """A metadata dict without the top-level "Repertoire" key must be
+    reported as a malformed input file, not surface as a bare KeyError."""
+
+    _patch_common_airrdownload_deps(
+        monkeypatch,
+        read_airr_return={"Info": {"title": "t", "version": 1, "description": "d"}},
+    )
 
     args = SimpleNamespace(repertoire="sample.airr.json")
     with pytest.raises(TCRcloudError, match="properly formatted AIRR repertoire file"):

@@ -94,23 +94,39 @@ def format_data(args: Namespace) -> pd.DataFrame:
     # entirely, in which case `row[k]` would raise a `KeyError` for every row.
     # When that happens we simply don't request the column from `row` here and
     # fill it in afterwards with a default derived from the input filename.
-    with open(args.rearrangements) as f:
-        first_line = f.readline()
-        header_columns = first_line.rstrip("\n").split("\t")
-        has_repertoire_id = "repertoire_id" in header_columns
+    try:
+        with open(args.rearrangements) as f:
+            first_line = f.readline()
+            header_columns = first_line.rstrip("\n").split("\t")
+            has_repertoire_id = "repertoire_id" in header_columns
 
-        keys = ["junction_aa", "v_call", "j_call", "junction"]
-        if has_repertoire_id:
-            keys.append("repertoire_id")
-        if "duplicate_count" in header_columns:
-            keys.append("duplicate_count")
-        keys.append("productive")
+            keys = ["junction_aa", "v_call", "j_call", "junction"]
+            if has_repertoire_id:
+                keys.append("repertoire_id")
+            if "duplicate_count" in header_columns:
+                keys.append("duplicate_count")
+            keys.append("productive")
+    except (OSError, UnicodeDecodeError) as exc:
+        # Reading the header failed (permissions, garbage bytes, ...). The
+        # file's existence itself is handled by the CLI's FileNotFoundError
+        # handler, so anything raised here means a malformed/unreadable file.
+        raise TCRcloudError(
+            f"{args.rearrangements} is not a valid AIRR rearrangement file ({exc})"
+        ) from exc
 
     # Validate the file against the AIRR rearrangement schema; the second
     # positional argument (`debug=True`) makes `airr` raise on the first
-    # validation error instead of only logging warnings.
-    airr.validate_rearrangement(args.rearrangements, True)
-    reader = airr.read_rearrangement(args.rearrangements)
+    # validation error instead of only logging warnings. Schema errors are
+    # expected user-facing failures (a bad input file), so convert them here
+    # - at the input boundary - to a TCRcloudError instead of letting them
+    # bubble up as internal exceptions.
+    try:
+        airr.validate_rearrangement(args.rearrangements, True)
+        reader = airr.read_rearrangement(args.rearrangements)
+    except airr.ValidationError as exc:
+        raise TCRcloudError(
+            f"{args.rearrangements} is not a valid AIRR rearrangement file ({exc})"
+        ) from exc
 
     # Collect filtered rows in a list so we can build a DataFrame at the end.
     valid_rows: list[dict] = []

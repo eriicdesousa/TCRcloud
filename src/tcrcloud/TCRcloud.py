@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 import argparse
-import json
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
 import matplotlib.pyplot as plt
-import yaml
 
 import tcrcloud.aminoacids
 import tcrcloud.cloud
@@ -387,18 +385,14 @@ def main() -> None:
         message = f"{filename} doesn't seem to exist" if filename else str(exc)
         sys.stderr.write(f"TCRcloud error: {message}\n")
         sys.exit(1)
-    except ValueError as exc:
-        # Fallback for unexpected ValueErrors from third-party libraries.
-        sys.stderr.write(f"TCRcloud error: {exc}\n")
-        sys.exit(1)
-    except (yaml.YAMLError, json.decoder.JSONDecodeError):
-        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR repertoire file\n")
-        sys.exit(1)
-    except (KeyError, TypeError):
-        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR rearrangements file\n")
-        sys.exit(1)
+
+    # Deliberately no catch-all for ValueError/KeyError/TypeError/etc.
+    # Expected user-input failures are validated and converted to
+    # TCRcloudError at the module boundary (see format.py/download.py); a
+    # broad catch here would conflate genuine programming bugs with bad
+    # user input, misreporting them as "not properly formatted" and
+    # hiding the traceback needed to fix the actual bug. Unexpected
+    # exceptions should propagate with a traceback.
 
 
 if __name__ == "__main__":
