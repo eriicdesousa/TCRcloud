@@ -21,7 +21,9 @@ import argparse
 import copy
 import itertools
 import sys
+from argparse import Namespace
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,7 +39,7 @@ from tcrcloud.errors import TCRcloudError
 _HTML_CONFIG = {"responsive": True, "displayModeBar": True, "displaylogo": False}
 
 
-def _load_combined(args):
+def _load_combined(args: Namespace) -> tuple[pd.DataFrame, str]:
     """Load one or two rearrangements files into a single tagged DataFrame.
 
     Returns `(combined_df, output_prefix)`. When a second file is given,
@@ -70,7 +72,13 @@ def _load_combined(args):
 # ---------------------------------------------------------------------------
 
 
-def _vgene_frequency_tables(formatted_vgene, chain_letter, repA, repB, species):
+def _vgene_frequency_tables(
+    formatted_vgene: pd.DataFrame,
+    chain_letter: str,
+    repA: str,
+    repB: str,
+    species: str,
+) -> tuple[pd.DataFrame, pd.DataFrame, list[str], list[Any]] | None:
     """Build aligned V-gene x CDR3-length frequency (%) tables for repA/repB."""
 
     if chain_letter == "D":
@@ -116,8 +124,15 @@ def _vgene_frequency_tables(formatted_vgene, chain_letter, repA, repB, species):
 
 
 def _vgene_comparison(
-    formatted_vgene, chain_letter, repA, repB, args, prefix, output_format, export
-):
+    formatted_vgene: pd.DataFrame,
+    chain_letter: str,
+    repA: str,
+    repB: str,
+    args: Namespace,
+    prefix: str,
+    output_format: str,
+    export: bool,
+) -> None:
     species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
     tables = _vgene_frequency_tables(formatted_vgene, chain_letter, repA, repB, species)
     if tables is None:
@@ -213,7 +228,7 @@ def _vgene_comparison(
 # ---------------------------------------------------------------------------
 
 
-def _aminoacid_position_table(df):
+def _aminoacid_position_table(df: pd.DataFrame) -> pd.DataFrame:
     """Build a (20 amino acids) x (CDR3 position) frequency (%) table."""
 
     df = df.reset_index(drop=True)
@@ -246,14 +261,14 @@ def _aminoacid_position_table(df):
 
 
 def _aminoacid_comparison(
-    formatted_aminoacids,
-    chain_letter,
-    repA,
-    repB,
-    prefix,
-    output_format,
-    export,
-):
+    formatted_aminoacids: pd.DataFrame,
+    chain_letter: str,
+    repA: str,
+    repB: str,
+    prefix: str,
+    output_format: str,
+    export: bool,
+) -> None:
     tables = {}
     for repertoire_id in (repA, repB):
         df = formatted_aminoacids[
@@ -286,7 +301,14 @@ def _aminoacid_comparison(
     _aminoacid_2d_diff_plots(diff, repA, repB, chain_letter, prefix, output_format)
 
 
-def _aminoacid_3d_diff_plot(diff, repA, repB, chain_letter, prefix, output_format):
+def _aminoacid_3d_diff_plot(
+    diff: pd.DataFrame,
+    repA: str,
+    repB: str,
+    chain_letter: str,
+    prefix: str,
+    output_format: str,
+) -> None:
     x_ordered = [aa for aa in aminoacids.desired_order if aa in diff.index]
     y_ordered = sorted(diff.columns, key=lambda v: int(v))
     diff_reordered = diff.loc[x_ordered, y_ordered]
@@ -377,7 +399,14 @@ def _aminoacid_3d_diff_plot(diff, repA, repB, chain_letter, prefix, output_forma
     print("Interactive HTML plot saved as " + html_outputname)
 
 
-def _aminoacid_2d_diff_plots(diff, repA, repB, chain_letter, prefix, output_format):
+def _aminoacid_2d_diff_plots(
+    diff: pd.DataFrame,
+    repA: str,
+    repB: str,
+    chain_letter: str,
+    prefix: str,
+    output_format: str,
+) -> None:
     # (A) Diverging stacked bar chart across CDR3 positions: for each
     # position, positive percentage-point differences stack upward and
     # negative ones stack downward, colored per amino acid.
@@ -443,7 +472,7 @@ def _aminoacid_2d_diff_plots(diff, repA, repB, chain_letter, prefix, output_form
 # ---------------------------------------------------------------------------
 
 
-def compare(args):
+def compare(args: Namespace) -> None:
     export = args.export
     if isinstance(export, str):
         export = export.lower() in ("yes", "true", "t", "y", "1")
@@ -472,7 +501,7 @@ def compare(args):
             print(f"Comparing {repA} vs {repB} ({chain_letter} chain)")
             _vgene_comparison(
                 formatted_vgene,
-                chain_letter,
+                str(chain_letter),
                 repA,
                 repB,
                 args,
@@ -482,7 +511,7 @@ def compare(args):
             )
             _aminoacid_comparison(
                 formatted_aminoacids,
-                chain_letter,
+                str(chain_letter),
                 repA,
                 repB,
                 prefix,

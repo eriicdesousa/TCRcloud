@@ -12,10 +12,14 @@ an actual logarithmic transform - see _METRIC_SCALES below.
 """
 
 import json
+from argparse import Namespace
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import skbio
 
 import tcrcloud.format
@@ -56,7 +60,7 @@ _METRIC_SCALES = [
 ]
 
 
-def calculate_dfifty(df, length):
+def calculate_dfifty(df: pd.DataFrame, length: int) -> float:
     """Compute D50 (% clones needed to reach 50% of total counts).
 
     D50 is the percentage of unique clones required to accumulate 50% of the
@@ -81,7 +85,7 @@ def calculate_dfifty(df, length):
     return (idx + 1) * 100.0 / (10000 if length >= 10000 else length)
 
 
-def _load_legend_mapping(legend_file):
+def _load_legend_mapping(legend_file: str) -> dict[str, str]:
     """Load the repertoire_id -> legend label mapping from a JSON file.
 
     Raises `tcrcloud.errors.TCRcloudError` (instead of exiting the process
@@ -102,7 +106,13 @@ def _load_legend_mapping(legend_file):
         ) from exc
 
 
-def calculate_metrics(keys, samples, legend_file, export, filename):
+def calculate_metrics(
+    keys: Sequence[tuple[str, str]],
+    samples: pd.core.groupby.DataFrameGroupBy,
+    legend_file: str | None,
+    export: bool,
+    filename: str,
+) -> tuple[list[list[Any]], np.ndarray, np.ndarray, list[str]]:
     """Compute all radar metrics for each repertoire.
 
     This function computes a fixed set of repertoire diversity metrics and
@@ -130,7 +140,7 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
         "L": "Lambda chain",
     }
 
-    def _format_label(key):
+    def _format_label(key: tuple[str, str]) -> str:
         prefix = legend_dict.get(key[1], key[1])
         suffix = chain_names.get(key[0], "")
         return f"{prefix} {suffix}".strip()
@@ -245,7 +255,9 @@ def calculate_metrics(keys, samples, legend_file, export, filename):
     return datasets, min_vals, max_vals, _METRIC_SCALES
 
 
-def _scale_value_to_01(value, min_val, max_val, scale):
+def _scale_value_to_01(
+    value: float, min_val: float, max_val: float, scale: str
+) -> float:
     """Map a raw metric value onto the shared [0, 1] radar axis.
 
     "tail-log" metrics fall through to the linear branch below (see the
@@ -260,7 +272,7 @@ def _scale_value_to_01(value, min_val, max_val, scale):
     return (v - min_val) / (max_val - min_val)
 
 
-def _format_tick(value, is_int):
+def _format_tick(value: float, is_int: bool) -> Any:
     """Format a single axis tick value as a display label."""
     if is_int:
         return int(round(value))
@@ -273,7 +285,7 @@ def _format_tick(value, is_int):
     return round(value, 5)
 
 
-def radar(args):
+def radar(args: Namespace) -> None:
     # Normalize boolean-style CLI flags (allow strings like "true"/"false").
     # argparse already handles this via str2bool when radar() is invoked
     # through the CLI, but radar() may also be called directly (e.g. in

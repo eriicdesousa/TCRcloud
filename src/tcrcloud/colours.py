@@ -746,20 +746,24 @@ SPECIES_VGENES = {
 }
 
 
-def _normalize_species(species):
+def _normalize_species(species: str | None) -> str:
     if not species:
         return "homo_sapiens"
     return species.strip().lower().replace(" ", "_").replace("-", "_")
 
 
-def get_vgene_palette(chain_name, species=None):
+def get_vgene_palette(
+    chain_name: str, species: str | None = None
+) -> dict[str, str]:
     """Get the V-gene palette for chain_name in the given species."""
     species_norm = _normalize_species(species)
     species_map = SPECIES_VGENES.get(species_norm, HOMO_SAPIENS)
     return species_map.get(chain_name.upper(), {})
 
 
-def get_color_from_vcall(vcall, species=None, default="grey"):
+def get_color_from_vcall(
+    vcall: str, species: str | None = None, default: str = "grey"
+) -> str:
     """Get hex color for a vcall (like TRAV1-2) in a species-specific palette."""
     if not vcall or len(vcall) < 4:
         return default

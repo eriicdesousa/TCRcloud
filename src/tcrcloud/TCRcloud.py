@@ -23,7 +23,7 @@ except PackageNotFoundError:
     __version__ = "0.0.0.dev"
 
 
-def str2bool(v):
+def str2bool(v: bool | str) -> bool:
     if isinstance(v, bool):
         return v
     if isinstance(v, str):
@@ -37,7 +37,7 @@ def str2bool(v):
 plt.rcParams["font.family"] = "serif"
 
 
-def main():
+def main() -> None:
     # create the top-level parser
     parser = argparse.ArgumentParser(
         description="Create visualizations from AIRR-seq data", prog="TCRcloud"
@@ -391,7 +391,7 @@ def main():
         # Fallback for unexpected ValueErrors from third-party libraries.
         sys.stderr.write(f"TCRcloud error: {exc}\n")
         sys.exit(1)
-    except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
+    except (yaml.YAMLError, json.decoder.JSONDecodeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR repertoire file\n")
         sys.exit(1)

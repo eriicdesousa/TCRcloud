@@ -1,4 +1,5 @@
 import copy
+from argparse import Namespace
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -36,7 +37,15 @@ desired_order = [
 ]
 
 
-def generate_mesh(x_min, x_max, y_min, y_max, z_min, z_max, color_value):
+def generate_mesh(
+    x_min: float,
+    x_max: float,
+    y_min: float,
+    y_max: float,
+    z_min: float,
+    z_max: float,
+    color_value: str,
+) -> go.Mesh3d:
     y_max = y_max + 0.5
     x_max = x_max + 0.5
     mesh = go.Mesh3d(
@@ -53,7 +62,7 @@ def generate_mesh(x_min, x_max, y_min, y_max, z_min, z_max, color_value):
     return mesh
 
 
-def aminoacids(args):
+def aminoacids(args: Namespace) -> None:
     all_aa = pd.DataFrame(
         np.zeros((20, 1)),
         columns=["just_empty"],

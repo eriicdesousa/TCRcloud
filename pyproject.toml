@@ -84,3 +84,21 @@ ignore = [
 # (importlib) and reads its attributes with getattr, which is legitimate here
 # and not safely replaceable by direct attribute access.
 "src/tcrcloud/assign_colours.py" = ["B009"]
+
+# Type checking. `pyright` is also run in CI (see .github/workflows/tests.yml).
+# The codebase is heavily pandas/numpy/plotly/matplotlib-based; those stubs
+# are incomplete (dynamic DataFrame/Series attribute access, Hashable index
+# typing, kwargs-style plotting overloads), so several rule categories produce
+# overwhelming false-positive noise here. We keep standard mode for the rules
+# that catch real bugs and silence the categories dominated by stub gaps.
+[tool.pyright]
+typeCheckingMode = "standard"
+include = ["src"]
+reportAttributeAccessIssue = false
+reportArgumentType = false
+reportCallIssue = false
+reportIndexIssue = false
+reportOperatorIssue = false
+reportGeneralTypeIssues = false
+reportOptionalMemberAccess = true
+reportPossiblyUnboundVariable = true

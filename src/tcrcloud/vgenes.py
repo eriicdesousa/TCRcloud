@@ -6,7 +6,10 @@ length x percentage of reads).
 """
 
 import copy
+from argparse import Namespace
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -43,7 +46,9 @@ _CHAIN_PLOT_SETTINGS = {
 }
 
 
-def _palette_for_chain(chain_letter: str, species: str = "homo_sapiens"):
+def _palette_for_chain(
+    chain_letter: str, species: str = "homo_sapiens"
+) -> dict[str, str]:
     mapping = {
         "A": "TRAV",
         "B": "TRBV",
@@ -59,7 +64,11 @@ def _palette_for_chain(chain_letter: str, species: str = "homo_sapiens"):
     return tcrcloud.colours.get_vgene_palette(vgene_type, species)
 
 
-def get_table(keys, samples, args):
+def get_table(
+    keys: Sequence[tuple[str, str]],
+    samples: pd.core.groupby.DataFrameGroupBy,
+    args: Namespace,
+) -> list[dict[str, Any]]:
     """Build the per-chain/repertoire V-gene usage tables used for plotting."""
 
     species = getattr(args, "species", "homo_sapiens") or "homo_sapiens"
@@ -158,7 +167,7 @@ def get_table(keys, samples, args):
     return datasets
 
 
-def barplot(args):
+def barplot(args: Namespace) -> None:
     # Normalize boolean-style CLI flags (allow strings like "true"/"false").
     # argparse already handles this via str2bool when barplot() is invoked
     # through the CLI, but barplot() may also be called directly (e.g. in

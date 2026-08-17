@@ -8,10 +8,13 @@ unit testing feasible without requiring matplotlib rendering.
 """
 
 import json
+from argparse import Namespace
 from pathlib import Path
+from typing import Any
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+import pandas as pd
 from natsort import natsorted
 from wordcloud import WordCloud
 
@@ -44,18 +47,18 @@ class SimpleGroupedColorFunc:
         of any value from color_to_words.
     """
 
-    def __init__(self, color_to_words, default_color):
+    def __init__(self, color_to_words: dict[str, list[str]], default_color: str):
         self.word_to_color = {
             word: color for (color, words) in color_to_words.items() for word in words
         }
 
         self.default_color = default_color
 
-    def __call__(self, word, **kwargs):
+    def __call__(self, word: str, **kwargs: Any) -> str:
         return self.word_to_color.get(word, self.default_color)
 
 
-def handle_duplicates(df):
+def handle_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     """Ensure CDR3 sequences are unique for wordcloud generation.
 
     WordCloud requires unique word keys. If the input dataframe contains
@@ -85,14 +88,14 @@ def handle_duplicates(df):
     return df
 
 
-def _ensure_required_columns(df):
+def _ensure_required_columns(df: pd.DataFrame) -> None:
     required_columns = {"junction_aa", "v_call", "counts", "chain", "repertoire_id"}
     missing = required_columns - set(df.columns)
     if missing:
         raise TCRcloudError(f"missing required columns: {sorted(missing)}")
 
 
-def _extract_family_and_text(df):
+def _extract_family_and_text(df: pd.DataFrame) -> tuple[dict, dict]:
     """Extract the mapping used to build the wordcloud.
 
     WordCloud wants a mapping of word->weight. Here, `junction_aa` is treated
@@ -110,7 +113,7 @@ def _extract_family_and_text(df):
     return family, text
 
 
-def _load_colour_mapping(colours_path: str) -> dict:
+def _load_colour_mapping(colours_path: str) -> dict[str, list[str]]:
     try:
         with open(colours_path) as json_file:
             return json.load(json_file)
@@ -160,7 +163,7 @@ def _add_legend(colour_map: dict[str, str]) -> None:
     )
 
 
-def wordcloud(args):
+def wordcloud(args: Namespace) -> None:
     """Main entrypoint for the `TCRcloud cloud` command.
 
     This function is intentionally small; it delegates most of the work to

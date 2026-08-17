@@ -111,7 +111,7 @@ def _download_repertoire(
     print(f"Received {len(repertoires)} repertoires. Saved as {output_path}")
 
 
-def download(args):
+def download(args: Any) -> None:
     """Download example test-data repertoires and generate a legend file.
 
     This is the entry point for the `TCRcloud testdata` CLI command (see

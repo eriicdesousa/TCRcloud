@@ -15,8 +15,10 @@ If repository discovery fails, a built-in fallback list of known AIRR nodes is u
 import os
 import sys
 import time
+from argparse import Namespace
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 # Third-party imports
 import airr
@@ -147,7 +149,7 @@ FALLBACK_REPOSITORIES = [
 ]
 
 
-def testserver(data):
+def testserver(data: dict[str, Any]) -> str | None:
     # Determine which AIRR repository holds the requested repertoire.
     # We do this by issuing a simple `POST /repertoire` search for the
     # repertoire_id and study_id from the metadata file.
@@ -213,7 +215,7 @@ def testserver(data):
     return host_url
 
 
-def airrdownload(args):
+def airrdownload(args: Namespace) -> None:
     # Validate the input file path and load the AIRR repertoire metadata.
     airr.validate_repertoire(args.repertoire)
     repertoire_file = args.repertoire
@@ -235,6 +237,8 @@ def airrdownload(args):
 
     # Find the correct AIRR repository that holds this repertoire.
     host_url = testserver(data)
+    if host_url is None:  # pragma: no cover - testserver raises instead
+        raise TCRcloudError("could not determine an AIRR repository host")
 
     # Use a shared HTTP session for all subsequent requests.
     session = get_session()
@@ -278,6 +282,7 @@ repertoire metadata file.")
     # we page through results using `from` and `size`.
 
     first = True
+    out_file = None
     for idx, r in enumerate(repertoires, start=1):
         print(
             f"Retrieving rearrangements for repertoire {idx}/{len(repertoires)}: {r['repertoire_id']}"
@@ -314,9 +319,7 @@ repertoire metadata file.")
             except ValueError as e:
                 raise TCRcloudError(
                     f"invalid JSON response from {host_url} ({e})"
-                ) from e
-
-            # progress report
+                ) from e            # progress report
             cnt += len(rearrangements)
             elapsed = time.perf_counter() - start_time
             print(
@@ -345,7 +348,7 @@ repertoire metadata file.")
             # Save the rearrangements to a file. If no file has been created
             # yet (this repertoire's pages have all been empty so far), there
             # is nothing to write.
-            if not first:
+            if not first and out_file is not None:
                 for row in rearrangements:
                     out_file.write(row)
 
@@ -376,5 +379,6 @@ repertoire metadata file.")
 
     # Flush and close the writer explicitly so the last written rows are
     # guaranteed to be on disk rather than relying on process exit/GC.
-    out_file.close()
+    if out_file is not None:
+        out_file.close()
     print("Saved as " + rearrangements_file)
