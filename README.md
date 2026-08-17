@@ -1,12 +1,11 @@
 ![TCRcloud](https://github.com/eriicdesousa/TCRcloud/raw/main/images/TCRcloud.png)
 
-![GitHub last commit](https://img.shields.io/github/last-commit/eriicdesousa/TCRcloud)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/eriicdesousa/TCRcloud)
+[![DOI](https://img.shields.io/badge/DOI-10.1186/s12967--025--07619--4-blue.svg)](https://doi.org/10.1186/s12967-025-07619-4)
 ![PyPI](https://img.shields.io/pypi/v/TCRcloud)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/TCRcloud)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/TCRcloud)
 ![License](https://img.shields.io/github/license/eriicdesousa/TCRcloud)
-[![DOI](https://img.shields.io/badge/DOI-10.1186/s12967--025--07619--4-blue.svg)](https://doi.org/10.1186/s12967-025-07619-4)
+![GitHub last commit](https://img.shields.io/github/last-commit/eriicdesousa/TCRcloud)
+[![Tests](https://github.com/eriicdesousa/TCRcloud/actions/workflows/tests.yml/badge.svg)](https://github.com/eriicdesousa/TCRcloud/actions/workflows/tests.yml)
 
 ## TCRcloud is an Adaptive Immune Receptor Repertoire (AIRR) visualization and comparison tool
 

@@ -2,6 +2,8 @@
 
 import sys
 
+import pytest
+
 import tcrcloud.cloud as cloud
 import tcrcloud.TCRcloud as TCRcloud
 
@@ -57,3 +59,68 @@ def test_main_preserves_custom_message_and_does_not_raise(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["TCRcloud", "cloud", "rearrangements.tsv"])
 
     TCRcloud.main()  # should not raise
+
+
+# ---------------------------------------------------------------------------
+# main() argument validation
+# ---------------------------------------------------------------------------
+#
+# Invalid argument values should abort with an argparse error (exit code 2)
+# and a message on stderr instead of silently running with wrong assumptions.
+
+
+def _assert_invalid_args_exit_with_error(monkeypatch, capsys, argv, message_part):
+    monkeypatch.setattr(sys, "argv", argv)
+
+    with pytest.raises(SystemExit) as excinfo:
+        TCRcloud.main()
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert message_part in captured.err
+    assert "usage:" in captured.err
+
+
+def test_main_rejects_invalid_species_for_cloud(monkeypatch, capsys):
+    _assert_invalid_args_exit_with_error(
+        monkeypatch,
+        capsys,
+        ["TCRcloud", "cloud", "rearrangements.tsv", "-p", "mus_musculs"],
+        "invalid choice: 'mus_musculs'",
+    )
+
+
+def test_main_rejects_invalid_species_for_vgenes(monkeypatch, capsys):
+    _assert_invalid_args_exit_with_error(
+        monkeypatch,
+        capsys,
+        ["TCRcloud", "vgenes", "rearrangements.tsv", "-p", "dog"],
+        "invalid choice: 'dog'",
+    )
+
+
+def test_main_rejects_invalid_species_for_compare(monkeypatch, capsys):
+    _assert_invalid_args_exit_with_error(
+        monkeypatch,
+        capsys,
+        ["TCRcloud", "compare", "rearrangements.tsv", "-p", "human"],
+        "invalid choice: 'human'",
+    )
+
+
+def test_main_rejects_invalid_boolean_for_aminoacids_export(monkeypatch, capsys):
+    _assert_invalid_args_exit_with_error(
+        monkeypatch,
+        capsys,
+        ["TCRcloud", "aminoacids", "rearrangements.tsv", "-e", "banana"],
+        "Expected a boolean value",
+    )
+
+
+def test_main_rejects_invalid_boolean_for_aminoacids_threed(monkeypatch, capsys):
+    _assert_invalid_args_exit_with_error(
+        monkeypatch,
+        capsys,
+        ["TCRcloud", "aminoacids", "rearrangements.tsv", "-t", "yes please"],
+        "Expected a boolean value",
+    )

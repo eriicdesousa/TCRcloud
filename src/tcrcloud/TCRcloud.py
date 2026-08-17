@@ -86,6 +86,12 @@ def main():
         "-p",
         "--species",
         type=str,
+        choices=[
+            "homo_sapiens",
+            "mus_musculus",
+            "macaca_mulatta",
+            "macaca_fascicularis",
+        ],
         help="Species to use for built-in V-gene colours (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
         metavar="species",
         default="homo_sapiens",
@@ -200,6 +206,12 @@ def main():
         "-p",
         "--species",
         type=str,
+        choices=[
+            "homo_sapiens",
+            "mus_musculus",
+            "macaca_mulatta",
+            "macaca_fascicularis",
+        ],
         help="Species to use for built-in V-gene (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
         metavar="species",
         default="homo_sapiens",
@@ -234,22 +246,22 @@ def main():
     parser_aminoacids.add_argument(
         "-t",
         "--threeD",
-        type=str,
+        type=str2bool,
         help="indicate if you want a tridimensional  \
                                    bar plot, default = False",
         metavar="True or False",
-        default="False",
+        default=False,
         required=False,
     )
     parser_aminoacids.add_argument(
         "-e",
         "--export",
-        type=str,
+        type=str2bool,
         help="indicate if the metrics from the plot \
                               should be exported to a csv file, \
                               default = False",
         metavar="True or False",
-        default="False",
+        default=False,
         required=False,
     )
     parser_aminoacids.add_argument(
@@ -294,6 +306,12 @@ def main():
         "-p",
         "--species",
         type=str,
+        choices=[
+            "homo_sapiens",
+            "mus_musculus",
+            "macaca_mulatta",
+            "macaca_fascicularis",
+        ],
         help="Species to use for built-in V-gene (homo_sapiens, mus_musculus, macaca_mulatta, macaca_fascicularis)",
         metavar="species",
         default="homo_sapiens",
