@@ -34,17 +34,28 @@ def test_is_valid_cdr3(cdr3, expected):
 
 
 def test_clean_v_calls_extracts_chain_letter():
-    # For a typical 8+ character V call, both the primary (index 2) and
-    # secondary (index -6) positions land on the locus letter.
-    assert format._clean_v_calls("TRBV20-1") == ("B", "B")
+    # For an ordinary V call, the primary locus letter is returned and the
+    # secondary is empty (no "/DV" suffix).
+    assert format._clean_v_calls("TRBV20-1") == ("B", "")
 
 
 def test_clean_v_calls_extracts_secondary_locus_for_dv_genes():
     # "TRAV1-2/DV8*01" is an ambiguous alpha/delta V-gene; the secondary
-    # character should land on the "D" of the "/DV" suffix.
+    # character should be the "D" of the "/DV" suffix.
     v_call, v_call2 = format._clean_v_calls("TRAV1-2/DV8*01")
     assert v_call == "A"
     assert v_call2 == "D"
+
+
+def test_clean_v_calls_handles_two_digit_dv_gene_number():
+    # Fixed-offset parsing (v_call[-6]) broke when the DV gene number had
+    # two digits; regex-based parsing must still find the "D".
+    assert format._clean_v_calls("TRAV1-2/DV12*01") == ("A", "D")
+
+
+def test_clean_v_calls_handles_missing_allele_suffix():
+    # Without an allele suffix the old v_call[-6] offset landed on garbage.
+    assert format._clean_v_calls("TRAV1-2/DV8") == ("A", "D")
 
 
 def test_clean_v_calls_handles_empty_string():
@@ -168,6 +179,31 @@ def test_format_data_assigns_delta_chain_for_ambiguous_dv_suffix(tmp_path, monke
         {
             "junction_aa": "CASSLGTDTQYF",
             "v_call": "TRAV1-2/DV8*01",
+            "j_call": "TRDJ2*01",
+            "junction": "TGTGCCAGCAGCTTAGGGACAGATACGCAGTATTTT",
+            "repertoire_id": "rep1",
+            "productive": "T",
+        },
+    ]
+    _patch_airr(monkeypatch, rows)
+
+    df = format.format_data(SimpleNamespace(rearrangements=str(path)))
+
+    assert len(df) == 1
+    assert df.iloc[0]["chain"] == "D"
+
+
+def test_format_data_assigns_delta_chain_for_two_digit_dv_gene(tmp_path, monkeypatch):
+    # With a two-digit DV gene number the old positional parsing
+    # (v_call[-3]) would have read "1" instead of "D".
+    path = _write_header(
+        tmp_path,
+        ["junction_aa", "v_call", "j_call", "junction", "repertoire_id", "productive"],
+    )
+    rows = [
+        {
+            "junction_aa": "CASSLGTDTQYF",
+            "v_call": "TRAV1-2/DV12*01",
             "j_call": "TRDJ2*01",
             "junction": "TGTGCCAGCAGCTTAGGGACAGATACGCAGTATTTT",
             "repertoire_id": "rep1",

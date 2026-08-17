@@ -10,6 +10,7 @@ cleaned `junction_aa`, `v_call`, `j_call`, and an inferred `chain` value.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Sequence
 
@@ -19,6 +20,20 @@ import airr
 
 INVALID_CDR3_CHARS = {"X", "*", "B", "Z", "J", "_"}
 
+# Locus letter of a standard V/J call, e.g. "TRBV20-1" -> "B",
+# "IGHV3-23" -> "H".
+_LOCUS_RE = re.compile(r"^(?:IG|TR)([A-Z])")
+
+# "/DV" suffix of ambiguous alpha/delta V calls, e.g. "TRAV1-2/DV8*01".
+_DV_SUFFIX_RE = re.compile(r"/DV\d+")
+
+
+def _locus_letter(call: str) -> str:
+    """Return the locus letter of a V/J call ("TRBV20-1" -> "B") or ""."""
+
+    match = _LOCUS_RE.match(call) if call else None
+    return match.group(1) if match else ""
+
 
 def _clean_v_calls(v_call: str) -> tuple[str, str]:
     """Extract the locus letter(s) from a V call string for V/J matching.
@@ -26,23 +41,24 @@ def _clean_v_calls(v_call: str) -> tuple[str, str]:
     Returns a `(primary, secondary)` pair of single characters used to check
     that a V call agrees with a J call:
 
-    - `primary` is `v_call[2]`, the locus letter in a standard call, e.g.
-      "TRBV20-1" -> "B", matching `j_call[2]` of "TRBJ2-3" -> "B".
-    - `secondary` is `v_call[-6]`, which lands on the "D" of the "/DV"
-      suffix for ambiguous alpha/delta calls like "TRAV1-2/DV8*01", so they
-      can also match a "TRDJ..." j_call.
+    - `primary` is the locus letter right after the "IG"/"TR" prefix, e.g.
+      "TRBV20-1" -> "B", matching the locus letter of "TRBJ2-3" -> "B".
+    - `secondary` is "D" only when the V call carries an ambiguous
+      alpha/delta "/DV" suffix (e.g. "TRAV1-2/DV8*01"), so that such calls
+      can also match a "TRDJ..." j_call. For all other calls it is "".
 
-    NOTE: both offsets assume a fixed-width allele suffix ("*01") and a
-    single-digit DV gene number; unusual formatting (e.g. two-digit DV gene
-    numbers, or no allele suffix) can shift these positions.
+    Locus letters are parsed with regular expressions rather than fixed
+    string offsets, so gene numbers of any width and missing allele
+    suffixes (e.g. "TRAV1-2/DV12*01" or a bare "TRBV20-1") are handled
+    correctly.
     """
 
     if not v_call:
         return "", ""
 
     return (
-        v_call[2] if len(v_call) > 2 else "",
-        v_call[-6] if len(v_call) > 5 else "",
+        _locus_letter(v_call),
+        "D" if _DV_SUFFIX_RE.search(v_call) else "",
     )
 
 
@@ -120,7 +136,7 @@ def format_data(args):
         j_call_raw = row.get("j_call") or ""
 
         v_call, v_call2 = _clean_v_calls(v_call_raw)
-        j_call = j_call_raw[2] if len(j_call_raw) > 2 else ""
+        j_call = _locus_letter(j_call_raw)
         if not (v_call and j_call):
             continue
 
@@ -159,22 +175,22 @@ def format_data(args):
 
     # Infer chain information (TCR alpha/beta/gamma/delta etc.) from V/J calls.
     # Genes like "TRAV1-2/DV8" are ambiguously alpha or delta; when paired
-    # with a "TRDJ..." j_call (checked above via `_clean_v_calls`), treat
-    # them as delta by reading the "D" from the "/DV" suffix (3rd-from-last
-    # character, e.g. "TRAV1-2/DV8" -> "D"). Otherwise the chain is simply
-    # the locus letter at index 2 of the (allele-stripped) v_call.
+    # with a "TRDJ..." j_call (checked above via `_clean_v_calls`), the
+    # rearrangement is a delta chain. Otherwise the chain is simply the
+    # locus letter at index 2 of the (allele-stripped) v_call - safe here
+    # because only rows whose v_call matched `_LOCUS_RE` (an "IG"/"TR"
+    # prefix followed by the locus letter) survive the filtering above.
     #
     # NOTE: this must check for the literal "/DV" suffix (with slash), not
     # just "DV" - ordinary delta V genes like "TRDV2-1" also contain "DV" as
     # a substring (the "D" of "TRDV" followed by "V"), so a plain "DV" check
-    # would misfire on genuine TRDV genes too, reading a garbage character
-    # (e.g. "2" from "TRDV2-1") from `v_call[-3]` instead of "D".
+    # would misfire on genuine TRDV genes too.
     is_dv_dj = df["v_call"].str.contains("/DV", na=False, regex=False) & df[
         "j_call"
     ].str.contains("DJ", na=False)
 
     df["chain"] = pd.NA
-    df.loc[is_dv_dj, "chain"] = df.loc[is_dv_dj, "v_call"].str[-3]
+    df.loc[is_dv_dj, "chain"] = "D"
     df.loc[~is_dv_dj, "chain"] = df.loc[~is_dv_dj, "v_call"].str[2]
 
     return df
