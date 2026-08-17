@@ -32,6 +32,7 @@ from natsort import natsort_keygen
 import tcrcloud.aminoacids as aminoacids
 import tcrcloud.format
 import tcrcloud.vgenes as vgenes
+from tcrcloud.errors import TCRcloudError
 
 _HTML_CONFIG = {"responsive": True, "displayModeBar": True, "displaylogo": False}
 
@@ -449,8 +450,8 @@ def compare(args):
 
     output_format = (getattr(args, "format", None) or "png").strip().lower()
     if output_format not in ("svg", "png"):
-        raise ValueError(
-            f"TCRcloud error: unsupported output format '{output_format}'. "
+        raise TCRcloudError(
+            f"unsupported output format '{output_format}'. "
             "Please choose 'svg' or 'png'"
         )
 
@@ -490,8 +491,8 @@ def compare(args):
             )
 
     if not compared_any:
-        raise ValueError(
-            "TCRcloud error: no chain had 2 or more repertoires to compare. "
+        raise TCRcloudError(
+            "no chain had 2 or more repertoires to compare. "
             "Provide a rearrangements file with multiple repertoires of the "
             "same chain, or a second rearrangements file with a matching "
             "chain to compare across files"

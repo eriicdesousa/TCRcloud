@@ -15,6 +15,7 @@ from natsort import natsort_keygen
 
 import tcrcloud.colours
 import tcrcloud.format
+from tcrcloud.errors import TCRcloudError
 
 # V genes ambiguously shared between the alpha and delta loci; when a
 # repertoire's delta chain is being plotted, these are renamed to their
@@ -171,8 +172,8 @@ def barplot(args):
     # otherwise catch a bad value.
     output_format = (getattr(args, "format", None) or "png").strip().lower()
     if output_format not in ("svg", "png"):
-        raise ValueError(
-            f"TCRcloud error: unsupported output format '{output_format}'. "
+        raise TCRcloudError(
+            f"unsupported output format '{output_format}'. "
             "Please choose 'svg' or 'png'"
         )
 
@@ -184,7 +185,7 @@ def barplot(args):
     datasets = get_table(keys, samples, args)
 
     if not datasets:
-        raise ValueError("TCRcloud error: no repertoires found for plotting")
+        raise TCRcloudError("no repertoires found for plotting")
 
     for d in datasets:
         fig = go.Figure(go.Surface(x=d["x"], y=d["y"], z=d["z"], colorscale="Turbo"))

@@ -9,6 +9,7 @@ import pytest
 import tcrcloud.colours
 import tcrcloud.format as tformat
 import tcrcloud.vgenes as vgenes
+from tcrcloud.errors import TCRcloudError
 
 # ---------------------------------------------------------------------------
 # _palette_for_chain
@@ -322,7 +323,7 @@ def test_barplot_rejects_unsupported_format(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
     _patch_palette_for_barplot(monkeypatch)
 
-    with pytest.raises(ValueError, match="unsupported output format"):
+    with pytest.raises(TCRcloudError, match="unsupported output format"):
         vgenes.barplot(_make_args(tmp_path, format="pdf"))
 
 
@@ -369,5 +370,5 @@ def test_barplot_raises_when_no_repertoires_found(tmp_path, monkeypatch):
         ),
     )
 
-    with pytest.raises(ValueError, match="no repertoires found"):
+    with pytest.raises(TCRcloudError, match="no repertoires found"):
         vgenes.barplot(_make_args(tmp_path))

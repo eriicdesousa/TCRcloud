@@ -346,7 +346,7 @@ def test_airrdownload_invalid_repertoire_file_exits(monkeypatch, capsys):
         download.airrdownload(args)
 
 
-def test_airrdownload_returns_on_request_exception(monkeypatch, capsys):
+def test_airrdownload_raises_on_request_exception(monkeypatch):
     _patch_common_airrdownload_deps(monkeypatch)
 
     fake_session = Mock()
@@ -357,13 +357,13 @@ def test_airrdownload_returns_on_request_exception(monkeypatch, capsys):
     monkeypatch.setattr(download.airr, "create_rearrangement", create_rearrangement)
 
     args = SimpleNamespace(repertoire="sample.airr.json")
-    download.airrdownload(args)  # should not raise
+    with pytest.raises(TCRcloudError, match="failed to download rearrangements"):
+        download.airrdownload(args)
 
     create_rearrangement.assert_not_called()
-    assert "failed to download rearrangements" in capsys.readouterr().err
 
 
-def test_airrdownload_returns_on_invalid_json(monkeypatch, capsys):
+def test_airrdownload_raises_on_invalid_json(monkeypatch):
     _patch_common_airrdownload_deps(monkeypatch)
 
     fake_session = Mock()
@@ -374,7 +374,7 @@ def test_airrdownload_returns_on_invalid_json(monkeypatch, capsys):
     monkeypatch.setattr(download.airr, "create_rearrangement", create_rearrangement)
 
     args = SimpleNamespace(repertoire="sample.airr.json")
-    download.airrdownload(args)  # should not raise
+    with pytest.raises(TCRcloudError, match="invalid JSON response"):
+        download.airrdownload(args)
 
     create_rearrangement.assert_not_called()
-    assert "invalid JSON response" in capsys.readouterr().err

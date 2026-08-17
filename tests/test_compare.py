@@ -8,6 +8,7 @@ import pytest
 import tcrcloud.colours
 import tcrcloud.compare as compare
 import tcrcloud.format as tformat
+from tcrcloud.errors import TCRcloudError
 
 # ---------------------------------------------------------------------------
 # _load_combined
@@ -179,12 +180,12 @@ def test_compare_raises_when_no_chain_has_multiple_repertoires(tmp_path, monkeyp
     single_rep = single_rep[single_rep["repertoire_id"] == "rep1"]
     monkeypatch.setattr(tformat, "format_data", lambda args: single_rep)
 
-    with pytest.raises(ValueError, match="no chain had 2 or more repertoires"):
+    with pytest.raises(TCRcloudError, match="no chain had 2 or more repertoires"):
         compare.compare(_make_args(str(tmp_path / "repertoire.tsv")))
 
 
 def test_compare_rejects_unsupported_format(tmp_path, monkeypatch):
     monkeypatch.setattr(tformat, "format_data", lambda args: _fake_raw_rows())
 
-    with pytest.raises(ValueError, match="unsupported output format"):
+    with pytest.raises(TCRcloudError, match="unsupported output format"):
         compare.compare(_make_args(str(tmp_path / "repertoire.tsv"), format="pdf"))

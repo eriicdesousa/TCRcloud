@@ -17,6 +17,8 @@ from pathlib import Path
 import airr
 import pandas as pd
 
+from tcrcloud.errors import TCRcloudError
+
 INVALID_CDR3_CHARS = {"X", "*", "B", "Z", "J", "_"}
 
 # Locus letter of a standard V/J call, e.g. "TRBV20-1" -> "B",
@@ -149,8 +151,8 @@ def format_data(args):
         # lines into a confusing `KeyError: 'v_call'` instead of explaining
         # that the file simply had no rows passing the quality filters
         # (productive, valid CDR3, matching V/J calls).
-        raise ValueError(
-            "TCRcloud error: no productive rearrangements with a valid CDR3 "
+        raise TCRcloudError(
+            "no productive rearrangements with a valid CDR3 "
             f"and matching V/J calls were found in {args.rearrangements}"
         )
 

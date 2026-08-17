@@ -8,6 +8,7 @@ import pytest
 
 import tcrcloud.cloud as cloud
 import tcrcloud.format as tformat
+from tcrcloud.errors import TCRcloudError
 
 # ---------------------------------------------------------------------------
 # legend natural ordering (via natsort)
@@ -82,9 +83,9 @@ def test_ensure_required_columns_passes_when_all_present():
     cloud._ensure_required_columns(df)  # should not raise
 
 
-def test_ensure_required_columns_raises_value_error_when_missing():
+def test_ensure_required_columns_raises_when_missing():
     df = pd.DataFrame(columns=["junction_aa", "v_call"])
-    with pytest.raises(ValueError, match="missing required columns"):
+    with pytest.raises(TCRcloudError, match="missing required columns"):
         cloud._ensure_required_columns(df)
 
 
@@ -124,26 +125,22 @@ def test_load_colour_mapping_reads_valid_json(tmp_path):
     assert cloud._load_colour_mapping(str(colours_file)) == {"#000000": ["CASSA"]}
 
 
-def test_load_colour_mapping_missing_file_raises_filenotfound_with_its_own_name(
-    tmp_path,
-):
+def test_load_colour_mapping_missing_file_raises_with_its_own_name(tmp_path):
     missing_path = tmp_path / "missing_colours.json"
-    with pytest.raises(
-        FileNotFoundError, match=r"TCRcloud error:.*doesn't seem to exist"
-    ):
+    with pytest.raises(TCRcloudError, match=r"doesn't seem to exist"):
         cloud._load_colour_mapping(str(missing_path))
     # The message must reference the colours file itself, not some other
     # filename, so that main() (see TCRcloud.py) can surface it verbatim.
     try:
         cloud._load_colour_mapping(str(missing_path))
-    except FileNotFoundError as exc:
+    except TCRcloudError as exc:
         assert str(missing_path) in str(exc)
 
 
-def test_load_colour_mapping_invalid_json_raises_value_error(tmp_path):
+def test_load_colour_mapping_invalid_json_raises_tcrcloud_error(tmp_path):
     bad_file = tmp_path / "bad_colours.json"
     bad_file.write_text("{not valid json")
-    with pytest.raises(ValueError, match="doesn't seem properly formatted"):
+    with pytest.raises(TCRcloudError, match="doesn't seem properly formatted"):
         cloud._load_colour_mapping(str(bad_file))
 
 
@@ -249,7 +246,7 @@ def test_wordcloud_format_is_case_insensitive(tmp_path, monkeypatch):
 def test_wordcloud_rejects_unsupported_format(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
 
-    with pytest.raises(ValueError, match="unsupported output format"):
+    with pytest.raises(TCRcloudError, match="unsupported output format"):
         cloud.wordcloud(_make_args(tmp_path, format="pdf"))
 
 

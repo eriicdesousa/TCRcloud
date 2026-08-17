@@ -17,6 +17,7 @@ from wordcloud import WordCloud
 
 import tcrcloud.colours
 import tcrcloud.format
+from tcrcloud.errors import TCRcloudError
 
 # No fixed species default here; per-chain color lookup is dynamic via tcrcloud.colours helpers.
 
@@ -88,7 +89,7 @@ def _ensure_required_columns(df):
     required_columns = {"junction_aa", "v_call", "counts", "chain", "repertoire_id"}
     missing = required_columns - set(df.columns)
     if missing:
-        raise ValueError(f"TCRcloud error: missing required columns: {sorted(missing)}")
+        raise TCRcloudError(f"missing required columns: {sorted(missing)}")
 
 
 def _extract_family_and_text(df):
@@ -114,12 +115,10 @@ def _load_colour_mapping(colours_path: str) -> dict:
         with open(colours_path) as json_file:
             return json.load(json_file)
     except FileNotFoundError as exc:
-        raise FileNotFoundError(
-            f"TCRcloud error: {colours_path} doesn't seem to exist"
-        ) from exc
+        raise TCRcloudError(f"{colours_path} doesn't seem to exist") from exc
     except json.decoder.JSONDecodeError as exc:
-        raise ValueError(
-            f"TCRcloud error: {colours_path} doesn't seem properly formatted. Check https://github.com/eriicdesousa/TCRcloud for more information"
+        raise TCRcloudError(
+            f"{colours_path} doesn't seem properly formatted. Check https://github.com/eriicdesousa/TCRcloud for more information"
         ) from exc
 
 
@@ -176,7 +175,7 @@ def wordcloud(args):
         elif legend.lower() in ("false", "f", "0", "no", "n"):
             legend = False
         else:
-            raise ValueError("TCRcloud error: please indicate legend True or False")
+            raise TCRcloudError("please indicate legend True or False")
 
     legend = bool(legend)
 
@@ -186,8 +185,8 @@ def wordcloud(args):
     # otherwise catch a bad value.
     output_format = (getattr(args, "format", None) or "png").strip().lower()
     if output_format not in ("svg", "png"):
-        raise ValueError(
-            f"TCRcloud error: unsupported output format '{output_format}'. "
+        raise TCRcloudError(
+            f"unsupported output format '{output_format}'. "
             "Please choose 'svg' or 'png'"
         )
 
@@ -225,8 +224,8 @@ def wordcloud(args):
         try:
             grouped_color_func = SimpleGroupedColorFunc(color_to_words, "grey")
         except TypeError as exc:
-            raise ValueError(
-                f"TCRcloud error: {args.colours} doesn't seem properly formatted. Check https://github.com/eriicdesousa/TCRcloud for more information"
+            raise TCRcloudError(
+                f"{args.colours} doesn't seem properly formatted. Check https://github.com/eriicdesousa/TCRcloud for more information"
             ) from exc
         wordcloud_obj.recolor(color_func=grouped_color_func)
 

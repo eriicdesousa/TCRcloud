@@ -377,20 +377,19 @@ def main():
         sys.stderr.write(f"TCRcloud error: {exc}\n")
         sys.exit(1)
     except FileNotFoundError as exc:
-        message = str(exc)
-        if not message.startswith("TCRcloud error:"):
-            filename = getattr(args, "repertoire", None) or getattr(
-                args, "rearrangements", None
-            )
-            message = (
-                f"TCRcloud error: {filename} doesn't seem to exist"
-                if filename
-                else message
-            )
-        sys.stderr.write(message + "\n")
+        # A bare FileNotFoundError, e.g. from open() on a missing input
+        # file. Library modules raise TCRcloudError for expected failures,
+        # so this only handles unexpected ones: report the input filename
+        # instead of the raw errno message.
+        filename = getattr(args, "repertoire", None) or getattr(
+            args, "rearrangements", None
+        )
+        message = f"{filename} doesn't seem to exist" if filename else str(exc)
+        sys.stderr.write(f"TCRcloud error: {message}\n")
         sys.exit(1)
     except ValueError as exc:
-        sys.stderr.write(str(exc) + "\n")
+        # Fallback for unexpected ValueErrors from third-party libraries.
+        sys.stderr.write(f"TCRcloud error: {exc}\n")
         sys.exit(1)
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \

@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 
 import tcrcloud.colours
 import tcrcloud.format
+from tcrcloud.errors import TCRcloudError
 
 colours = tcrcloud.colours.aminoacids
 
@@ -104,8 +105,8 @@ def aminoacids(args):
     # `choices=["svg", "png"]` wouldn't otherwise catch a bad value.
     output_format = (getattr(args, "format", None) or "png").strip().lower()
     if output_format not in ("svg", "png"):
-        raise ValueError(
-            f"TCRcloud error: unsupported output format '{output_format}'. "
+        raise TCRcloudError(
+            f"unsupported output format '{output_format}'. "
             "Please choose 'svg' or 'png'"
         )
 

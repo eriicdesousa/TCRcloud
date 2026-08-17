@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 import tcrcloud.format as format
+from tcrcloud.errors import TCRcloudError
 
 # ---------------------------------------------------------------------------
 # _is_valid_cdr3
@@ -227,7 +228,7 @@ def test_format_data_raises_clear_error_when_no_rows_pass_filters(
     )
     _patch_airr(monkeypatch, [])  # no rows at all
 
-    with pytest.raises(ValueError, match="no productive rearrangements"):
+    with pytest.raises(TCRcloudError, match="no productive rearrangements"):
         format.format_data(SimpleNamespace(rearrangements=str(path)))
 
 

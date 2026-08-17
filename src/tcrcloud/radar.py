@@ -19,6 +19,7 @@ import numpy as np
 import skbio
 
 import tcrcloud.format
+from tcrcloud.errors import TCRcloudError
 
 # For large-range metrics (Distinct CDR3, Chao1), the axis uses log scaling.
 # For the Gini-Simpson metric, the axis range is restricted to its upper
@@ -83,7 +84,7 @@ def calculate_dfifty(df, length):
 def _load_legend_mapping(legend_file):
     """Load the repertoire_id -> legend label mapping from a JSON file.
 
-    Raises FileNotFoundError/ValueError (instead of exiting the process
+    Raises `tcrcloud.errors.TCRcloudError` (instead of exiting the process
     directly) so that callers - and TCRcloud.py's centralized error
     handling in particular - can surface a clean "TCRcloud error: ..."
     message, consistent with tcrcloud.cloud._load_colour_mapping.
@@ -93,12 +94,10 @@ def _load_legend_mapping(legend_file):
         with open(legend_file) as json_file:
             return json.load(json_file)
     except FileNotFoundError as exc:
-        raise FileNotFoundError(
-            f"TCRcloud error: {legend_file} doesn't seem to exist"
-        ) from exc
+        raise TCRcloudError(f"{legend_file} doesn't seem to exist") from exc
     except json.decoder.JSONDecodeError as exc:
-        raise ValueError(
-            f"TCRcloud error: {legend_file} doesn't seem properly formatted. "
+        raise TCRcloudError(
+            f"{legend_file} doesn't seem properly formatted. "
             "Check https://github.com/eriicdesousa/TCRcloud for more information"
         ) from exc
 
@@ -290,8 +289,8 @@ def radar(args):
     # otherwise catch a bad value.
     output_format = (getattr(args, "format", None) or "png").strip().lower()
     if output_format not in ("svg", "png"):
-        raise ValueError(
-            f"TCRcloud error: unsupported output format '{output_format}'. "
+        raise TCRcloudError(
+            f"unsupported output format '{output_format}'. "
             "Please choose 'svg' or 'png'"
         )
 
@@ -321,7 +320,7 @@ def radar(args):
     )
 
     if not datasets:
-        raise ValueError("TCRcloud error: no repertoires found for plotting")
+        raise TCRcloudError("no repertoires found for plotting")
 
     label_loc = np.linspace(start=0, stop=2 * np.pi, num=len(datasets[0]))
 

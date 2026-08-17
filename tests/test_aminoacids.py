@@ -7,6 +7,7 @@ import pytest
 
 import tcrcloud.aminoacids as aminoacids
 import tcrcloud.format as tformat
+from tcrcloud.errors import TCRcloudError
 
 # ---------------------------------------------------------------------------
 # generate_mesh
@@ -131,7 +132,7 @@ def test_aminoacids_format_is_case_insensitive(tmp_path, monkeypatch):
 def test_aminoacids_rejects_unsupported_format(tmp_path, monkeypatch):
     _patch_format_pipeline(monkeypatch)
 
-    with pytest.raises(ValueError, match="unsupported output format"):
+    with pytest.raises(TCRcloudError, match="unsupported output format"):
         aminoacids.aminoacids(_make_args(tmp_path, format="pdf"))
 
 

@@ -11,6 +11,7 @@ import skbio
 
 import tcrcloud.format as tformat
 import tcrcloud.radar as radar
+from tcrcloud.errors import TCRcloudError
 
 # ---------------------------------------------------------------------------
 # calculate_dfifty
@@ -50,18 +51,16 @@ def test_load_legend_mapping_reads_valid_json(tmp_path):
     assert radar._load_legend_mapping(str(legend_file)) == {"rep1": "Patient 1"}
 
 
-def test_load_legend_mapping_missing_file_raises_filenotfound(tmp_path):
+def test_load_legend_mapping_missing_file_raises_tcrcloud_error(tmp_path):
     missing_path = tmp_path / "missing_legend.json"
-    with pytest.raises(
-        FileNotFoundError, match=r"TCRcloud error:.*doesn't seem to exist"
-    ):
+    with pytest.raises(TCRcloudError, match=r"doesn't seem to exist"):
         radar._load_legend_mapping(str(missing_path))
 
 
-def test_load_legend_mapping_invalid_json_raises_value_error(tmp_path):
+def test_load_legend_mapping_invalid_json_raises_tcrcloud_error(tmp_path):
     bad_file = tmp_path / "bad_legend.json"
     bad_file.write_text("{not valid json")
-    with pytest.raises(ValueError, match="doesn't seem properly formatted"):
+    with pytest.raises(TCRcloudError, match="doesn't seem properly formatted"):
         radar._load_legend_mapping(str(bad_file))
 
 
@@ -137,7 +136,7 @@ def test_calculate_metrics_missing_legend_file_raises(tmp_path):
     samples, keys = _make_samples()
     missing_path = tmp_path / "missing.json"
 
-    with pytest.raises(FileNotFoundError, match="doesn't seem to exist"):
+    with pytest.raises(TCRcloudError, match="doesn't seem to exist"):
         radar.calculate_metrics(keys, samples, str(missing_path), False, "sample.tsv")
 
 
@@ -329,7 +328,7 @@ def test_radar_format_is_case_insensitive(tmp_path, monkeypatch):
 def test_radar_rejects_unsupported_format(tmp_path, monkeypatch):
     _patch_format_data(monkeypatch)
 
-    with pytest.raises(ValueError, match="unsupported output format"):
+    with pytest.raises(TCRcloudError, match="unsupported output format"):
         radar.radar(_make_args(tmp_path, format="pdf"))
 
 
@@ -362,7 +361,7 @@ def test_radar_raises_when_no_repertoires_found(tmp_path, monkeypatch):
         columns=["junction_aa", "junction", "repertoire_id", "chain"]
     )
     monkeypatch.setattr(tformat, "format_data", lambda args: empty_df)
-    with pytest.raises(ValueError, match="no repertoires found"):
+    with pytest.raises(TCRcloudError, match="no repertoires found"):
         radar.radar(_make_args(tmp_path))
 
 

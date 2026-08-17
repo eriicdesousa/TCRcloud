@@ -300,10 +300,9 @@ repertoire metadata file.")
                 )
                 resp.raise_for_status()
             except requests.exceptions.RequestException as e:
-                sys.stderr.write(
-                    f"TCRcloud error: failed to download rearrangements from {host_url} ({e})\n"
-                )
-                return
+                raise TCRcloudError(
+                    f"failed to download rearrangements from {host_url} ({e})"
+                ) from e
 
             try:
                 # Note: this reassigns the outer `data` (the repertoire
@@ -313,10 +312,9 @@ repertoire metadata file.")
                 page_data = resp.json()
                 rearrangements = page_data.get("Rearrangement", [])
             except ValueError as e:
-                sys.stderr.write(
-                    f"TCRcloud error: invalid JSON response from {host_url} ({e})\n"
-                )
-                return
+                raise TCRcloudError(
+                    f"invalid JSON response from {host_url} ({e})"
+                ) from e
 
             # progress report
             cnt += len(rearrangements)
