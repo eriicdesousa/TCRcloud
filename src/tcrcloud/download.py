@@ -25,6 +25,8 @@ from urllib3.util.retry import Retry
 import requests
 import airr
 
+from tcrcloud.errors import TCRcloudError
+
 
 def get_session() -> requests.Session:
     """Return a requests.Session configured with sensible default retries.
@@ -204,11 +206,10 @@ def testserver(data):
             break
 
     if host_url is None:
-        sys.stderr.write(
-            "TCRcloud error: could not reach any of the configured AIRR repositories. "
-            "Please check your network connection and try again.\n"
+        raise TCRcloudError(
+            "could not reach any of the configured AIRR repositories. "
+            "Please check your network connection and try again."
         )
-        sys.exit(1)
 
     return host_url
 
@@ -225,10 +226,10 @@ def airrdownload(args):
 
     try:
         data = airr.read_airr(args.repertoire)
-    except TypeError:
-        sys.stderr.write("TCRcloud error: It seems you did not indicate a \
-properly formatted AIRR repertoire file\n")
-        sys.exit(1)
+    except TypeError as exc:
+        raise TCRcloudError(
+            "It seems you did not indicate a properly formatted AIRR repertoire file"
+        ) from exc
 
     # The metadata file may contain multiple repertoires; we will iterate them.
     repertoires = data["Repertoire"]

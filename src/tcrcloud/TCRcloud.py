@@ -14,6 +14,7 @@ import tcrcloud.testdata
 import tcrcloud.vgenes
 import tcrcloud.aminoacids
 import tcrcloud.compare
+from tcrcloud.errors import TCRcloudError
 
 try:
     __version__ = version("TCRcloud")
@@ -369,6 +370,12 @@ def main():
     args = parser.parse_args()
     try:
         args.func(args)
+    except TCRcloudError as exc:
+        # Expected, user-facing failures raised by library modules. Print a
+        # clean message and exit non-zero (so the failure is visible to
+        # scripts/pipelines), instead of letting helpers call sys.exit().
+        sys.stderr.write(f"TCRcloud error: {exc}\n")
+        sys.exit(1)
     except FileNotFoundError as exc:
         message = str(exc)
         if not message.startswith("TCRcloud error:"):
@@ -381,14 +388,18 @@ def main():
                 else message
             )
         sys.stderr.write(message + "\n")
+        sys.exit(1)
     except ValueError as exc:
         sys.stderr.write(str(exc) + "\n")
+        sys.exit(1)
     except (yaml.scanner.ScannerError, json.decoder.JSONDecodeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR repertoire file\n")
+        sys.exit(1)
     except (KeyError, TypeError):
         sys.stderr.write("TCRcloud error: It seems you did not indicate a \
 properly formatted AIRR rearrangements file\n")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,6 @@ example workflows.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -16,6 +15,7 @@ import airr
 import requests
 
 from tcrcloud.download import get_session
+from tcrcloud.errors import TCRcloudError
 
 # Base URL for the iReceptor AIRR API.
 # This specific node is hardcoded (rather than discovered, unlike download.py)
@@ -78,9 +78,9 @@ def _download_repertoire(
     `testdata` command on the first hiccup.
 
     Any failure (network error, bad/non-JSON response, or an empty
-    ``Repertoire`` list) is reported as a friendly "TCRcloud error: ..."
-    message on stderr and exits the process, matching the error-handling
-    style used elsewhere in the CLI (e.g. `tcrcloud.download.testserver`).
+    ``Repertoire`` list) is raised as a `tcrcloud.errors.TCRcloudError`,
+    which the CLI (`tcrcloud.TCRcloud.main`) surfaces as a clean
+    "TCRcloud error: ..." message with a non-zero exit code.
     """
 
     # Query iReceptor for the requested repertoire. `timeout` prevents the
@@ -89,26 +89,21 @@ def _download_repertoire(
         resp = session.post(f"{HOST_URL}/repertoire", json=query, timeout=30)
         resp.raise_for_status()
     except requests.exceptions.RequestException as exc:
-        sys.stderr.write(f"TCRcloud error: could not reach {HOST_URL} ({exc})\n")
-        sys.exit(1)
+        raise TCRcloudError(f"could not reach {HOST_URL} ({exc})") from exc
 
     # Parse JSON response and write using the airr library.
     try:
         data = resp.json()
     except ValueError as exc:
-        sys.stderr.write(
-            f"TCRcloud error: invalid JSON response from {HOST_URL} ({exc})\n"
-        )
-        sys.exit(1)
+        raise TCRcloudError(f"invalid JSON response from {HOST_URL} ({exc})") from exc
 
     # Guard against a "successful" response that has no actual data, which
     # would otherwise silently produce an empty repertoire file.
     repertoires = data.get("Repertoire") or []
     if not repertoires:
-        sys.stderr.write(
-            f"TCRcloud error: no repertoires were returned by {HOST_URL} for {output_path}\n"
+        raise TCRcloudError(
+            f"no repertoires were returned by {HOST_URL} for {output_path}"
         )
-        sys.exit(1)
 
     airr.write_repertoire(output_path, repertoires, info=data["Info"])
 

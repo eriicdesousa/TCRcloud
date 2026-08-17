@@ -7,6 +7,7 @@ import pytest
 import requests
 
 import tcrcloud.download as download
+from tcrcloud.errors import TCRcloudError
 
 
 def _response(json_payload=None, json_error=None, raise_for_status_error=None):
@@ -230,11 +231,8 @@ def test_testserver_exits_when_repertoire_not_found_anywhere(monkeypatch, capsys
     fake_session.post.return_value = _response(json_payload={"Repertoire": []})
     monkeypatch.setattr(download, "get_session", Mock(return_value=fake_session))
 
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(TCRcloudError, match="could not reach any"):
         download.testserver(_repertoire_data())
-
-    assert exc_info.value.code == 1
-    assert "could not reach any" in capsys.readouterr().err
 
 
 # ---------------------------------------------------------------------------
@@ -344,11 +342,8 @@ def test_airrdownload_invalid_repertoire_file_exits(monkeypatch, capsys):
     monkeypatch.setattr(download.airr, "read_airr", Mock(side_effect=TypeError()))
 
     args = SimpleNamespace(repertoire="sample.airr.json")
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(TCRcloudError, match="properly formatted AIRR repertoire file"):
         download.airrdownload(args)
-
-    assert exc_info.value.code == 1
-    assert "properly formatted AIRR repertoire file" in capsys.readouterr().err
 
 
 def test_airrdownload_returns_on_request_exception(monkeypatch, capsys):

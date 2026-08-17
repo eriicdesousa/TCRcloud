@@ -25,8 +25,10 @@ def test_main_preserves_custom_filenotfound_message(monkeypatch, capsys):
     monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
     monkeypatch.setattr(sys, "argv", ["TCRcloud", "cloud", "rearrangements.tsv"])
 
-    TCRcloud.main()
+    with pytest.raises(SystemExit) as excinfo:
+        TCRcloud.main()
 
+    assert excinfo.value.code == 1
     captured = capsys.readouterr()
     assert "colours.json doesn't seem to exist" in captured.err
     assert "rearrangements.tsv" not in captured.err
@@ -43,22 +45,31 @@ def test_main_falls_back_to_argument_filename_for_generic_filenotfound(
     monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
     monkeypatch.setattr(sys, "argv", ["TCRcloud", "cloud", "missing.tsv"])
 
-    TCRcloud.main()
+    with pytest.raises(SystemExit) as excinfo:
+        TCRcloud.main()
 
+    assert excinfo.value.code == 1
     captured = capsys.readouterr()
     assert "missing.tsv doesn't seem to exist" in captured.err
 
 
-def test_main_preserves_custom_message_and_does_not_raise(monkeypatch):
-    """main() should swallow the FileNotFoundError, not propagate it."""
+def test_main_exits_nonzero_on_tcrcloud_error(monkeypatch, capsys):
+    """TCRcloudError raised by a subcommand must surface as a clean message
+    plus a non-zero exit code (not a swallowed print)."""
+    from tcrcloud.errors import TCRcloudError
 
     def fake_wordcloud(args):
-        raise FileNotFoundError("TCRcloud error: colours.json doesn't seem to exist")
+        raise TCRcloudError("something went wrong")
 
     monkeypatch.setattr(cloud, "wordcloud", fake_wordcloud)
     monkeypatch.setattr(sys, "argv", ["TCRcloud", "cloud", "rearrangements.tsv"])
 
-    TCRcloud.main()  # should not raise
+    with pytest.raises(SystemExit) as excinfo:
+        TCRcloud.main()
+
+    assert excinfo.value.code == 1
+    captured = capsys.readouterr()
+    assert "TCRcloud error: something went wrong" in captured.err
 
 
 # ---------------------------------------------------------------------------

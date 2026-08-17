@@ -7,6 +7,7 @@ import pytest
 import requests
 
 import tcrcloud.testdata as testdata
+from tcrcloud.errors import TCRcloudError
 
 # ---------------------------------------------------------------------------
 # _make_query
@@ -92,13 +93,11 @@ def test_download_repertoire_network_error_exits(monkeypatch, capsys):
     session = Mock()
     session.post.side_effect = requests.exceptions.ConnectionError("boom")
 
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(TCRcloudError) as exc_info:
         testdata._download_repertoire(session, {}, "out.json")
 
-    assert exc_info.value.code == 1
-    captured = capsys.readouterr()
-    assert "TCRcloud error" in captured.err
-    assert testdata.HOST_URL in captured.err
+    assert "could not reach" in str(exc_info.value)
+    assert testdata.HOST_URL in str(exc_info.value)
 
 
 def test_download_repertoire_http_error_exits(monkeypatch, capsys):
@@ -107,24 +106,20 @@ def test_download_repertoire_http_error_exits(monkeypatch, capsys):
         raise_for_status_error=requests.exceptions.HTTPError("500 error")
     )
 
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(TCRcloudError) as exc_info:
         testdata._download_repertoire(session, {}, "out.json")
 
-    assert exc_info.value.code == 1
-    captured = capsys.readouterr()
-    assert "TCRcloud error" in captured.err
+    assert "could not reach" in str(exc_info.value)
 
 
 def test_download_repertoire_invalid_json_exits(monkeypatch, capsys):
     session = Mock()
     session.post.return_value = _make_response(json_error=ValueError("bad json"))
 
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(TCRcloudError) as exc_info:
         testdata._download_repertoire(session, {}, "out.json")
 
-    assert exc_info.value.code == 1
-    captured = capsys.readouterr()
-    assert "invalid JSON" in captured.err
+    assert "invalid JSON" in str(exc_info.value)
 
 
 def test_download_repertoire_empty_repertoire_exits(monkeypatch, capsys):
@@ -135,12 +130,10 @@ def test_download_repertoire_empty_repertoire_exits(monkeypatch, capsys):
     write_repertoire = Mock()
     monkeypatch.setattr(testdata.airr, "write_repertoire", write_repertoire)
 
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(TCRcloudError) as exc_info:
         testdata._download_repertoire(session, {}, "out.json")
 
-    assert exc_info.value.code == 1
-    captured = capsys.readouterr()
-    assert "no repertoires were returned" in captured.err
+    assert "no repertoires were returned" in str(exc_info.value)
     write_repertoire.assert_not_called()
 
 
