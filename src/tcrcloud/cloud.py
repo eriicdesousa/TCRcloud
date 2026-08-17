@@ -108,20 +108,22 @@ def _extract_family_and_text(df):
     Additionally, we keep a `family` mapping that remembers which V-gene call is
     associated with each `junction_aa`, so that we can colour words consistently.
 
-    When the group has only a single row, pandas squeezes differently, so we
-    explicitly handle that case to avoid unexpected scalar values.
+    `iloc[:, 0]` (not the deprecated `DataFrame.squeeze()`) selects the single
+    remaining column, and works uniformly for groups of one or many rows.
     """
 
-    if len(df) > 1:
-        family = (
-            df[["junction_aa", "v_call"]].set_index("junction_aa").squeeze().to_dict()
-        )
-        text = (
-            df[["junction_aa", "counts"]].set_index("junction_aa").squeeze().to_dict()
-        )
-    else:
-        family = {df["junction_aa"].iloc[0]: df["v_call"].iloc[0]}
-        text = {df["junction_aa"].iloc[0]: df["counts"].iloc[0]}
+    family = (
+        df[["junction_aa", "v_call"]]
+        .set_index("junction_aa")
+        .iloc[:, 0]
+        .to_dict()
+    )
+    text = (
+        df[["junction_aa", "counts"]]
+        .set_index("junction_aa")
+        .iloc[:, 0]
+        .to_dict()
+    )
     return family, text
 
 
