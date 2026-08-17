@@ -12,6 +12,7 @@ an actual logarithmic transform - see _METRIC_SCALES below.
 """
 
 import json
+import logging
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,8 @@ import skbio
 
 import tcrcloud.format
 from tcrcloud.errors import TCRcloudError
+
+logger = logging.getLogger(__name__)
 
 # For large-range metrics (Distinct CDR3, Chao1), the axis uses log scaling.
 # For the Gini-Simpson metric, the axis range is restricted to its upper
@@ -249,7 +252,7 @@ def calculate_metrics(
                     file=fileout,
                 )
                 print(file=fileout)
-        print("Repertoire metrics saved as " + metrics_filename)
+        logger.info("Repertoire metrics saved as " + metrics_filename)
 
     return datasets, min_vals, max_vals, _METRIC_SCALES
 
@@ -442,4 +445,4 @@ def radar(
         plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), fontsize=16)
     plt.savefig(outputname, dpi=300, bbox_inches="tight")
     plt.close()
-    print("Radar saved as " + outputname)
+    logger.info("Radar saved as " + outputname)

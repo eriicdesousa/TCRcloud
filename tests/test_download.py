@@ -1,5 +1,6 @@
 """Unit tests for tcrcloud.download."""
 
+import logging
 from unittest.mock import Mock
 
 import airr
@@ -135,7 +136,7 @@ def _repertoire_data(repertoire_id="rep1", study_id="study1"):
     }
 
 
-def test_testserver_returns_first_matching_repository(monkeypatch, capsys):
+def test_testserver_returns_first_matching_repository(monkeypatch, caplog):
     monkeypatch.setattr(
         download,
         "discover_repositories",
@@ -153,15 +154,16 @@ def test_testserver_returns_first_matching_repository(monkeypatch, capsys):
     )
     monkeypatch.setattr(download, "get_session", Mock(return_value=fake_session))
 
-    host_url = download.testserver(_repertoire_data())
+    with caplog.at_level(logging.INFO, logger="tcrcloud.download"):
+        host_url = download.testserver(_repertoire_data())
 
     assert host_url == "https://repo1.example/airr/v1"
     fake_session.post.assert_called_once()
-    assert "Your repertoire was found" in capsys.readouterr().out
+    assert "Your repertoire was found" in caplog.text
 
 
 def test_testserver_falls_back_to_next_repository_on_request_exception(
-    monkeypatch, capsys
+    monkeypatch, caplog
 ):
     monkeypatch.setattr(
         download,
@@ -192,10 +194,10 @@ def test_testserver_falls_back_to_next_repository_on_request_exception(
     host_url = download.testserver(_repertoire_data())
 
     assert host_url == "https://repo2.example/airr/v1"
-    assert "could not reach" in capsys.readouterr().err
+    assert "could not reach" in caplog.text
 
 
-def test_testserver_skips_repository_with_invalid_json(monkeypatch, capsys):
+def test_testserver_skips_repository_with_invalid_json(monkeypatch, caplog):
     monkeypatch.setattr(
         download,
         "discover_repositories",
@@ -217,10 +219,10 @@ def test_testserver_skips_repository_with_invalid_json(monkeypatch, capsys):
     host_url = download.testserver(_repertoire_data())
 
     assert host_url == "https://repo2.example/airr/v1"
-    assert "invalid JSON" in capsys.readouterr().err
+    assert "invalid JSON" in caplog.text
 
 
-def test_testserver_exits_when_repertoire_not_found_anywhere(monkeypatch, capsys):
+def test_testserver_exits_when_repertoire_not_found_anywhere(monkeypatch):
     monkeypatch.setattr(
         download,
         "discover_repositories",
@@ -262,7 +264,7 @@ def _patch_common_airrdownload_deps(monkeypatch, read_airr_return=None):
     )
 
 
-def test_airrdownload_writes_rearrangements_and_closes_file(monkeypatch, capsys):
+def test_airrdownload_writes_rearrangements_and_closes_file(monkeypatch, caplog):
     _patch_common_airrdownload_deps(monkeypatch)
 
     rows = [{"junction_aa": "CASSX", "v_call": "TRBV1"}]
@@ -274,18 +276,19 @@ def test_airrdownload_writes_rearrangements_and_closes_file(monkeypatch, capsys)
     create_rearrangement = Mock(return_value=fake_writer)
     monkeypatch.setattr(download.airr, "create_rearrangement", create_rearrangement)
 
-    download.airrdownload("sample.airr.json")
+    with caplog.at_level(logging.INFO, logger="tcrcloud.download"):
+        download.airrdownload("sample.airr.json")
 
     create_rearrangement.assert_called_once_with(
         "sample.airr.rearrangements.tsv", fields=rows[0].keys()
     )
     fake_writer.write.assert_called_once_with(rows[0])
     fake_writer.close.assert_called_once()
-    assert "Saved as sample.airr.rearrangements.tsv" in capsys.readouterr().out
+    assert "Saved as sample.airr.rearrangements.tsv" in caplog.text
 
 
 def test_airrdownload_handles_empty_rearrangements_without_crashing(
-    monkeypatch, capsys
+    monkeypatch, caplog
 ):
     """A repertoire with zero productive rearrangements must not raise
     IndexError, and no file should be created (regression test)."""
@@ -302,8 +305,7 @@ def test_airrdownload_handles_empty_rearrangements_without_crashing(
     download.airrdownload("sample.airr.json")  # should not raise
 
     create_rearrangement.assert_not_called()
-    err = capsys.readouterr().err
-    assert "no rearrangements were found" in err
+    assert "no rearrangements were found" in caplog.text
 
 
 def test_airrdownload_paginates_until_short_page(monkeypatch):
@@ -334,7 +336,7 @@ def test_airrdownload_paginates_until_short_page(monkeypatch):
     fake_writer.close.assert_called_once()
 
 
-def test_airrdownload_invalid_repertoire_file_exits(monkeypatch, capsys):
+def test_airrdownload_invalid_repertoire_file_exits(monkeypatch):
     monkeypatch.setattr(download.airr, "validate_repertoire", Mock())
     monkeypatch.setattr(download.airr, "read_airr", Mock(side_effect=TypeError()))
 

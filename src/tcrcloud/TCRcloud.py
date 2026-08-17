@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
@@ -45,6 +46,11 @@ plt.rcParams["font.family"] = "serif"
 
 
 def main() -> None:
+    # Surface library status/progress messages (logged at INFO) on the CLI.
+    # Library modules log via `logging.getLogger(__name__)` instead of
+    # printing, so importers of the package stay free of stdout noise.
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
     # create the top-level parser
     parser = argparse.ArgumentParser(
         description="Create visualizations from AIRR-seq data", prog="TCRcloud"

@@ -8,6 +8,7 @@ example workflows.
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,8 @@ import requests
 
 from tcrcloud.download import get_session
 from tcrcloud.errors import TCRcloudError
+
+logger = logging.getLogger(__name__)
 
 # Base URL for the iReceptor AIRR API.
 # This specific node is hardcoded (rather than discovered, unlike download.py)
@@ -108,7 +111,7 @@ def _download_repertoire(
 
     airr.write_repertoire(output_path, repertoires, info=data["Info"])
 
-    print(f"Received {len(repertoires)} repertoires. Saved as {output_path}")
+    logger.info(f"Received {len(repertoires)} repertoires. Saved as {output_path}")
 
 
 def download() -> None:
@@ -146,4 +149,4 @@ def download() -> None:
     }
 
     Path("legend.json").write_text(json.dumps(legend, indent=4))
-    print("json file for legend saved as legend.json")
+    logger.info("json file for legend saved as legend.json")

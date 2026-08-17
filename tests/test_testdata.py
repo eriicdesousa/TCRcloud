@@ -1,6 +1,7 @@
 """Unit tests for tcrcloud.testdata."""
 
 import json
+import logging
 from unittest.mock import Mock
 
 import pytest
@@ -65,7 +66,7 @@ def _make_response(json_payload=None, json_error=None, raise_for_status_error=No
     return resp
 
 
-def test_download_repertoire_success(tmp_path, monkeypatch, capsys):
+def test_download_repertoire_success(tmp_path, monkeypatch, caplog):
     output_path = tmp_path / "alpharepertoire.airr.json"
     payload = {"Repertoire": [{"repertoire_id": "r1"}], "Info": {"title": "test"}}
 
@@ -75,7 +76,8 @@ def test_download_repertoire_success(tmp_path, monkeypatch, capsys):
     write_repertoire = Mock()
     monkeypatch.setattr(testdata.airr, "write_repertoire", write_repertoire)
 
-    testdata._download_repertoire(session, {"filters": {}}, str(output_path))
+    with caplog.at_level(logging.INFO, logger="tcrcloud.testdata"):
+        testdata._download_repertoire(session, {"filters": {}}, str(output_path))
 
     session.post.assert_called_once_with(
         f"{testdata.HOST_URL}/repertoire", json={"filters": {}}, timeout=30
@@ -84,12 +86,11 @@ def test_download_repertoire_success(tmp_path, monkeypatch, capsys):
         str(output_path), payload["Repertoire"], info=payload["Info"]
     )
 
-    captured = capsys.readouterr()
-    assert "Received 1 repertoires" in captured.out
-    assert str(output_path) in captured.out
+    assert "Received 1 repertoires" in caplog.text
+    assert str(output_path) in caplog.text
 
 
-def test_download_repertoire_network_error_exits(monkeypatch, capsys):
+def test_download_repertoire_network_error_exits(monkeypatch):
     session = Mock()
     session.post.side_effect = requests.exceptions.ConnectionError("boom")
 
@@ -100,7 +101,7 @@ def test_download_repertoire_network_error_exits(monkeypatch, capsys):
     assert testdata.HOST_URL in str(exc_info.value)
 
 
-def test_download_repertoire_http_error_exits(monkeypatch, capsys):
+def test_download_repertoire_http_error_exits(monkeypatch):
     session = Mock()
     session.post.return_value = _make_response(
         raise_for_status_error=requests.exceptions.HTTPError("500 error")
@@ -112,7 +113,7 @@ def test_download_repertoire_http_error_exits(monkeypatch, capsys):
     assert "could not reach" in str(exc_info.value)
 
 
-def test_download_repertoire_invalid_json_exits(monkeypatch, capsys):
+def test_download_repertoire_invalid_json_exits(monkeypatch):
     session = Mock()
     session.post.return_value = _make_response(json_error=ValueError("bad json"))
 
@@ -122,7 +123,7 @@ def test_download_repertoire_invalid_json_exits(monkeypatch, capsys):
     assert "invalid JSON" in str(exc_info.value)
 
 
-def test_download_repertoire_empty_repertoire_exits(monkeypatch, capsys):
+def test_download_repertoire_empty_repertoire_exits(monkeypatch):
     session = Mock()
     session.post.return_value = _make_response(
         json_payload={"Repertoire": [], "Info": {}}

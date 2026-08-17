@@ -8,6 +8,7 @@ unit testing feasible without requiring matplotlib rendering.
 """
 
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,8 @@ from wordcloud import WordCloud
 import tcrcloud.colours
 import tcrcloud.format
 from tcrcloud.errors import TCRcloudError
+
+logger = logging.getLogger(__name__)
 
 # No fixed species default here; per-chain color lookup is dynamic via tcrcloud.colours helpers.
 
@@ -252,4 +255,4 @@ def wordcloud(
         outputname = f"{input_stem}_{repertoire_id}_{chain}.{output_format}"
         fig.savefig(outputname, dpi=300, bbox_inches="tight", pad_inches=0.2)
         plt.close(fig)
-        print("Word cloud saved as " + outputname)
+        logger.info("Word cloud saved as " + outputname)

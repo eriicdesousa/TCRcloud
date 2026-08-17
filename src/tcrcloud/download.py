@@ -12,8 +12,8 @@ If repository discovery fails, a built-in fallback list of known AIRR nodes is u
 """
 
 # Standard library imports
+import logging
 import os
-import sys
 import time
 from functools import lru_cache
 from pathlib import Path
@@ -26,6 +26,8 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from tcrcloud.errors import TCRcloudError
+
+logger = logging.getLogger(__name__)
 
 
 def get_session() -> requests.Session:
@@ -175,7 +177,7 @@ def testserver(data: dict[str, Any]) -> str | None:
     }
 
     session = get_session()
-    print("Looking for your repertoire in the AIRR Data Commons repositories...")
+    logger.info("Looking for your repertoire in the AIRR Data Commons repositories...")
     repositories = discover_repositories() or FALLBACK_REPOSITORIES
 
     host_url = None
@@ -187,22 +189,22 @@ def testserver(data: dict[str, Any]) -> str | None:
             )
             resp.raise_for_status()
         except requests.exceptions.RequestException:
-            sys.stderr.write(
-                f"TCRcloud warning: could not reach {test_url}. Trying the next repository.\n"
+            logger.warning(
+                f"TCRcloud warning: could not reach {test_url}. Trying the next repository."
             )
             continue
 
         try:
             repertoires = resp.json().get("Repertoire", [])
         except ValueError as e:
-            sys.stderr.write(
-                f"TCRcloud warning: invalid JSON from {test_url} ({e}). Trying the next repository.\n"
+            logger.warning(
+                f"TCRcloud warning: invalid JSON from {test_url} ({e}). Trying the next repository."
             )
             continue
 
         if len(repertoires) > 0:
             host_url = i
-            print("Your repertoire was found at " + host_url)
+            logger.info("Your repertoire was found at " + host_url)
             break
 
     if host_url is None:
@@ -264,7 +266,7 @@ def airrdownload(repertoire: str) -> None:
     # Use a shared HTTP session for all subsequent requests.
     session = get_session()
 
-    print(f"Using AIRR repository: {host_url}")
+    logger.info(f"Using AIRR repository: {host_url}")
 
     # Retrieve repository-level metadata from the AIRR file.
     # Some versions nest the metadata under `Info.Info`.
@@ -283,14 +285,14 @@ def airrdownload(repertoire: str) -> None:
     # malformed for our purposes; report it as an input problem rather than
     # surfacing a bare KeyError.
     try:
-        print("       Info: " + info["title"])
-        print("    version: " + str(info["version"]))
-        print("description: " + info["description"])
+        logger.info("       Info: " + info["title"])
+        logger.info("    version: " + str(info["version"]))
+        logger.info("description: " + info["description"])
     except (KeyError, TypeError) as exc:
         raise TCRcloudError(
             "It seems you did not indicate a properly formatted AIRR repertoire file"
         ) from exc
-    print("Found " + str(len(data["Repertoire"])) + " repertoires in \
+    logger.info("Found " + str(len(data["Repertoire"])) + " repertoires in \
 repertoire metadata file.")
 
     # Build a reusable query template for the rearrangements endpoint.
@@ -324,10 +326,10 @@ repertoire metadata file.")
             raise TCRcloudError(
                 "It seems you did not indicate a properly formatted AIRR repertoire file"
             ) from exc
-        print(
+        logger.info(
             f"Retrieving rearrangements for repertoire {idx}/{len(repertoires)}: {repertoire_id}"
         )
-        print(
+        logger.info(
             "This process may take some time depending on the number of "
             "rearrangements you are downloading"
         )
@@ -362,11 +364,9 @@ repertoire metadata file.")
                 ) from e            # progress report
             cnt += len(rearrangements)
             elapsed = time.perf_counter() - start_time
-            print(
+            logger.info(
                 f"  fetched {cnt} rows (last chunk {len(rearrangements)}) "
-                f"in {elapsed:.1f}s",
-                end="\r",
-                flush=True,
+                f"in {elapsed:.1f}s"
             )
 
             # Open a file for writing the rearrangements. We do this here
@@ -399,8 +399,7 @@ repertoire metadata file.")
             # Need to update the from parameter to get the next chunk
             query["from"] = cnt
 
-        print()
-        print(
+        logger.info(
             "Retrieved "
             + str(cnt)
             + " rearrangements for repertoire: "
@@ -411,9 +410,9 @@ repertoire metadata file.")
     # was ever created; say so explicitly instead of printing a misleading
     # "Saved as ..." message for a file that doesn't exist.
     if first:
-        sys.stderr.write(
+        logger.warning(
             "TCRcloud warning: no rearrangements were found for any repertoire; "
-            "no file was written.\n"
+            "no file was written."
         )
         return
 
@@ -421,4 +420,4 @@ repertoire metadata file.")
     # guaranteed to be on disk rather than relying on process exit/GC.
     if out_file is not None:
         out_file.close()
-    print("Saved as " + rearrangements_file)
+    logger.info("Saved as " + rearrangements_file)

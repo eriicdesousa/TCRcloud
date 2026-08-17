@@ -19,7 +19,7 @@ per chain before pairing, so repertoires can also be compared across files
 
 import copy
 import itertools
-import sys
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +33,8 @@ import tcrcloud.aminoacids as aminoacids
 import tcrcloud.format
 import tcrcloud.vgenes as vgenes
 from tcrcloud.errors import TCRcloudError
+
+logger = logging.getLogger(__name__)
 
 _HTML_CONFIG = {"responsive": True, "displayModeBar": True, "displaylogo": False}
 
@@ -132,9 +134,9 @@ def _vgene_comparison(
 ) -> None:
     tables = _vgene_frequency_tables(formatted_vgene, chain_letter, repA, repB, species)
     if tables is None:
-        sys.stderr.write(
+        logger.warning(
             f"Skipping V genes comparison for {repA} vs {repB} ({chain_letter}): "
-            "no built-in V-gene palette for this chain/species\n"
+            "no built-in V-gene palette for this chain/species"
         )
         return
     tableA, tableB, v_genes, lengths = tables
@@ -146,7 +148,7 @@ def _vgene_comparison(
             f"{prefix}_vgenes_diff_table_{repA}_vs_{repB}_{chain_letter}.csv"
         )
         diff.to_csv(diff_filename)
-        print("V genes comparison table saved as " + diff_filename)
+        logger.info("V genes comparison table saved as " + diff_filename)
 
     settings = vgenes._CHAIN_PLOT_SETTINGS.get(
         chain_letter, {"plot_aspect": (3, 1, 1), "x_size": 6}
@@ -195,7 +197,7 @@ def _vgene_comparison(
     )
     outputname = f"{prefix}_vgenes_diff_{repA}_vs_{repB}_{chain_letter}.{output_format}"
     fig.write_image(outputname, scale=6)
-    print("V genes comparison plot saved as " + outputname)
+    logger.info("V genes comparison plot saved as " + outputname)
 
     fig_html = copy.deepcopy(fig)
     sc_html = dict(sc)
@@ -216,7 +218,7 @@ def _vgene_comparison(
     )
     html_outputname = f"{prefix}_vgenes_diff_{repA}_vs_{repB}_{chain_letter}.html"
     fig_html.write_html(html_outputname, config=_HTML_CONFIG)
-    print("Interactive HTML plot saved as " + html_outputname)
+    logger.info("Interactive HTML plot saved as " + html_outputname)
 
 
 # ---------------------------------------------------------------------------
@@ -272,9 +274,9 @@ def _aminoacid_comparison(
             & (formatted_aminoacids["repertoire_id"] == repertoire_id)
         ]
         if df.empty:
-            sys.stderr.write(
+            logger.warning(
                 f"Skipping amino acids comparison for {repA} vs {repB} "
-                f"({chain_letter}): no data for {repertoire_id}\n"
+                f"({chain_letter}): no data for {repertoire_id}"
             )
             return
         tables[repertoire_id] = _aminoacid_position_table(df)
@@ -291,7 +293,7 @@ def _aminoacid_comparison(
             f"{prefix}_aminoacids_diff_table_{repA}_vs_{repB}_{chain_letter}.csv"
         )
         diff.to_csv(diff_filename)
-        print("Amino acids comparison table saved as " + diff_filename)
+        logger.info("Amino acids comparison table saved as " + diff_filename)
 
     _aminoacid_3d_diff_plot(diff, repA, repB, chain_letter, prefix, output_format)
     _aminoacid_2d_diff_plots(diff, repA, repB, chain_letter, prefix, output_format)
@@ -363,7 +365,7 @@ def _aminoacid_3d_diff_plot(
         f"{prefix}_aminoacids3D_diff_{repA}_vs_{repB}_{chain_letter}.{output_format}"
     )
     fig.write_image(outputname, scale=6)
-    print("Tridimensional amino acids comparison plot saved as " + outputname)
+    logger.info("Tridimensional amino acids comparison plot saved as " + outputname)
 
     fig_html = copy.deepcopy(fig)
     sc_html = dict(
@@ -392,7 +394,7 @@ def _aminoacid_3d_diff_plot(
     )
     html_outputname = f"{prefix}_aminoacids3D_diff_{repA}_vs_{repB}_{chain_letter}.html"
     fig_html.write_html(html_outputname, config=_HTML_CONFIG)
-    print("Interactive HTML plot saved as " + html_outputname)
+    logger.info("Interactive HTML plot saved as " + html_outputname)
 
 
 def _aminoacid_2d_diff_plots(
@@ -441,7 +443,7 @@ def _aminoacid_2d_diff_plots(
     plt.tight_layout()
     plt.savefig(outname, dpi=300, bbox_inches="tight")
     plt.close()
-    print("Amino acids 2D comparison plot saved as " + outname)
+    logger.info("Amino acids 2D comparison plot saved as " + outname)
 
     # (B) Squashed per-amino-acid bar chart: sum the difference across all
     # CDR3 positions to give one net difference value per amino acid.
@@ -460,7 +462,7 @@ def _aminoacid_2d_diff_plots(
     plt.tight_layout()
     plt.savefig(outname2, dpi=300, bbox_inches="tight")
     plt.close()
-    print("Amino acids squashed comparison plot saved as " + outname2)
+    logger.info("Amino acids squashed comparison plot saved as " + outname2)
 
 
 # ---------------------------------------------------------------------------
@@ -502,7 +504,7 @@ def compare(
             continue
         for repA, repB in itertools.combinations(reps, 2):
             compared_any = True
-            print(f"Comparing {repA} vs {repB} ({chain_letter} chain)")
+            logger.info(f"Comparing {repA} vs {repB} ({chain_letter} chain)")
             _vgene_comparison(
                 formatted_vgene,
                 str(chain_letter),

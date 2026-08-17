@@ -1,4 +1,5 @@
 import copy
+import logging
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -9,6 +10,8 @@ import plotly.graph_objects as go
 import tcrcloud.colours
 import tcrcloud.format
 from tcrcloud.errors import TCRcloudError
+
+logger = logging.getLogger(__name__)
 
 colours = tcrcloud.colours.aminoacids
 
@@ -168,7 +171,7 @@ def aminoacids(
             plt.legend(bbox_to_anchor=(1.01, 1), reverse=False, loc="upper left")
             plt.savefig(outputname, dpi=300, bbox_inches="tight")
             plt.close()
-            print("Amino acids plot saved as " + outputname)
+            logger.info("Amino acids plot saved as " + outputname)
 
         # If user wants a 3D bar plot
         else:
@@ -359,8 +362,8 @@ def aminoacids(
                 },
             )
 
-            print("Tridimensional Amino acids plot saved as " + outputname)
-            print("Interactive HTML plot saved as", html_outputname)
+            logger.info("Tridimensional Amino acids plot saved as " + outputname)
+            logger.info("Interactive HTML plot saved as " + html_outputname)
 
         # Export the processed data to a CSV file
         if export:

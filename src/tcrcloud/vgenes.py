@@ -6,6 +6,7 @@ length x percentage of reads).
 """
 
 import copy
+import logging
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,8 @@ from natsort import natsort_keygen
 import tcrcloud.colours
 import tcrcloud.format
 from tcrcloud.errors import TCRcloudError
+
+logger = logging.getLogger(__name__)
 
 # V genes ambiguously shared between the alpha and delta loci; when a
 # repertoire's delta chain is being plotted, these are renamed to their
@@ -240,7 +243,7 @@ def barplot(
             + output_format
         )
         fig.write_image(outputname, scale=6)
-        print("V genes plot saved as " + outputname)
+        logger.info("V genes plot saved as " + outputname)
 
         # Also make an interactive HTML version with bigger fonts, independent
         # of the chosen static image format.
@@ -287,4 +290,4 @@ def barplot(
             html_outputname,
             config={"responsive": True, "displayModeBar": True, "displaylogo": False},
         )
-        print("Interactive HTML plot saved as " + html_outputname)
+        logger.info("Interactive HTML plot saved as " + html_outputname)
