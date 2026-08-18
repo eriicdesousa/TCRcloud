@@ -2,7 +2,6 @@
 import argparse
 import logging
 import sys
-from importlib.metadata import PackageNotFoundError, version
 
 import tcrcloud.aminoacids
 import tcrcloud.cloud
@@ -11,14 +10,8 @@ import tcrcloud.download
 import tcrcloud.radar
 import tcrcloud.testdata
 import tcrcloud.vgenes
+from tcrcloud import __version__
 from tcrcloud.errors import TCRcloudError
-
-try:
-    __version__ = version("TCRcloud")
-except PackageNotFoundError:
-    # Package isn't installed (e.g. running directly from a source checkout).
-    __version__ = "0.0.0.dev"
-
 
 # Species with a built-in V-gene colour palette (see tcrcloud.colours*).
 _SPECIES = (
