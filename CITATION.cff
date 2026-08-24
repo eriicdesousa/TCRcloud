@@ -1,5 +1,10 @@
 cff-version: 1.2.0
 message: "If you use this tool, please cite our paper as below."
+type: software
+title: "TCRcloud: a global visualization tool for T-cell and B-cell receptor transcripts"
+doi: "10.1186/s12967-025-07619-4"
+date-released: 2026-02-06
+url: "https://github.com/eriicdesousa/TCRcloud"
 authors:
   - family-names: "de Sousa"
     given-names: "Eric"
@@ -23,10 +28,6 @@ authors:
     given-names: "Margarida"
   - family-names: "Maeurer"
     given-names: "Markus"
-title: "TCRcloud: a global visualization tool for T‑cell and B‑cell receptor transcripts"
-doi: "10.1186/s12967-025-07619-4"
-date-released: 2026-02-06
-url: "https://github.com/eriicdesousa/TCRcloud"
 preferred-citation:
   type: article
   authors:
@@ -52,10 +53,9 @@ preferred-citation:
       given-names: "Margarida"
     - family-names: "Maeurer"
       given-names: "Markus"
-  title: "TCRcloud: a global visualization tool for T‑cell and B‑cell receptor transcripts"
+  title: "TCRcloud: a global visualization tool for T-cell and B-cell receptor transcripts"
   journal: "Journal of Translational Medicine"
   volume: 24
-  issue: 340
+  issue: "340"
   year: 2026
   doi: "10.1186/s12967-025-07619-4"
-
