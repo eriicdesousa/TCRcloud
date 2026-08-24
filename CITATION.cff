@@ -1,35 +1,20 @@
 cff-version: 1.2.0
-message: "If you use this tool, please cite our paper as below."
+message: "If you use this software, please cite the associated publication."
+
 type: software
-title: "TCRcloud: a global visualization tool for T-cell and B-cell receptor transcripts"
-doi: "10.1186/s12967-025-07619-4"
-date-released: 2026-02-06
-url: "https://github.com/eriicdesousa/TCRcloud"
+title: "TCRcloud"
+
 authors:
   - family-names: "de Sousa"
     given-names: "Eric"
-  - family-names: "Lérias"
-    given-names: "Joana R."
-  - family-names: "Gorgulho"
-    given-names: "Carolina M."
-  - family-names: "Chaves-Ferreira"
-    given-names: "Miguel"
-  - family-names: "Balan"
-    given-names: "Vitaly"
-  - family-names: "Pan"
-    given-names: "Wenjing"
-  - family-names: "Byrne-Steele"
-    given-names: "Miranda"
-  - family-names: "Wang"
-    given-names: "Zhe"
-  - family-names: "Han"
-    given-names: "Jian"
-  - family-names: "Gama-Carvalho"
-    given-names: "Margarida"
-  - family-names: "Maeurer"
-    given-names: "Markus"
+
+repository-code: "https://github.com/eriicdesousa/TCRcloud"
+url: "https://github.com/eriicdesousa/TCRcloud"
+
 preferred-citation:
   type: article
+  title: "TCRcloud: a global visualization tool for T-cell and B-cell receptor transcripts"
+
   authors:
     - family-names: "de Sousa"
       given-names: "Eric"
@@ -53,9 +38,9 @@ preferred-citation:
       given-names: "Margarida"
     - family-names: "Maeurer"
       given-names: "Markus"
-  title: "TCRcloud: a global visualization tool for T-cell and B-cell receptor transcripts"
+
   journal: "Journal of Translational Medicine"
-  volume: 24
-  issue: "340"
   year: 2026
+  volume: 24
+  start: 340
   doi: "10.1186/s12967-025-07619-4"
